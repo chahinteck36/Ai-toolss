@@ -1,0 +1,6 @@
+{
+  "name": "أدواتي AI | دليل أدوات الذكاء الاصطناعي الشامل - adawatai.online",
+  "description": "المرجع العربي الشامل لاكتشاف وتصنيف ومراجعة أفضل أدوات وتطبيقات الذكاء الاصطناعي في مختلف المجالات.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

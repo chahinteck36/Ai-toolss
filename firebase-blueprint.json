@@ -1,0 +1,106 @@
+{
+  "entities": {
+    "tools": {
+      "title": "tools",
+      "description": "AI Tools directory collection",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nameAr": { "type": "string" },
+        "nameEn": { "type": "string" },
+        "taglineAr": { "type": "string" },
+        "descriptionAr": { "type": "string" },
+        "category": { "type": "string" },
+        "pricing": { "type": "string" },
+        "pricingAr": { "type": "string" },
+        "pricingDetailsAr": { "type": "string" },
+        "websiteUrl": { "type": "string" },
+        "rating": { "type": "number" },
+        "reviewsCount": { "type": "number" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "isPopular": { "type": "boolean" },
+        "isFeatured": { "type": "boolean" },
+        "isNew": { "type": "boolean" },
+        "supportsArabic": { "type": "boolean" },
+        "platforms": { "type": "array", "items": { "type": "string" } },
+        "pros": { "type": "array", "items": { "type": "string" } },
+        "cons": { "type": "array", "items": { "type": "string" } },
+        "useCases": { "type": "array", "items": { "type": "string" } },
+        "addedDate": { "type": "string" },
+        "customAdded": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["published", "pending", "draft", "archived"] },
+        "gradient": { "type": "string" },
+        "iconBg": { "type": "string" },
+        "clicksCount": { "type": "number" }
+      },
+      "required": ["nameAr", "nameEn", "category", "pricing", "websiteUrl"]
+    },
+    "submissions": {
+      "title": "submissions",
+      "description": "Visitor suggested AI tools for admin approval",
+      "type": "object",
+      "properties": {
+        "nameAr": { "type": "string" },
+        "nameEn": { "type": "string" },
+        "taglineAr": { "type": "string" },
+        "descriptionAr": { "type": "string" },
+        "category": { "type": "string" },
+        "pricing": { "type": "string" },
+        "websiteUrl": { "type": "string" },
+        "submittedBy": { "type": "string" },
+        "submitterEmail": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "submittedAt": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["nameAr", "websiteUrl", "category"]
+    },
+    "advertisements": {
+      "title": "advertisements",
+      "description": "Directory advertisements and sponsored banners",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" },
+        "ctaText": { "type": "string" },
+        "targetUrl": { "type": "string" },
+        "placement": { "type": "string", "enum": ["top_banner", "grid_sponsored", "sidebar", "footer"] },
+        "badgeText": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "clicks": { "type": "number" },
+        "impressions": { "type": "number" },
+        "bgGradient": { "type": "string" }
+      },
+      "required": ["title", "targetUrl", "placement", "isActive"]
+    },
+    "members": {
+      "title": "members",
+      "description": "Directory members and admins",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "editor", "member"] },
+        "joinedAt": { "type": "string" },
+        "lastActive": { "type": "string" }
+      },
+      "required": ["email", "role"]
+    },
+    "reviews": {
+      "title": "reviews",
+      "description": "User reviews and ratings for tools",
+      "type": "object",
+      "properties": {
+        "toolId": { "type": "string" },
+        "userName": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["toolId", "rating"]
+    }
+  }
+}

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="50%" stop-color="#7c3aed" />
+      <stop offset="100%" stop-color="#db2777" />
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0.3" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#4f46e5" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle -->
+  <rect x="24" y="24" width="464" height="464" rx="112" fill="url(#grad1)" filter="url(#shadow)" />
+
+  <!-- Subtle inner border overlay -->
+  <rect x="28" y="28" width="456" height="456" rx="108" stroke="url(#glow)" stroke-width="4" fill="none" opacity="0.6" />
+
+  <!-- Center AI Node / Sparkle Geometric Design -->
+  <!-- Central Glowing Diamond -->
+  <path d="M256 100 L285 200 L385 229 L285 258 L256 358 L227 258 L127 229 L227 200 Z" fill="#ffffff" />
+  
+  <!-- Secondary Sparkles -->
+  <path d="M375 120 L388 160 L428 173 L388 186 L375 226 L362 186 L322 173 L362 160 Z" fill="#fde047" opacity="0.9" />
+  <path d="M140 310 L150 340 L180 350 L150 360 L140 390 L130 360 L100 350 L130 340 Z" fill="#a7f3d0" opacity="0.9" />
+
+  <!-- Arabic Typography / Modern Stylized Element -->
+  <circle cx="256" cy="400" r="16" fill="#ffffff" opacity="0.9" />
+  <circle cx="304" cy="400" r="10" fill="#fde047" opacity="0.9" />
+  <circle cx="208" cy="400" r="10" fill="#a7f3d0" opacity="0.9" />
+</svg>

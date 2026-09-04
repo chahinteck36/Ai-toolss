@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Tools collection: allow reading published tools to everyone; allow write/edit/delete
+    match /tools/{toolId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // Submissions collection: visitors can submit; admins can review/update
+    match /submissions/{subId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if true;
+    }
+
+    // Advertisements: public read for active ads; manage via admin
+    match /advertisements/{adId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Reviews & Ratings
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Members & Roles
+    match /members/{memberId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Settings
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

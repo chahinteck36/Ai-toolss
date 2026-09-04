@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" fill="none">
+  <defs>
+    <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="50%" stop-color="#7c3aed" />
+      <stop offset="100%" stop-color="#db2777" />
+    </linearGradient>
+    <linearGradient id="text-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="50%" stop-color="#7c3aed" />
+      <stop offset="100%" stop-color="#db2777" />
+    </linearGradient>
+  </defs>
+
+  <!-- Logo Icon Container -->
+  <g transform="translate(40, 20)">
+    <rect width="200" height="200" rx="48" fill="url(#logo-grad)" />
+    <!-- Sparkle Diamond -->
+    <path d="M100 35 L115 85 L165 100 L115 115 L100 165 L85 115 L35 100 L85 85 Z" fill="#ffffff" />
+    <path d="M155 45 L162 65 L182 72 L162 79 L155 99 L148 79 L128 72 L148 65 Z" fill="#fde047" />
+  </g>
+
+  <!-- Text Section -->
+  <g transform="translate(280, 50)">
+    <text x="0" y="60" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="52" fill="#1e1b4b" direction="rtl">
+      أدواتي AI
+    </text>
+    <text x="0" y="110" font-family="system-ui, -apple-system, sans-serif" font-weight="600" font-size="24" fill="#4f46e5" direction="rtl">
+      دليل أدوات الذكاء الاصطناعي الشامل
+    </text>
+    <text x="0" y="150" font-family="monospace" font-weight="700" font-size="20" fill="#64748b" letter-spacing="1">
+      adawatai.online
+    </text>
+  </g>
+</svg>
