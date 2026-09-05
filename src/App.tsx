@@ -185,7 +185,7 @@ export default function App() {
     }
   }, [isDarkMode]);
 
-  // Check URL parameters / hash on mount & hashchange for direct navigation (Admin, About, Privacy, Prompts)
+  // Check URL parameters / hash on mount & hashchange for direct navigation (Admin, About, Privacy, Prompts, Tools)
   useEffect(() => {
     const handleUrlRoutes = () => {
       const hash = window.location.hash.toLowerCase();
@@ -216,12 +216,55 @@ export default function App() {
       if (hash.includes('prompts') || hash.includes('prompt') || search.includes('prompts')) {
         setIsPromptsLibraryOpen(true);
       }
+
+      // Check for direct tool parameter (?tool=id) or hash (#tool-id)
+      const urlParams = new URLSearchParams(window.location.search);
+      const toolParam = urlParams.get('tool');
+      if (toolParam) {
+        const found = tools.find(
+          (t) => t.id.toLowerCase() === toolParam.toLowerCase() ||
+                 t.nameEn.toLowerCase() === toolParam.toLowerCase()
+        );
+        if (found) {
+          setSelectedToolForModal(found);
+        }
+      } else if (hash.startsWith('#tool-')) {
+        const toolId = hash.replace('#tool-', '');
+        const found = tools.find(
+          (t) => t.id.toLowerCase() === toolId.toLowerCase() ||
+                 t.nameEn.toLowerCase() === toolId.toLowerCase()
+        );
+        if (found) {
+          setSelectedToolForModal(found);
+        }
+      }
     };
 
     handleUrlRoutes();
     window.addEventListener('hashchange', handleUrlRoutes);
-    return () => window.removeEventListener('hashchange', handleUrlRoutes);
-  }, []);
+    window.addEventListener('popstate', handleUrlRoutes);
+    return () => {
+      window.removeEventListener('hashchange', handleUrlRoutes);
+      window.removeEventListener('popstate', handleUrlRoutes);
+    };
+  }, [tools]);
+
+  // Sync URL when selectedToolForModal changes
+  useEffect(() => {
+    if (selectedToolForModal) {
+      const currentUrl = new URL(window.location.href);
+      if (currentUrl.searchParams.get('tool') !== selectedToolForModal.id) {
+        currentUrl.searchParams.set('tool', selectedToolForModal.id);
+        window.history.pushState(null, '', currentUrl.toString());
+      }
+    } else {
+      const currentUrl = new URL(window.location.href);
+      if (currentUrl.searchParams.has('tool')) {
+        currentUrl.searchParams.delete('tool');
+        window.history.pushState(null, '', currentUrl.pathname + currentUrl.hash);
+      }
+    }
+  }, [selectedToolForModal]);
 
   // Keyboard shortcut listener for Secret Admin Access (Ctrl+Shift+A or Alt+A)
   useEffect(() => {
@@ -958,6 +1001,18 @@ export default function App() {
         onOpenPromptsForTool={(toolName) => {
           setPromptsLibraryToolFilter(toolName);
           setIsPromptsLibraryOpen(true);
+        }}
+        onSelectCategory={(catId) => {
+          setSelectedToolForModal(null);
+          handleFilterChange({ selectedCategory: catId, searchQuery: '' });
+          const el = document.getElementById('tools-catalog');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }}
+        onSelectTag={(tag) => {
+          setSelectedToolForModal(null);
+          handleFilterChange({ searchQuery: tag });
+          const el = document.getElementById('tools-catalog');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
         }}
         allTools={tools}
         advertisements={advertisements}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   X, 
   ExternalLink, 
@@ -12,17 +12,27 @@ import {
   Globe, 
   Tag, 
   Layers, 
-  CreditCard,
-  MessageSquare,
-  FileText,
-  Copy,
-  Laptop,
-  Terminal,
-  Repeat,
-  GraduationCap,
-  BookOpen
+  CreditCard, 
+  FileText, 
+  Copy, 
+  Laptop, 
+  Terminal, 
+  Repeat, 
+  GraduationCap, 
+  PenTool, 
+  Palette, 
+  Code2, 
+  TrendingUp, 
+  Briefcase, 
+  ShieldCheck, 
+  ChevronLeft,
+  ArrowUpRight,
+  Info,
+  Users,
+  Compass
 } from 'lucide-react';
-import { AiTool, PricingType, Advertisement } from '../types';
+import { AiTool, PricingType, Advertisement, CategoryId } from '../types';
+import { CATEGORIES } from '../data/toolsData';
 import { SponsoredBanner } from './SponsoredBanner';
 
 interface ToolDetailModalProps {
@@ -37,10 +47,65 @@ interface ToolDetailModalProps {
   onSaveNote: (id: string, note: string) => void;
   onSelectTool: (tool: AiTool) => void;
   onOpenPromptsForTool?: (toolName: string) => void;
+  onSelectCategory?: (category: CategoryId) => void;
+  onSelectTag?: (tag: string) => void;
   allTools: AiTool[];
   advertisements?: Advertisement[];
   isDarkMode: boolean;
 }
+
+interface AudienceItem {
+  id: string;
+  nameAr: string;
+  nameEn: string;
+  descriptionAr: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const ALL_AUDIENCES: Record<string, AudienceItem> = {
+  students: {
+    id: 'students',
+    nameAr: 'الطلاب والباحثون',
+    nameEn: 'Students & Researchers',
+    descriptionAr: 'لإعداد الأبحاث الأكاديمية، تلخيص المراجع المعقدة، والتحصيل العلمي.',
+    icon: GraduationCap,
+  },
+  creators: {
+    id: 'creators',
+    nameAr: 'صناع المحتوى والكتاب',
+    nameEn: 'Content Creators & Writers',
+    descriptionAr: 'لتوليد الأفكار، صياغة المقالات، وتطوير السيناريوهات والمحتوى الرقمي.',
+    icon: PenTool,
+  },
+  designers: {
+    id: 'designers',
+    nameAr: 'المصممون والمبدعون',
+    nameEn: 'Designers & Visual Artists',
+    descriptionAr: 'لإنشاء وتعديل الرسومات الفنية، واجهات الاستخدام، والمؤثرات البصرية.',
+    icon: Palette,
+  },
+  developers: {
+    id: 'developers',
+    nameAr: 'المبرمجون والمطورون',
+    nameEn: 'Developers & Engineers',
+    descriptionAr: 'لكتابة الأكواد، فحص الأخطاء، وتسريع وتيرة بناء التطبيقات.',
+    icon: Code2,
+  },
+  marketers: {
+    id: 'marketers',
+    nameAr: 'المسوقون ورواد الأعمال',
+    nameEn: 'Marketers & Entrepreneurs',
+    descriptionAr: 'لإطلاق الحملات الإعلانية، كتابة نصوص الإعلانات، وتحسين نتائج محركات البحث.',
+    icon: TrendingUp,
+  },
+  businesses: {
+    id: 'businesses',
+    nameAr: 'الشركات وفرق العمل',
+    nameEn: 'Businesses & Teams',
+    descriptionAr: 'لأتمتة المهام التشغيلية، تنظيم المشاريع، ورفع كفاءة الإنتاجية الإدارية.',
+    icon: Briefcase,
+  },
+};
 
 export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
   tool,
@@ -54,6 +119,8 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
   onSaveNote,
   onSelectTool,
   onOpenPromptsForTool,
+  onSelectCategory,
+  onSelectTag,
   allTools,
   advertisements = [],
   isDarkMode
@@ -62,15 +129,317 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
   const [copied, setCopied] = useState(false);
   const [noteSavedToast, setNoteSavedToast] = useState(false);
   const [hoverRating, setHoverRating] = useState<number | null>(null);
+  const [logoImgError, setLogoImgError] = useState(false);
 
+  // Sync user note
   useEffect(() => {
     setNoteText(userNote || '');
   }, [userNote, tool]);
 
+  // Reset logo error on tool change
+  useEffect(() => {
+    setLogoImgError(false);
+  }, [tool?.id]);
+
+  // Keyboard escape listener to close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  // SEO: Update Title, Meta Description, Canonical Link & JSON-LD Structured Data
+  useEffect(() => {
+    if (!isOpen || !tool) return;
+
+    const prevTitle = document.title;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    const prevDesc = metaDesc ? metaDesc.getAttribute('content') : '';
+    const canonicalLink = document.querySelector('link[rel="canonical"]');
+    const prevCanonical = canonicalLink ? canonicalLink.getAttribute('href') : '';
+
+    // Set unique SEO Title & Description
+    const seoTitle = `${tool.nameAr} (${tool.nameEn}) | مراجعة شاملة، بدائل ومميزات الأداة - أدواتي AI`;
+    document.title = seoTitle;
+
+    const seoDesc = `${tool.nameAr} (${tool.nameEn}) - ${tool.taglineAr}. استكشف أهم المميزات والسلبيات، خطط الأسعار، وأقوى البدائل المناسبة على دليل أدواتي.`;
+    if (metaDesc) {
+      metaDesc.setAttribute('content', seoDesc);
+    }
+
+    const toolCanonical = `https://adawatai.online/?tool=${tool.id}`;
+    if (canonicalLink) {
+      canonicalLink.setAttribute('href', toolCanonical);
+    }
+
+    // Inject JSON-LD Schema for SoftwareApplication
+    const schemaScriptId = 'tool-schema-jsonld';
+    let scriptTag = document.getElementById(schemaScriptId) as HTMLScriptElement | null;
+    if (!scriptTag) {
+      scriptTag = document.createElement('script');
+      scriptTag.id = schemaScriptId;
+      scriptTag.type = 'application/ld+json';
+      document.head.appendChild(scriptTag);
+    }
+
+    const jsonLdData = {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": tool.nameEn,
+      "alternateName": tool.nameAr,
+      "description": tool.descriptionAr,
+      "applicationCategory": tool.category,
+      "operatingSystem": tool.platforms?.join(', ') || 'Web',
+      "url": tool.websiteUrl,
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": tool.rating || 4.8,
+        "reviewCount": tool.reviewsCount || 120,
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": tool.pricing === 'free' ? "0" : undefined,
+        "priceCurrency": "USD",
+        "category": tool.pricingAr
+      }
+    };
+    scriptTag.text = JSON.stringify(jsonLdData);
+
+    return () => {
+      document.title = prevTitle;
+      if (metaDesc && prevDesc) metaDesc.setAttribute('content', prevDesc);
+      if (canonicalLink && prevCanonical) canonicalLink.setAttribute('href', prevCanonical);
+      const existingScript = document.getElementById(schemaScriptId);
+      if (existingScript) existingScript.remove();
+    };
+  }, [isOpen, tool]);
+
+  // Target audiences mapping based on category, tags, and use cases
+  const targetAudiences = useMemo<AudienceItem[]>(() => {
+    if (!tool) return [];
+    const matched = new Set<string>();
+
+    switch (tool.category) {
+      case 'coding_dev':
+        matched.add('developers');
+        matched.add('students');
+        matched.add('businesses');
+        break;
+      case 'academic_scholar':
+      case 'search_research':
+        matched.add('students');
+        matched.add('creators');
+        break;
+      case 'image_generation':
+      case 'design_ui':
+        matched.add('designers');
+        matched.add('creators');
+        matched.add('marketers');
+        break;
+      case 'video_generation':
+        matched.add('creators');
+        matched.add('marketers');
+        matched.add('designers');
+        break;
+      case 'audio_music':
+        matched.add('creators');
+        matched.add('designers');
+        matched.add('marketers');
+        break;
+      case 'text_writing':
+        matched.add('creators');
+        matched.add('marketers');
+        matched.add('students');
+        matched.add('businesses');
+        break;
+      case 'productivity':
+        matched.add('businesses');
+        matched.add('marketers');
+        matched.add('students');
+        matched.add('developers');
+        break;
+      case 'chatbots':
+        matched.add('students');
+        matched.add('creators');
+        matched.add('developers');
+        matched.add('businesses');
+        break;
+      case 'translation':
+        matched.add('students');
+        matched.add('businesses');
+        matched.add('creators');
+        break;
+      case 'education':
+        matched.add('students');
+        matched.add('creators');
+        matched.add('businesses');
+        break;
+      default:
+        matched.add('students');
+        matched.add('creators');
+        break;
+    }
+
+    const corpus = (
+      tool.tags.join(' ') + ' ' +
+      tool.useCases.join(' ') + ' ' +
+      (tool.academicTags?.join(' ') || '') + ' ' +
+      tool.descriptionAr
+    ).toLowerCase();
+
+    if (corpus.includes('برمج') || corpus.includes('كود') || corpus.includes('مطور') || corpus.includes('api')) {
+      matched.add('developers');
+    }
+    if (corpus.includes('تصميم') || corpus.includes('رسم') || corpus.includes('صور') || corpus.includes('جرافيك')) {
+      matched.add('designers');
+    }
+    if (corpus.includes('تسويق') || corpus.includes('سوشيال') || corpus.includes('seo') || corpus.includes('إعلان')) {
+      matched.add('marketers');
+    }
+    if (corpus.includes('طالب') || corpus.includes('أكاديم') || corpus.includes('جامع') || corpus.includes('بحث علمي') || tool.academicFocus) {
+      matched.add('students');
+    }
+    if (corpus.includes('شركة') || corpus.includes('فريق') || corpus.includes('إدارة') || corpus.includes('أعمال')) {
+      matched.add('businesses');
+    }
+    if (corpus.includes('مقال') || corpus.includes('صانع') || corpus.includes('فيديو') || corpus.includes('يوتيوب') || corpus.includes('كتابة')) {
+      matched.add('creators');
+    }
+
+    const results: AudienceItem[] = [];
+    matched.forEach((key) => {
+      if (ALL_AUDIENCES[key]) {
+        results.push(ALL_AUDIENCES[key]);
+      }
+    });
+
+    return results;
+  }, [tool]);
+
+  // Pricing model explanation helper
+  const pricingInfo = useMemo(() => {
+    if (!tool) return null;
+    switch (tool.pricing) {
+      case 'free':
+        return {
+          labelAr: 'مجاني بالكامل',
+          labelEn: 'Free',
+          badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800',
+          explanation: 'الأداة مجانية للاستخدام بشكل كامل دون الحاجة إلى اشتراك مالي أو بطاقة بنكية.'
+        };
+      case 'freemium':
+        return {
+          labelAr: 'مجاني جزئياً',
+          labelEn: 'Freemium',
+          badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-950/70 dark:text-blue-300 border-blue-300 dark:border-blue-800',
+          explanation: 'توفر الأداة خطة مجانية دائمة مع ميزات قياسية، مع توفير خطط مدفوعة للحصول على ميزات متقدمة أو سعة استخدام أكبر.'
+        };
+      case 'paid':
+        return {
+          labelAr: 'مدفوع',
+          labelEn: 'Paid',
+          badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border-amber-300 dark:border-amber-800',
+          explanation: 'تتطلب الأداة اشتراكاً مدفوعاً للوصول إلى كامل إمكانياتها واستخدام خدماتها.'
+        };
+      case 'free_trial':
+        return {
+          labelAr: 'تجربة مجانية',
+          labelEn: 'Free Trial',
+          badgeColor: 'bg-teal-100 text-teal-800 dark:bg-teal-950/70 dark:text-teal-300 border-teal-300 dark:border-teal-800',
+          explanation: 'تتيح الأداة تجربة خدماتها مجاناً لفترة محددة أو بعدد نقاط تجريبية قبل الترقية إلى خطة مدفوعة.'
+        };
+      case 'open_source':
+        return {
+          labelAr: 'مفتوح المصدر',
+          labelEn: 'Open Source',
+          badgeColor: 'bg-purple-100 text-purple-800 dark:bg-purple-950/70 dark:text-purple-300 border-purple-300 dark:border-purple-800',
+          explanation: 'الأداة مفتوحة المصدر بالكامل ومتاحة مجاناً للجميع للاستخدام، التعديل، أو الاستضافة الذاتية.'
+        };
+      default:
+        return {
+          labelAr: tool.pricingAr || 'غير محدد',
+          labelEn: 'Available',
+          badgeColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border-slate-300 dark:border-slate-700',
+          explanation: 'يرجى مراجعة الموقع الرسمي للتحقق من تفاصيل الباقات المحدثة.'
+        };
+    }
+  }, [tool]);
+
+  // Alternatives discovery (3-5 tools from Adawatai database)
+  const alternatives = useMemo<AiTool[]>(() => {
+    if (!tool) return [];
+    const found: AiTool[] = [];
+    const addedIds = new Set<string>([tool.id]);
+
+    // 1. Direct alternativeTo links
+    if (tool.alternativeTo && tool.alternativeTo.length > 0) {
+      for (const altName of tool.alternativeTo) {
+        const lower = altName.toLowerCase().trim();
+        const match = allTools.find(
+          (t) => !addedIds.has(t.id) && (
+            t.nameEn.toLowerCase().includes(lower) ||
+            t.nameAr.includes(altName) ||
+            t.id.toLowerCase().includes(lower)
+          )
+        );
+        if (match) {
+          found.push(match);
+          addedIds.add(match.id);
+        }
+      }
+    }
+
+    // 2. Tools referencing this tool
+    for (const t of allTools) {
+      if (!addedIds.has(t.id) && t.alternativeTo) {
+        const matches = t.alternativeTo.some(
+          (alt) => alt.toLowerCase().includes(tool.nameEn.toLowerCase()) || tool.nameEn.toLowerCase().includes(alt.toLowerCase())
+        );
+        if (matches) {
+          found.push(t);
+          addedIds.add(t.id);
+        }
+      }
+      if (found.length >= 5) break;
+    }
+
+    // 3. Same category high-rated tools
+    if (found.length < 4) {
+      const sameCategory = allTools
+        .filter((t) => !addedIds.has(t.id) && t.category === tool.category)
+        .sort((a, b) => b.rating - a.rating);
+      for (const t of sameCategory) {
+        found.push(t);
+        addedIds.add(t.id);
+        if (found.length >= 4) break;
+      }
+    }
+
+    return found.slice(0, 5);
+  }, [tool, allTools]);
+
+  // Related tools (from same category, excluding active tool and alternatives)
+  const relatedTools = useMemo<AiTool[]>(() => {
+    if (!tool) return [];
+    const excludedIds = new Set<string>([tool.id, ...alternatives.map((a) => a.id)]);
+
+    return allTools
+      .filter((t) => !excludedIds.has(t.id) && t.category === tool.category)
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 4);
+  }, [tool, allTools, alternatives]);
+
   if (!isOpen || !tool) return null;
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(tool.websiteUrl);
+    const shareUrl = `https://adawatai.online/?tool=${tool.id}`;
+    navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -82,171 +451,434 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
     setTimeout(() => setNoteSavedToast(false), 2500);
   };
 
-  // Find related tools in the same category
-  const relatedTools = allTools
-    .filter((t) => t.category === tool.category && t.id !== tool.id)
-    .slice(0, 3);
-
+  // Find category object
+  const categoryObj = CATEGORIES.find((c) => c.id === tool.category);
   const displayRating = userRating || tool.rating;
 
-  // Find in-article ads
+  // Derive domain for official favicon logo
+  let domain = '';
+  try {
+    if (tool.websiteUrl) {
+      domain = new URL(tool.websiteUrl).hostname;
+    }
+  } catch (e) {}
+  const faviconUrl = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : '';
+
+  // In-article ads if enabled
   const inArticleTopAd = advertisements.find((a) => a.isActive && a.placement === 'in_article_top');
   const inArticleBottomAd = advertisements.find((a) => a.isActive && a.placement === 'in_article_bottom');
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+    <div 
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/65 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-fadeIn"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tool-title-h1"
+    >
       {/* Click outside backdrop */}
-      <div className="fixed inset-0" onClick={onClose} />
+      <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
 
-      {/* Modal Container */}
+      {/* Main Modal Container */}
       <div 
         id="tool-detail-modal-container"
-        className={`relative w-full max-w-3xl rounded-3xl border shadow-2xl overflow-hidden z-10 my-8 transition-colors ${
+        className={`relative w-full max-w-4xl rounded-3xl border shadow-2xl overflow-hidden z-10 my-4 sm:my-8 transition-colors ${
           isDarkMode 
             ? 'bg-slate-900 border-slate-800 text-slate-100' 
             : 'bg-white border-slate-200 text-slate-900'
         }`}
         dir="rtl"
       >
-        {/* Modal Header Banner */}
-        <div className={`relative p-4 sm:p-8 bg-gradient-to-l ${tool.gradient} text-white`}>
+        {/* 1. Tool Header (Breadcrumb + Title + Logo + Rating + Badges + Quick Actions) */}
+        <header className={`relative p-5 sm:p-7 border-b ${
+          isDarkMode 
+            ? 'bg-gradient-to-b from-slate-800/80 to-slate-900 border-slate-800' 
+            : 'bg-gradient-to-b from-slate-50/90 to-white border-slate-200/80'
+        }`}>
+          {/* Close button top corner */}
           <button
             id="close-modal-btn"
             onClick={onClose}
-            className="absolute top-3 left-3 sm:top-4 sm:left-4 p-2 rounded-full bg-black/20 hover:bg-black/40 text-white transition-colors z-20"
-            title="إغلاق النافذة"
+            className="absolute top-4 left-4 p-2 rounded-full bg-slate-200/60 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors z-20 cursor-pointer"
+            title="إغلاق النافذة (Esc)"
+            aria-label="إغلاق"
           >
             <X className="w-5 h-5" />
           </button>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2 sm:mt-0">
-            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white font-black text-xl sm:text-2xl border border-white/20 shadow-lg shrink-0">
-                {tool.nameEn.slice(0, 2).toUpperCase()}
+          {/* Breadcrumbs Navigation */}
+          <nav aria-label="مسار التصفح" className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-4 flex-wrap">
+            <button 
+              onClick={onClose}
+              className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
+            >
+              الرئيسية
+            </button>
+            <span className="text-slate-400">/</span>
+            <button 
+              onClick={() => {
+                if (onSelectCategory) {
+                  onClose();
+                  onSelectCategory(tool.category);
+                }
+              }}
+              className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium cursor-pointer"
+            >
+              {categoryObj?.nameAr || 'دليل الأدوات'}
+            </button>
+            <span className="text-slate-400">/</span>
+            <span className="text-slate-900 dark:text-white font-semibold truncate max-w-[240px]">
+              {tool.nameAr}
+            </span>
+          </nav>
+
+          {/* Header Content Grid */}
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-5">
+            {/* Logo + Titles */}
+            <div className="flex items-start gap-4 min-w-0">
+              {/* Official Logo / Badge */}
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white p-2 flex items-center justify-center border border-slate-200 dark:border-slate-700 shadow-sm shrink-0 overflow-hidden">
+                {!logoImgError && faviconUrl ? (
+                  <img
+                    src={faviconUrl}
+                    alt={`شعار ${tool.nameAr}`}
+                    onError={() => setLogoImgError(true)}
+                    className="w-full h-full object-contain"
+                    loading="eager"
+                  />
+                ) : (
+                  <div className={`w-full h-full rounded-xl flex items-center justify-center text-white font-black text-xl bg-gradient-to-br ${tool.gradient || 'from-indigo-600 to-purple-700'}`}>
+                    {tool.nameEn.slice(0, 2).toUpperCase()}
+                  </div>
+                )}
               </div>
-              <div className="min-w-0">
+
+              {/* Title & Tagline */}
+              <div className="min-w-0 space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-xl sm:text-3xl font-extrabold">
+                  <h1 id="tool-title-h1" className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
                     {tool.nameAr}
-                  </h2>
+                    <span className="mr-2 text-base sm:text-lg font-semibold text-slate-500 dark:text-slate-400">
+                      ({tool.nameEn})
+                    </span>
+                  </h1>
+
                   {tool.isFeatured && (
-                    <span className="bg-amber-400/90 text-amber-950 text-xs px-2 py-0.5 rounded-full font-bold">
-                      مميز
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                      أداة رائدة
                     </span>
                   )}
                 </div>
-                <p className="text-xs sm:text-sm text-white/80 font-medium">
-                  {tool.nameEn}
+
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
+                  {tool.taglineAr}
                 </p>
+
+                {/* Badges Row: Category, Rating, Pricing Model */}
+                <div className="flex items-center gap-2 pt-1 flex-wrap text-xs">
+                  {/* Category Badge */}
+                  <button
+                    onClick={() => {
+                      if (onSelectCategory) {
+                        onClose();
+                        onSelectCategory(tool.category);
+                      }
+                    }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 transition-colors cursor-pointer"
+                    title={`استعراض أدوات تصنيف ${categoryObj?.nameAr}`}
+                  >
+                    <Layers className="w-3.5 h-3.5 text-indigo-500" />
+                    <span>{categoryObj?.nameAr || 'القسم'}</span>
+                  </button>
+
+                  {/* Rating Badge */}
+                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/80">
+                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                    <span>{displayRating.toFixed(1)} / 5</span>
+                    <span className="text-[11px] font-normal text-slate-400 mr-0.5">
+                      ({tool.reviewsCount || 100} تقييم)
+                    </span>
+                  </div>
+
+                  {/* Pricing Model Badge */}
+                  {pricingInfo && (
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold border text-xs ${pricingInfo.badgeColor}`}>
+                      <CreditCard className="w-3.5 h-3.5 opacity-75" />
+                      <span>{pricingInfo.labelAr}</span>
+                      <span className="text-[10px] font-normal opacity-75">({pricingInfo.labelEn})</span>
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Quick Actions in Header */}
-            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            {/* Quick Actions & Official Website CTA */}
+            <div className="flex items-center gap-2 shrink-0 self-stretch sm:self-auto justify-end">
+              {/* Favorite Button */}
               <button
                 id="modal-favorite-btn"
                 onClick={() => onToggleFavorite(tool.id)}
-                className={`p-2 sm:p-2.5 rounded-xl border backdrop-blur-md transition-all ${
+                className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
                   isFavorite 
-                    ? 'bg-rose-500 text-white border-rose-400 shadow-md' 
-                    : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
+                    ? 'bg-rose-500 text-white border-rose-400 shadow-sm' 
+                    : 'bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
                 }`}
                 title={isFavorite ? 'إزالة من المفضلة' : 'حفظ في المفضلة'}
+                aria-label={isFavorite ? 'إزالة من المفضلة' : 'حفظ في المفضلة'}
               >
-                <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isFavorite ? 'fill-white' : ''}`} />
+                <Heart className={`w-4 h-4 ${isFavorite ? 'fill-white' : ''}`} />
               </button>
 
+              {/* Share/Copy Link Button */}
               <button
                 id="modal-copy-btn"
                 onClick={handleCopyLink}
-                className="p-2 sm:p-2.5 rounded-xl border bg-white/10 hover:bg-white/20 text-white border-white/20 transition-colors"
-                title="نسخ رابط الموقع"
+                className="p-2.5 rounded-xl border bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                title="نسخ رابط صفحة الأداة"
+                aria-label="مشاركة الأداة"
               >
-                {copied ? <Check className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-300" /> : <Copy className="w-4 h-4 sm:w-5 sm:h-5" />}
+                {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4" />}
               </button>
 
+              {/* 10. Official Website CTA (Header) */}
               <a
-                id="modal-visit-btn"
+                id="modal-visit-btn-top"
                 href={tool.websiteUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white text-indigo-900 hover:bg-indigo-50 font-bold text-xs sm:text-sm shadow-md transition-colors"
+                className="flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-indigo-600/20 transition-all hover:scale-[1.02] cursor-pointer"
               >
-                <span>زيارة الموقع</span>
+                <span>زيارة الموقع الرسمي</span>
                 <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </a>
             </div>
           </div>
-        </div>
+        </header>
 
-        {/* Modal Body Content */}
-        <div className="p-6 sm:p-8 space-y-6 max-h-[70vh] overflow-y-auto">
-          {/* Quick Info Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className={`p-3 rounded-2xl border text-center ${
-              isDarkMode ? 'bg-slate-800/60 border-slate-700' : 'bg-slate-50 border-slate-200'
-            }`}>
-              <span className="text-[11px] text-slate-400 block mb-1">التقييم العام</span>
-              <div className="flex items-center justify-center gap-1 font-bold text-amber-500 text-base">
-                <Star className="w-4 h-4 fill-amber-400" />
-                <span>{displayRating.toFixed(1)} / 5</span>
-              </div>
-            </div>
-
-            <div className={`p-3 rounded-2xl border text-center ${
-              isDarkMode ? 'bg-slate-800/60 border-slate-700' : 'bg-slate-50 border-slate-200'
-            }`}>
-              <span className="text-[11px] text-slate-400 block mb-1">نموذج التسعير</span>
-              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 block truncate">
-                {tool.pricingAr}
-              </span>
-            </div>
-
-            <div className={`p-3 rounded-2xl border text-center ${
-              isDarkMode ? 'bg-slate-800/60 border-slate-700' : 'bg-slate-50 border-slate-200'
-            }`}>
-              <span className="text-[11px] text-slate-400 block mb-1">دعم اللغة العربية</span>
-              <span className={`text-xs font-bold ${tool.supportsArabic ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'}`}>
-                {tool.supportsArabic ? '✓ مدعوم بطلاقة' : '— واجهة إنجليزية'}
-              </span>
-            </div>
-
-            <div className={`p-3 rounded-2xl border text-center ${
-              isDarkMode ? 'bg-slate-800/60 border-slate-700' : 'bg-slate-50 border-slate-200'
-            }`}>
-              <span className="text-[11px] text-slate-400 block mb-1">تاريخ الإضافة</span>
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-                {tool.addedDate}
-              </span>
-            </div>
-          </div>
-
+        {/* Scrollable Body Content */}
+        <div className="p-5 sm:p-8 space-y-7 max-h-[72vh] overflow-y-auto">
           {/* Top in-article sponsored ad if active */}
           {inArticleTopAd && (
             <SponsoredBanner ad={inArticleTopAd} isDarkMode={isDarkMode} />
           )}
 
-          {/* Alternatives Badge Section */}
-          {tool.alternativeTo && tool.alternativeTo.length > 0 && (
-            <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-900 dark:text-purple-200">
-              <div className="flex items-center gap-2 mb-1.5 font-bold text-xs">
-                <Repeat className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                <span>بديل قوي ومباشر لـ:</span>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {tool.alternativeTo.map((alt) => (
-                  <span key={alt} className="px-2.5 py-0.5 rounded-lg bg-white dark:bg-slate-800 text-xs font-semibold border border-purple-200 dark:border-purple-800 text-purple-800 dark:text-purple-300 shadow-2xs">
-                    {alt}
-                  </span>
-                ))}
+          {/* 2. What is [Tool Name]? (ما هي أداة وما المشكلة التي تحلها) */}
+          <section aria-labelledby="section-about-title">
+            <h2 id="section-about-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-2.5 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              <span>ما هي أداة {tool.nameAr} ({tool.nameEn}) وما المشكلة التي تحلها؟</span>
+            </h2>
+            <div className={`p-4 sm:p-5 rounded-2xl border leading-relaxed text-sm ${
+              isDarkMode ? 'bg-slate-800/40 border-slate-800 text-slate-300' : 'bg-slate-50/80 border-slate-200/90 text-slate-700'
+            }`}>
+              <p className="mb-2.5 font-normal">
+                {tool.descriptionAr}
+              </p>
+              <div className="flex items-center gap-2 pt-2 border-t border-slate-200/60 dark:border-slate-700/60 text-xs text-slate-500 dark:text-slate-400">
+                <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>حل ذكي متكامل مصمم لاختصار الوقت والجهد ورفع دقة المخرجات بجودة احترافية.</span>
               </div>
             </div>
+          </section>
+
+          {/* 3. Key Features (أبرز المميزات والخصائص كعناصر نقطية واضحة) */}
+          <section aria-labelledby="section-features-title">
+            <h2 id="section-features-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <span>أبرز مميزات وخصائص {tool.nameAr} (Key Features)</span>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {tool.pros && tool.pros.length > 0 ? (
+                tool.pros.map((feature, idx) => (
+                  <div 
+                    key={idx}
+                    className={`flex items-start gap-2.5 p-3.5 rounded-xl border ${
+                      isDarkMode ? 'bg-slate-800/40 border-slate-700/80 text-slate-200' : 'bg-slate-50/90 border-slate-200 text-slate-800'
+                    }`}
+                  >
+                    <div className="w-5 h-5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs">
+                      ✓
+                    </div>
+                    <span className="text-xs sm:text-sm font-medium leading-relaxed">{feature}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs text-slate-500 p-3">تتميز الأداة بدقة عالية وسرعة استجابة فائقة.</div>
+              )}
+            </div>
+          </section>
+
+          {/* 4. Who is it for? (لمن هذه الأداة - الفئات المستفيدة ذات الصلة فقط) */}
+          <section aria-labelledby="section-audience-title">
+            <div className="flex items-center justify-between mb-3">
+              <h2 id="section-audience-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                <span>لمن هذه الأداة؟ (الجمهور والفئات المستفيدة)</span>
+              </h2>
+              <span className="text-xs text-slate-400 hidden sm:inline">
+                الفئات الأكثر استفادة من وظائف الأداة
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {targetAudiences.map((aud) => {
+                const IconComponent = aud.icon;
+                return (
+                  <div
+                    key={aud.id}
+                    className={`p-3.5 rounded-2xl border flex items-start gap-3 transition-all ${
+                      isDarkMode 
+                        ? 'bg-slate-800/40 border-slate-700/70 text-slate-200' 
+                        : 'bg-white border-slate-200/80 text-slate-800 shadow-2xs'
+                    }`}
+                  >
+                    <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5">
+                      <IconComponent className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mb-0.5">
+                        {aud.nameAr}
+                      </h3>
+                      <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                        {aud.descriptionAr}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* 5. Main Use Cases (أبرز حالات الاستخدام والتطبيقات العملية) */}
+          {tool.useCases && tool.useCases.length > 0 && (
+            <section aria-labelledby="section-usecases-title">
+              <h2 id="section-usecases-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <span>أبرز حالات الاستخدام والتطبيقات العملية (Main Use Cases)</span>
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {tool.useCases.map((uc, idx) => (
+                  <div 
+                    key={idx}
+                    className={`p-3.5 rounded-2xl border flex items-start gap-3 ${
+                      isDarkMode ? 'bg-slate-800/40 border-slate-700/70' : 'bg-slate-50/70 border-slate-200/80'
+                    }`}
+                  >
+                    <div className="w-6 h-6 rounded-lg bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
+                      {idx + 1}
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm font-medium leading-relaxed text-slate-800 dark:text-slate-200">
+                        {uc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
           )}
 
-          {/* Academic & Scholar Suite Highlights */}
+          {/* 6. Pros & Cons (المميزات والسلبيات بنموذج متوازن وببيانات موثقة فقط) */}
+          <section aria-labelledby="section-proscons-title">
+            <h2 id="section-proscons-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+              <Repeat className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              <span>المميزات والسلبيات (Pros & Cons)</span>
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Pros */}
+              <div className={`p-4 sm:p-5 rounded-2xl border ${
+                isDarkMode ? 'bg-emerald-950/20 border-emerald-900/40' : 'bg-emerald-50/50 border-emerald-200/70'
+              }`}>
+                <h3 className="text-xs sm:text-sm font-bold text-emerald-800 dark:text-emerald-300 mb-3 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>أبرز المميزات ونقاط القوة (Pros)</span>
+                </h3>
+                <ul className="space-y-2.5">
+                  {tool.pros.map((pro, idx) => (
+                    <li key={idx} className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 flex items-start gap-2 leading-relaxed">
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0 mt-0.5">✓</span>
+                      <span>{pro}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Cons */}
+              <div className={`p-4 sm:p-5 rounded-2xl border ${
+                isDarkMode ? 'bg-rose-950/20 border-rose-900/40' : 'bg-rose-50/50 border-rose-200/70'
+              }`}>
+                <h3 className="text-xs sm:text-sm font-bold text-rose-800 dark:text-rose-300 mb-3 flex items-center gap-2">
+                  <XCircle className="w-4 h-4 text-rose-600" />
+                  <span>المحددات والملاحظات (Cons)</span>
+                </h3>
+                {tool.cons && tool.cons.length > 0 ? (
+                  <ul className="space-y-2.5">
+                    {tool.cons.map((con, idx) => (
+                      <li key={idx} className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 flex items-start gap-2 leading-relaxed">
+                        <span className="text-rose-600 dark:text-rose-400 font-bold shrink-0 mt-0.5">✗</span>
+                        <span>{con}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-slate-500 dark:text-slate-400 italic">
+                    لم تسجل أي سلبيات أو قيود جوهرية في بنية الاستخدام المعتادة للأداة.
+                  </p>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* 7. Pricing (شرح نموذج التسعير وتفاصيل الاشتراكات) */}
+          <section aria-labelledby="section-pricing-title">
+            <h2 id="section-pricing-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              <span>تفاصيل الأسعار ونموذج الاشتراك (Pricing Model)</span>
+            </h2>
+
+            <div className={`p-4 sm:p-5 rounded-2xl border space-y-4 ${
+              isDarkMode ? 'bg-slate-800/40 border-slate-700/70' : 'bg-slate-50/80 border-slate-200/90'
+            }`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <span className={`px-3 py-1 rounded-xl text-xs font-bold border ${pricingInfo?.badgeColor}`}>
+                    {pricingInfo?.labelAr} ({pricingInfo?.labelEn})
+                  </span>
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                    {tool.supportsArabic ? '✓ تدعم اللغة العربية بطلاقة' : '— واجهة إنجليزية'}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                  <Laptop className="w-3.5 h-3.5" />
+                  <span>المنصات: {tool.platforms?.join('، ') || 'المتصفح (Web)'}</span>
+                </div>
+              </div>
+
+              {/* Verified Pricing Breakdown from Database */}
+              {tool.pricingDetailsAr ? (
+                <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                  <span className="font-bold text-indigo-600 dark:text-indigo-400 block mb-1">
+                    تفاصيل الخطة الموثقة:
+                  </span>
+                  <p>{tool.pricingDetailsAr}</p>
+                </div>
+              ) : (
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  {pricingInfo?.explanation}
+                </p>
+              )}
+
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                <Info className="w-3.5 h-3.5 shrink-0" />
+                <span>ملاحظة: تخضع خطط وباقات الأسعار للتحديث الدوري المستمر من قبل الموقع الرسمي للأداة.</span>
+              </p>
+            </div>
+          </section>
+
+          {/* Academic or Scholar Focus if present */}
           {(tool.academicFocus || (tool.academicTags && tool.academicTags.length > 0)) && (
-            <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200">
-              <div className="flex items-center gap-2 mb-1.5 font-bold text-xs">
+            <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200">
+              <div className="flex items-center gap-2 mb-1.5 font-bold text-xs sm:text-sm">
                 <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>حقيبة البحث العلمي والطلبة والأساتذة:</span>
               </div>
@@ -267,20 +899,9 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
             </div>
           )}
 
-          {/* Description Section */}
-          <div>
-            <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-indigo-500" />
-              <span>نبذة شاملة عن الأداة</span>
-            </h4>
-            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-              {tool.descriptionAr}
-            </p>
-          </div>
-
-          {/* Prompts for this tool spotlight banner */}
+          {/* Prompts library deep-link banner for this tool */}
           {onOpenPromptsForTool && (
-            <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+            <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 ${
               isDarkMode 
                 ? 'bg-gradient-to-r from-amber-950/40 via-indigo-950/40 to-slate-900 border-amber-500/30' 
                 : 'bg-gradient-to-r from-amber-50/90 via-indigo-50/70 to-purple-50/60 border-amber-200'
@@ -290,11 +911,11 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                   <Terminal className="w-5 h-5 animate-pulse" />
                 </div>
                 <div>
-                  <h5 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
-                    أوامر وبرومبتات جاهزة لـ {tool.nameAr} ({tool.nameEn})
-                  </h5>
+                  <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                    أوامر وبرومبتات احترافية لـ {tool.nameAr} ({tool.nameEn})
+                  </h3>
                   <p className="text-[11px] text-slate-600 dark:text-slate-400">
-                    احصل على أفضل صياغات الأوامر باللغة العربية للحصول على أعلى دقة واستجابة فورية من الأداة.
+                    احصل على أفضل صياغات الأوامر باللغة العربية لتحقيق أقصى فاعلية واستجابة من الأداة.
                   </p>
                 </div>
               </div>
@@ -304,7 +925,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                   onClose();
                   onOpenPromptsForTool(tool.nameEn);
                 }}
-                className="px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white shadow-xs transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+                className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white shadow-xs transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>تصفح الأوامر المخصصة</span>
@@ -312,133 +933,135 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
             </div>
           )}
 
-          {/* Pricing breakdown */}
-          {tool.pricingDetailsAr && (
-            <div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-indigo-500" />
-                <span>تفاصيل الأسعار والاشتراك</span>
-              </h4>
-              <p className="text-xs text-slate-600 dark:text-slate-300 bg-indigo-50/50 dark:bg-indigo-950/30 p-3.5 rounded-2xl border border-indigo-100 dark:border-indigo-900/50">
-                {tool.pricingDetailsAr}
-              </p>
-            </div>
+          {/* Bottom in-article sponsored ad if active */}
+          {inArticleBottomAd && (
+            <SponsoredBanner ad={inArticleBottomAd} isDarkMode={isDarkMode} />
           )}
 
-          {/* Pros & Cons Columns */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Pros */}
-            <div className={`p-4 rounded-2xl border ${
-              isDarkMode ? 'bg-emerald-950/20 border-emerald-900/50' : 'bg-emerald-50/60 border-emerald-100'
-            }`}>
-              <h4 className="text-sm font-bold text-emerald-800 dark:text-emerald-300 mb-3 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>أبرز المميزات ونقاط القوة</span>
-              </h4>
-              <ul className="space-y-2">
-                {tool.pros.map((pro, idx) => (
-                  <li key={idx} className="text-xs text-slate-700 dark:text-slate-300 flex items-start gap-2">
-                    <span className="text-emerald-600 font-bold mt-0.5">•</span>
-                    <span>{pro}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {/* 8. Alternatives (بدائل مقترحة للأداة من قاعدة بيانات أدواتي - قابلة للنقر) */}
+          {alternatives.length > 0 && (
+            <section aria-labelledby="section-alternatives-title" className="pt-2">
+              <div className="flex items-center justify-between mb-3">
+                <h2 id="section-alternatives-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Repeat className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  <span>أفضل بدائل {tool.nameAr} على منصة أدواتي (AI Alternatives)</span>
+                </h2>
+                <span className="text-xs text-slate-400 hidden sm:inline">
+                  أدوات مشابهة تقدم وظائف منافسة
+                </span>
+              </div>
 
-            {/* Cons */}
-            <div className={`p-4 rounded-2xl border ${
-              isDarkMode ? 'bg-rose-950/20 border-rose-900/50' : 'bg-rose-50/60 border-rose-100'
-            }`}>
-              <h4 className="text-sm font-bold text-rose-800 dark:text-rose-300 mb-3 flex items-center gap-2">
-                <XCircle className="w-4 h-4 text-rose-600" />
-                <span>الملاحظات والمحددات</span>
-              </h4>
-              <ul className="space-y-2">
-                {tool.cons.map((con, idx) => (
-                  <li key={idx} className="text-xs text-slate-700 dark:text-slate-300 flex items-start gap-2">
-                    <span className="text-rose-600 font-bold mt-0.5">•</span>
-                    <span>{con}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Use Cases */}
-          {tool.useCases && tool.useCases.length > 0 && (
-            <div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-purple-500" />
-                <span>أفضل حالات واستخدامات الأداة</span>
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {tool.useCases.map((uc, idx) => (
-                  <div 
-                    key={idx} 
-                    className={`p-3 rounded-xl border text-xs text-slate-700 dark:text-slate-300 flex items-center gap-2.5 ${
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {alternatives.map((altTool) => (
+                  <button
+                    key={altTool.id}
+                    onClick={() => onSelectTool(altTool)}
+                    className={`p-3.5 rounded-2xl border text-right transition-all hover:border-indigo-400 hover:shadow-md flex flex-col justify-between gap-3 group cursor-pointer ${
                       isDarkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-white border-slate-200'
                     }`}
                   >
-                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-600 text-[10px] font-bold shrink-0">
-                      {idx + 1}
-                    </span>
-                    <span>{uc}</span>
-                  </div>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white text-xs font-bold bg-gradient-to-br ${altTool.gradient || 'from-indigo-600 to-purple-600'} shrink-0 shadow-xs`}>
+                        {altTool.nameEn.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                            {altTool.nameAr}
+                          </span>
+                          <span className="text-[10px] font-bold text-amber-500 flex items-center gap-0.5 shrink-0">
+                            <Star className="w-3 h-3 fill-amber-400" />
+                            {altTool.rating.toFixed(1)}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-slate-400 block truncate">
+                          {altTool.nameEn}
+                        </span>
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed text-right">
+                      {altTool.taglineAr}
+                    </p>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px]">
+                      <span className="font-semibold text-indigo-600 dark:text-indigo-400 truncate max-w-[120px]">
+                        {altTool.pricingAr}
+                      </span>
+                      <span className="text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 flex items-center gap-1 font-medium transition-colors">
+                        <span>عرض التفاصيل</span>
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+                  </button>
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
-          {/* Platforms & Tags */}
-          <div className="space-y-3">
-            <div>
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">
-                المنصات المدعومة:
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {tool.platforms.map((platform) => (
-                  <span
-                    key={platform}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+          {/* 9. Related Tools (أدوات ذات صلة في نفس التصنيف لتشجيع التصفح المستمر) */}
+          {relatedTools.length > 0 && (
+            <section aria-labelledby="section-related-title" className="pt-2">
+              <div className="flex items-center justify-between mb-3">
+                <h2 id="section-related-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Compass className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  <span>أدوات ذات صلة في تصنيف {categoryObj?.nameAr || 'القسم'}</span>
+                </h2>
+                <button
+                  onClick={() => {
+                    if (onSelectCategory) {
+                      onClose();
+                      onSelectCategory(tool.category);
+                    }
+                  }}
+                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <span>استعراض كل القسم</span>
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {relatedTools.map((relTool) => (
+                  <button
+                    key={relTool.id}
+                    onClick={() => onSelectTool(relTool)}
+                    className={`p-3 rounded-xl border text-right transition-all hover:border-indigo-400 hover:shadow-sm flex flex-col justify-between gap-2 group cursor-pointer ${
+                      isDarkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-white border-slate-200'
+                    }`}
                   >
-                    <Laptop className="w-3 h-3 text-slate-400" />
-                    <span>{platform}</span>
-                  </span>
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold bg-gradient-to-br ${relTool.gradient || 'from-indigo-500 to-purple-600'} shrink-0`}>
+                        {relTool.nameEn.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white block truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                          {relTool.nameAr}
+                        </span>
+                        <span className="text-[10px] text-slate-400 block truncate">
+                          {relTool.pricingAr}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
                 ))}
               </div>
-            </div>
+            </section>
+          )}
 
-            <div>
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">
-                الكلمات المفتاحية والتصنيف:
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {tool.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60"
-                  >
-                    <Tag className="w-3 h-3 opacity-60" />
-                    <span>{tag}</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Interactive Rating & Personal User Notes Section */}
-          <div className={`p-4 rounded-2xl border space-y-3 ${
-            isDarkMode ? 'bg-slate-800/70 border-slate-700' : 'bg-slate-50 border-slate-200'
+          {/* Interactive Rating & Personal User Notes Section (Local State) */}
+          <section aria-labelledby="section-notes-title" className={`p-4 sm:p-5 rounded-2xl border space-y-3 ${
+            isDarkMode ? 'bg-slate-800/50 border-slate-700/80' : 'bg-slate-50 border-slate-200'
           }`}>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <h3 id="section-notes-title" className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
-                <span>تقييمك الشخصي وملاحظاتك الخاصة</span>
-              </h4>
+                <span>تقييمك الشخصي وملاحظاتك الخاصة حول {tool.nameAr}</span>
+              </h3>
               
               {/* Star Picker */}
               <div className="flex items-center gap-1">
-                <span className="text-xs text-slate-500 ml-1">حدد تقييمك:</span>
+                <span className="text-xs text-slate-500 ml-1">قيم تجربتك:</span>
                 {[1, 2, 3, 4, 5].map((star) => {
                   const isActive = hoverRating !== null ? hoverRating >= star : (userRating || 0) >= star;
                   return (
@@ -448,10 +1071,11 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                       onMouseEnter={() => setHoverRating(star)}
                       onMouseLeave={() => setHoverRating(null)}
                       onClick={() => onRateTool(tool.id, star)}
-                      className="p-1 hover:scale-125 transition-transform"
+                      className="p-1 hover:scale-125 transition-transform cursor-pointer"
                       title={`تقييم ${star} نجوم`}
+                      aria-label={`تقييم ${star} نجوم`}
                     >
-                      <Star className={`w-5 h-5 ${isActive ? 'fill-amber-400 text-amber-400' : 'text-slate-300 dark:text-slate-600'}`} />
+                      <Star className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? 'fill-amber-400 text-amber-400' : 'text-slate-300 dark:text-slate-600'}`} />
                     </button>
                   );
                 })}
@@ -463,90 +1087,87 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
               <textarea
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
-                placeholder="اكتب ملاحظاتك الشخصية حول تجربتك لهذه الأداة (تُحفظ تلقائياً في متصفحك)..."
+                placeholder="اكتب ملاحظاتك الشخصية حول تجربتك لهذه الأداة (تُحفظ تلقائياً في ذاكرة متصفحك)..."
                 rows={2}
-                className="w-full p-2.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full p-3 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-slate-400">
                   {noteSavedToast ? (
                     <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5" /> تم حفظ الملاحظة بنجاح في المتصفح
+                      <Check className="w-3.5 h-3.5" /> تم حفظ الملاحظة بنجاح
                     </span>
                   ) : (
-                    'يتم حفظ التقييم والملاحظات محلياً في ذاكرة جهازك'
+                    'ملاحظاتك وتقييمك سرية وخاصة بك ومخزنة محلياً في جهازك'
                   )}
                 </span>
                 <button
                   type="submit"
-                  className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-2xs"
+                  className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-2xs cursor-pointer"
                 >
                   حفظ الملاحظة
                 </button>
               </div>
             </form>
-          </div>
+          </section>
 
-          {/* Bottom in-article sponsored ad if active */}
-          {inArticleBottomAd && (
-            <SponsoredBanner ad={inArticleBottomAd} isDarkMode={isDarkMode} />
-          )}
-
-          {/* Related Tools Recommendation */}
-          {relatedTools.length > 0 && (
-            <div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                <Layers className="w-4 h-4 text-indigo-500" />
-                <span>أدوات بديلة ومشابهة في نفس التصنيف</span>
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {relatedTools.map((relTool) => (
-                  <button
-                    key={relTool.id}
-                    onClick={() => onSelectTool(relTool)}
-                    className={`p-3 rounded-xl border text-right transition-all hover:border-indigo-400 hover:shadow-xs flex items-center gap-2.5 ${
-                      isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-200'
-                    }`}
-                  >
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold bg-gradient-to-br ${relTool.gradient} shrink-0`}>
-                      {relTool.nameEn.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-xs font-bold text-slate-900 dark:text-white block truncate">
-                        {relTool.nameAr}
-                      </span>
-                      <span className="text-[10px] text-slate-400 block truncate">
-                        {relTool.pricingAr}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
+          {/* Tags cloud & internal link exploration */}
+          {tool.tags && tool.tags.length > 0 && (
+            <div className="pt-1 flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs text-slate-400 flex items-center gap-1 ml-1">
+                <Tag className="w-3 h-3" /> الكلمات المفتاحية:
+              </span>
+              {tool.tags.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => {
+                    if (onSelectTag) {
+                      onClose();
+                      onSelectTag(tag);
+                    }
+                  }}
+                  className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 text-slate-700 dark:text-slate-300 hover:text-indigo-600 transition-colors border border-slate-200 dark:border-slate-700 cursor-pointer"
+                >
+                  #{tag}
+                </button>
+              ))}
             </div>
           )}
         </div>
 
-        {/* Modal Bottom Footer */}
-        <div className={`p-4 sm:p-5 border-t flex items-center justify-between ${
+        {/* Modal Bottom Footer (Close + Share + Prominent 10. Official Website CTA) */}
+        <footer className={`p-4 sm:p-5 border-t flex flex-col sm:flex-row items-center justify-between gap-3 ${
           isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'
         }`}>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors"
-          >
-            إغلاق
-          </button>
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+            <button
+              onClick={onClose}
+              className="px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+            >
+              إغلاق النافذة
+            </button>
 
+            <button
+              onClick={handleCopyLink}
+              className="px-3 py-2 text-xs font-medium rounded-xl text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1.5 cursor-pointer"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>{copied ? 'تم نسخ الرابط' : 'مشاركة الأداة'}</span>
+            </button>
+          </div>
+
+          {/* 10. Official Website CTA (Prominent Bottom Button) */}
           <a
+            id="modal-visit-btn-bottom"
             href={tool.websiteUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-500/25 transition-all"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-600/25 transition-all hover:scale-[1.02] cursor-pointer"
           >
-            <span>زيارة الرابط الرسمي</span>
+            <span>زيارة الموقع الرسمي</span>
             <ExternalLink className="w-4 h-4" />
           </a>
-        </div>
+        </footer>
       </div>
     </div>
   );
