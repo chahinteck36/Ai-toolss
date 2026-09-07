@@ -158,13 +158,17 @@ const ToolCardComponent: React.FC<ToolCardProps> = ({
           </button>
 
           {/* Details Button */}
-          <button
+          <a
             id={`details-btn-compact-${tool.id}`}
-            onClick={() => onOpenDetails(tool)}
-            className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors"
+            href={`/tools/${encodeURIComponent(tool.id)}`}
+            onClick={(e) => {
+              e.preventDefault();
+              onOpenDetails(tool);
+            }}
+            className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors inline-flex items-center justify-center"
           >
             التفاصيل
-          </button>
+          </a>
 
           {/* Visit Website */}
           <a
@@ -354,14 +358,18 @@ const ToolCardComponent: React.FC<ToolCardProps> = ({
 
         {/* Buttons */}
         <div className="grid grid-cols-2 gap-2">
-          <button
+          <a
             id={`open-modal-btn-${tool.id}`}
-            onClick={() => onOpenDetails(tool)}
-            className="flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-95 transition-all shadow-2xs"
+            href={`/tools/${encodeURIComponent(tool.id)}`}
+            onClick={(e) => {
+              e.preventDefault();
+              onOpenDetails(tool);
+            }}
+            className="flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-95 transition-all shadow-2xs cursor-pointer"
           >
             <Info className="w-3.5 h-3.5 text-indigo-500 group-hover:rotate-12 transition-transform duration-300" />
             <span>التفاصيل</span>
-          </button>
+          </a>
 
           <a
             id={`direct-link-btn-${tool.id}`}

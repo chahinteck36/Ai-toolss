@@ -1,6 +1,7 @@
 import React from 'react';
 import { Sparkles, Heart, Globe, ArrowUp, Github, Lock, Info, ShieldCheck, PlusCircle, Mail, Terminal } from 'lucide-react';
 import { Category, CategoryId } from '../types';
+import { SupportedLanguage, SUPPORTED_LANGUAGES, TRANSLATIONS } from '../lib/i18n';
 
 interface FooterProps {
   categories: Category[];
@@ -12,6 +13,8 @@ interface FooterProps {
   onOpenContact?: () => void;
   onOpenAddModal?: () => void;
   onOpenSecretAdmin?: () => void;
+  lang?: SupportedLanguage;
+  onLanguageChange?: (lang: SupportedLanguage) => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -23,11 +26,14 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenPrivacyPolicy,
   onOpenContact,
   onOpenAddModal,
-  onOpenSecretAdmin
+  onOpenSecretAdmin,
+  lang = 'ar',
+  onLanguageChange
 }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.ar;
 
   return (
     <footer className={`border-t transition-colors mt-20 ${
@@ -66,20 +72,22 @@ export const Footer: React.FC<FooterProps> = ({
           {/* Quick Categories Navigation */}
           <div className="space-y-3">
             <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-              أبرز التصنيفات
+              {lang === 'ar' ? 'أبرز التصنيفات' : 'Top Categories'}
             </h4>
             <ul className="space-y-1.5 text-xs">
               {categories.slice(1, 6).map((cat) => (
                 <li key={cat.id}>
-                  <button
-                    onClick={() => {
+                  <a
+                    href={`/category/${cat.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
                       onSelectCategory(cat.id);
                       scrollToTop();
                     }}
-                    className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors block"
                   >
-                    {cat.nameAr}
-                  </button>
+                    {lang === 'ar' ? cat.nameAr : cat.nameEn}
+                  </a>
                 </li>
               ))}
             </ul>
@@ -88,20 +96,22 @@ export const Footer: React.FC<FooterProps> = ({
           {/* More Categories */}
           <div className="space-y-3">
             <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-              أقسام أخرى
+              {lang === 'ar' ? 'أقسام أخرى' : 'More Categories'}
             </h4>
             <ul className="space-y-1.5 text-xs">
               {categories.slice(6, 11).map((cat) => (
                 <li key={cat.id}>
-                  <button
-                    onClick={() => {
+                  <a
+                    href={`/category/${cat.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
                       onSelectCategory(cat.id);
                       scrollToTop();
                     }}
-                    className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors block"
                   >
-                    {cat.nameAr}
-                  </button>
+                    {lang === 'ar' ? cat.nameAr : cat.nameEn}
+                  </a>
                 </li>
               ))}
             </ul>
@@ -193,6 +203,27 @@ export const Footer: React.FC<FooterProps> = ({
         {/* Bottom bar */}
         <div className="pt-8 border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <p>© {new Date().getFullYear()} أدواتي AI (adawatai.online). جميع الحقوق محفوظة لأصحاب العلامات التجارية والأدوات المدرجة.</p>
+          
+          {/* Language Switch Links in Footer */}
+          {onLanguageChange && (
+            <div className="flex items-center gap-2 text-xs">
+              <Globe className="w-3.5 h-3.5 text-indigo-500" />
+              {SUPPORTED_LANGUAGES.map((l, idx) => (
+                <React.Fragment key={l.code}>
+                  <button
+                    onClick={() => onLanguageChange(l.code)}
+                    className={`hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors ${
+                      lang === l.code ? 'font-bold text-indigo-600 dark:text-indigo-400' : ''
+                    }`}
+                  >
+                    {l.label}
+                  </button>
+                  {idx < SUPPORTED_LANGUAGES.length - 1 && <span className="text-slate-300 dark:text-slate-700">•</span>}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+
           <div className="flex items-center gap-3">
             <span>دليل الذكاء الاصطناعي العربي الشامل</span>
             {onOpenSecretAdmin && (

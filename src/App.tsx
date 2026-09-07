@@ -27,6 +27,10 @@ import { ContactModal } from './components/ContactModal';
 import { SponsoredBanner } from './components/SponsoredBanner';
 import { StickyBottomAd } from './components/StickyBottomAd';
 import { Footer } from './components/Footer';
+import { NotFoundPage } from './components/NotFoundPage';
+import { SEO } from './components/SEO';
+import { getHomeSEO, getCategorySEO } from './lib/seoHelpers';
+import { SupportedLanguage } from './lib/i18n';
 import { 
   fetchToolsFromFirestore, 
   saveToolToFirestore, 
@@ -174,6 +178,32 @@ export default function App() {
   const [promptsLibraryToolFilter, setPromptsLibraryToolFilter] = useState('all');
   const [globalNotification, setGlobalNotification] = useState<string | null>(null);
 
+  // Language state (ar / en / fr)
+  const [lang, setLang] = useState<SupportedLanguage>(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const l = urlParams.get('lang');
+      if (l === 'en' || l === 'fr' || l === 'ar') return l;
+      const saved = localStorage.getItem('adawatai_lang');
+      if (saved === 'en' || saved === 'fr' || saved === 'ar') return saved;
+    } catch (e) {}
+    return 'ar';
+  });
+
+  const [is404, setIs404] = useState(false);
+
+  const handleLanguageChange = (newLang: SupportedLanguage) => {
+    setLang(newLang);
+    localStorage.setItem('adawatai_lang', newLang);
+    const currentUrl = new URL(window.location.href);
+    if (newLang === 'ar') {
+      currentUrl.searchParams.delete('lang');
+    } else {
+      currentUrl.searchParams.set('lang', newLang);
+    }
+    window.history.pushState(null, '', currentUrl.toString());
+  };
+
   // Sync theme
   useEffect(() => {
     if (isDarkMode) {
@@ -217,9 +247,58 @@ export default function App() {
         setIsPromptsLibraryOpen(true);
       }
 
-      // Check for direct tool parameter (?tool=id) or hash (#tool-id)
+      // Check URL search parameters
       const urlParams = new URLSearchParams(window.location.search);
-      const toolParam = urlParams.get('tool');
+      
+      const langParam = urlParams.get('lang');
+      if (langParam === 'en' || langParam === 'fr' || langParam === 'ar') {
+        setLang(langParam);
+      }
+
+      const qParam = urlParams.get('q');
+      if (qParam) {
+        setFilterState((prev) => ({ ...prev, searchQuery: qParam }));
+      }
+
+      const pathname = window.location.pathname;
+      if (pathname === '/404' || search.includes('404')) {
+        setIs404(true);
+        return;
+      }
+
+      // Check path-based routing: /category/{slug}
+      const catPathMatch = pathname.match(/^\/category\/([^/]+)/i);
+      if (catPathMatch) {
+        const catSlug = decodeURIComponent(catPathMatch[1]).toLowerCase();
+        const catFound = CATEGORIES.find((c) => c.id.toLowerCase() === catSlug);
+        if (catFound) {
+          setFilterState((prev) => ({ ...prev, selectedCategory: catFound.id }));
+          setIs404(false);
+        } else {
+          setIs404(true);
+          return;
+        }
+      } else {
+        // Check legacy query parameter: ?category={id}
+        const catParam = urlParams.get('category');
+        if (catParam) {
+          const catFound = CATEGORIES.find((c) => c.id.toLowerCase() === catParam.toLowerCase());
+          if (catFound) {
+            setFilterState((prev) => ({ ...prev, selectedCategory: catFound.id }));
+            setIs404(false);
+          } else {
+            setIs404(true);
+            return;
+          }
+        }
+      }
+
+      // Check path-based routing: /tools/{slug}
+      const toolPathMatch = pathname.match(/^\/tools\/([^/]+)/i);
+      const toolSlugFromPath = toolPathMatch ? decodeURIComponent(toolPathMatch[1]) : null;
+
+      // Check for direct tool parameter (?tool=id), clean path (/tools/id), or hash (#tool-id)
+      const toolParam = urlParams.get('tool') || toolSlugFromPath;
       if (toolParam) {
         const found = tools.find(
           (t) => t.id.toLowerCase() === toolParam.toLowerCase() ||
@@ -227,6 +306,10 @@ export default function App() {
         );
         if (found) {
           setSelectedToolForModal(found);
+          setIs404(false);
+        } else {
+          setSelectedToolForModal(null);
+          setIs404(true);
         }
       } else if (hash.startsWith('#tool-')) {
         const toolId = hash.replace('#tool-', '');
@@ -236,6 +319,17 @@ export default function App() {
         );
         if (found) {
           setSelectedToolForModal(found);
+          setIs404(false);
+        } else {
+          setSelectedToolForModal(null);
+          setIs404(true);
+        }
+      } else {
+        setSelectedToolForModal(null);
+        if (!catPathMatch && !urlParams.get('category') && pathname !== '/' && pathname !== '' && pathname !== '/404') {
+          setIs404(true);
+        } else if (pathname !== '/404') {
+          setIs404(false);
         }
       }
     };
@@ -253,18 +347,35 @@ export default function App() {
   useEffect(() => {
     if (selectedToolForModal) {
       const currentUrl = new URL(window.location.href);
-      if (currentUrl.searchParams.get('tool') !== selectedToolForModal.id) {
-        currentUrl.searchParams.set('tool', selectedToolForModal.id);
-        window.history.pushState(null, '', currentUrl.toString());
+      const targetPath = `/tools/${selectedToolForModal.id}`;
+      if (currentUrl.pathname !== targetPath || currentUrl.searchParams.has('tool')) {
+        currentUrl.pathname = targetPath;
+        currentUrl.searchParams.delete('tool');
+        const cleanSearch = currentUrl.searchParams.toString();
+        const targetUrl = currentUrl.pathname + (cleanSearch ? `?${cleanSearch}` : '') + currentUrl.hash;
+        window.history.pushState(null, '', targetUrl);
       }
     } else {
       const currentUrl = new URL(window.location.href);
+      let changed = false;
       if (currentUrl.searchParams.has('tool')) {
         currentUrl.searchParams.delete('tool');
-        window.history.pushState(null, '', currentUrl.pathname + currentUrl.hash);
+        changed = true;
+      }
+      if (currentUrl.pathname.startsWith('/tools/')) {
+        const returnPath = filterState.selectedCategory !== 'all'
+          ? `/category/${filterState.selectedCategory}`
+          : '/';
+        currentUrl.pathname = returnPath;
+        changed = true;
+      }
+      if (changed) {
+        const cleanSearch = currentUrl.searchParams.toString();
+        const targetUrl = currentUrl.pathname + (cleanSearch ? `?${cleanSearch}` : '') + currentUrl.hash;
+        window.history.pushState(null, '', targetUrl);
       }
     }
-  }, [selectedToolForModal]);
+  }, [selectedToolForModal, filterState.selectedCategory]);
 
   // Keyboard shortcut listener for Secret Admin Access (Ctrl+Shift+A or Alt+A)
   useEffect(() => {
@@ -628,7 +739,24 @@ export default function App() {
 
   // Handler: Partial filter update
   const handleFilterChange = useCallback((updates: Partial<FilterState>) => {
-    setFilterState((prev) => ({ ...prev, ...updates }));
+    setFilterState((prev) => {
+      const next = { ...prev, ...updates };
+      if (updates.selectedCategory !== undefined) {
+        const currentUrl = new URL(window.location.href);
+        if (!currentUrl.pathname.startsWith('/tools/')) {
+          currentUrl.pathname = updates.selectedCategory === 'all' 
+            ? '/' 
+            : `/category/${updates.selectedCategory}`;
+          currentUrl.searchParams.delete('category');
+          const cleanSearch = currentUrl.searchParams.toString();
+          const targetUrl = currentUrl.pathname + (cleanSearch ? `?${cleanSearch}` : '') + currentUrl.hash;
+          if (window.location.pathname + window.location.search !== currentUrl.pathname + (cleanSearch ? `?${cleanSearch}` : '')) {
+            window.history.pushState(null, '', targetUrl);
+          }
+        }
+      }
+      return next;
+    });
   }, []);
 
   // Handler: Reset filters
@@ -641,6 +769,15 @@ export default function App() {
       onlyArabicSupport: false,
       sortBy: 'rating'
     });
+    const currentUrl = new URL(window.location.href);
+    if (!currentUrl.pathname.startsWith('/tools/')) {
+      currentUrl.pathname = '/';
+      currentUrl.searchParams.delete('category');
+      currentUrl.searchParams.delete('q');
+      const cleanSearch = currentUrl.searchParams.toString();
+      const targetUrl = '/' + (cleanSearch ? `?${cleanSearch}` : '') + currentUrl.hash;
+      window.history.pushState(null, '', targetUrl);
+    }
   }, []);
 
   // Fuse.js search query execution
@@ -827,11 +964,40 @@ export default function App() {
     );
   }
 
+  // Active Category object for SEO
+  const activeCategoryObj = useMemo(() => {
+    if (filterState.selectedCategory === 'all') return null;
+    return CATEGORIES.find((c) => c.id === filterState.selectedCategory) || null;
+  }, [filterState.selectedCategory]);
+
+  // Root SEO: dynamically compute for Category or Home
+  const rootSeoData = useMemo(() => {
+    if (activeCategoryObj) {
+      return getCategorySEO(activeCategoryObj, lang);
+    }
+    return getHomeSEO(lang, tools.length);
+  }, [activeCategoryObj, lang, tools.length]);
+
   return (
     <div className={`min-h-screen transition-colors duration-200 ${
       isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-[#f4f6f8] text-slate-900'
-    }`} dir="rtl">
+    }`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       
+      {/* Dynamic Root SEO for Home or Active Category */}
+      {!selectedToolForModal && !is404 && (
+        <SEO
+          title={rootSeoData.title}
+          description={rootSeoData.description}
+          canonical={rootSeoData.canonical}
+          robots={rootSeoData.robots}
+          image={rootSeoData.image}
+          type="website"
+          jsonLd={rootSeoData.jsonLd}
+          lang={lang}
+          keywords={rootSeoData.keywords}
+        />
+      )}
+
       {/* Global Notification Toast */}
       {globalNotification && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-slate-900 text-white border border-indigo-500 shadow-2xl flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-top duration-200" dir="rtl">
@@ -862,29 +1028,58 @@ export default function App() {
         onlyFavorites={filterState.onlyFavorites}
         onToggleFavoritesOnly={() => handleFilterChange({ onlyFavorites: !filterState.onlyFavorites })}
         isAdmin={currentUserRole === 'admin' || currentUserRole === 'editor'}
+        lang={lang}
+        onLanguageChange={handleLanguageChange}
       />
 
-      {/* Hero Section with Fuse.js instant fuzzy search */}
-      <HeroSection
-        searchQuery={filterState.searchQuery}
-        onSearchChange={(q) => handleFilterChange({ searchQuery: q })}
-        onSelectKeyword={(kw) => {
-          if (kw === 'دعم اللغة العربية') {
-            handleFilterChange({ onlyArabicSupport: true, searchQuery: '' });
-          } else {
-            handleFilterChange({ searchQuery: kw });
-          }
-        }}
-        onOpenSmartFinder={() => setIsSmartFinderOpen(true)}
-        onOpenPromptsLibrary={() => {
-          setPromptsLibraryToolFilter('all');
-          setIsPromptsLibraryOpen(true);
-        }}
-        onSelectCategory={(catId) => handleFilterChange({ selectedCategory: catId, searchQuery: '' })}
-        isDarkMode={isDarkMode}
-        bestSuggestion={searchResultData.bestSuggestion}
-        hasTypoCorrection={searchResultData.hasTypoCorrection}
-      />
+      {is404 ? (
+        <NotFoundPage
+          onBackHome={() => {
+            setIs404(false);
+            setFilterState((prev) => ({ ...prev, selectedCategory: 'all', searchQuery: '' }));
+            const currentUrl = new URL(window.location.href);
+            currentUrl.pathname = '/';
+            currentUrl.searchParams.delete('tool');
+            currentUrl.searchParams.delete('category');
+            currentUrl.searchParams.delete('q');
+            const cleanSearch = currentUrl.searchParams.toString();
+            window.history.pushState(null, '', '/' + (cleanSearch ? `?${cleanSearch}` : ''));
+          }}
+          onSearch={(q) => {
+            setIs404(false);
+            handleFilterChange({ searchQuery: q });
+          }}
+          onSelectTool={(tool) => {
+            setIs404(false);
+            setSelectedToolForModal(tool);
+          }}
+          suggestedTools={tools.slice(0, 4)}
+          lang={lang}
+          isDarkMode={isDarkMode}
+        />
+      ) : (
+        <>
+          {/* Hero Section with Fuse.js instant fuzzy search */}
+          <HeroSection
+            searchQuery={filterState.searchQuery}
+            onSearchChange={(q) => handleFilterChange({ searchQuery: q })}
+            onSelectKeyword={(kw) => {
+              if (kw === 'دعم اللغة العربية') {
+                handleFilterChange({ onlyArabicSupport: true, searchQuery: '' });
+              } else {
+                handleFilterChange({ searchQuery: kw });
+              }
+            }}
+            onOpenSmartFinder={() => setIsSmartFinderOpen(true)}
+            onOpenPromptsLibrary={() => {
+              setPromptsLibraryToolFilter('all');
+              setIsPromptsLibraryOpen(true);
+            }}
+            onSelectCategory={(catId) => handleFilterChange({ selectedCategory: catId, searchQuery: '' })}
+            isDarkMode={isDarkMode}
+            bestSuggestion={searchResultData.bestSuggestion}
+            hasTypoCorrection={searchResultData.hasTypoCorrection}
+          />
 
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -982,6 +1177,8 @@ export default function App() {
           </div>
         )}
       </main>
+      </>
+      )}
 
       {/* Tool Detail Modal */}
       <ToolDetailModal
@@ -1017,6 +1214,7 @@ export default function App() {
         allTools={tools}
         advertisements={advertisements}
         isDarkMode={isDarkMode}
+        lang={lang}
       />
 
       {/* Prompts and Commands Library Modal (مكتبة الأوامر والبرومبتات) */}
@@ -1130,7 +1328,10 @@ export default function App() {
       {/* Footer */}
       <Footer
         categories={CATEGORIES}
-        onSelectCategory={(catId) => handleFilterChange({ selectedCategory: catId })}
+        onSelectCategory={(catId) => {
+          handleFilterChange({ selectedCategory: catId, searchQuery: '' });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
         isDarkMode={isDarkMode}
         onOpenPromptsLibrary={() => {
           setPromptsLibraryToolFilter('all');
@@ -1141,6 +1342,8 @@ export default function App() {
         onOpenContact={() => setIsContactModalOpen(true)}
         onOpenAddModal={() => setIsVisitorSubmitOpen(true)}
         onOpenSecretAdmin={() => setIsSecretAuthModalOpen(true)}
+        lang={lang}
+        onLanguageChange={handleLanguageChange}
       />
       {/* Sticky Bottom Floating Banner Ad */}
       <StickyBottomAd

@@ -256,15 +256,17 @@ export const QuickAIAssistantModal: React.FC<QuickAIAssistantModalProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                      <button
-                        onClick={() => {
+                      <a
+                        href={`/tools/${encodeURIComponent(tool.id)}`}
+                        onClick={(e) => {
+                          e.preventDefault();
                           onClose();
                           onSelectTool(tool);
                         }}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                        className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer"
                       >
                         عرض التفاصيل
-                      </button>
+                      </a>
 
                       <a
                         href={tool.websiteUrl}

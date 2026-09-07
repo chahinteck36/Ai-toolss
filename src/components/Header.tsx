@@ -1,5 +1,6 @@
-import React from 'react';
-import { Sparkles, Bookmark, PlusCircle, Compass, Moon, Sun, Layers, Cpu, Database, Info, ShieldCheck, Terminal } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sparkles, Bookmark, PlusCircle, Compass, Moon, Sun, Layers, Cpu, Database, Info, ShieldCheck, Terminal, Globe } from 'lucide-react';
+import { SupportedLanguage, SUPPORTED_LANGUAGES, TRANSLATIONS } from '../lib/i18n';
 
 interface HeaderProps {
   totalTools: number;
@@ -19,6 +20,8 @@ interface HeaderProps {
   onlyFavorites: boolean;
   onToggleFavoritesOnly: () => void;
   isAdmin?: boolean;
+  lang?: SupportedLanguage;
+  onLanguageChange?: (lang: SupportedLanguage) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -38,8 +41,12 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAdminDashboard,
   onlyFavorites,
   onToggleFavoritesOnly,
-  isAdmin = true
+  isAdmin = true,
+  lang = 'ar',
+  onLanguageChange
 }) => {
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.ar;
   return (
     <header className={`sticky top-0 z-30 backdrop-blur-md border-b transition-colors duration-200 ${
       isDarkMode 
@@ -162,6 +169,41 @@ export const Header: React.FC<HeaderProps> = ({
               <PlusCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500" />
               <span className="hidden md:inline">اقترح أداة</span>
             </button>
+
+            {/* Language Switcher */}
+            {onLanguageChange && (
+              <div className="relative">
+                <button
+                  id="header-lang-btn"
+                  onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                  className="flex items-center gap-1 px-2 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 transition-colors"
+                  title="تغيير اللغة / Change Language"
+                >
+                  <Globe className="w-3.5 h-3.5 text-indigo-500" />
+                  <span className="uppercase">{lang}</span>
+                </button>
+
+                {isLangMenuOpen && (
+                  <div className="absolute top-full mt-1.5 end-0 z-50 min-w-[120px] py-1 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 text-xs font-medium">
+                    {SUPPORTED_LANGUAGES.map((l) => (
+                      <button
+                        key={l.code}
+                        onClick={() => {
+                          onLanguageChange(l.code);
+                          setIsLangMenuOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-2 px-3 py-1.5 text-start hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${
+                          lang === l.code ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50/50 dark:bg-indigo-950/30' : 'text-slate-700 dark:text-slate-200'
+                        }`}
+                      >
+                        <span>{l.flag}</span>
+                        <span>{l.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Dark Mode Toggle */}
             <button

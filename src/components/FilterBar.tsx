@@ -101,11 +101,15 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             const count = cat.id === 'all' ? totalToolsCount : (categoryCounts[cat.id] || 0);
 
             return (
-              <button
+              <a
                 key={cat.id}
                 id={`category-pill-${cat.id}`}
-                onClick={() => onFilterChange({ selectedCategory: cat.id })}
-                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shrink-0 shadow-2xs border ${
+                href={cat.id === 'all' ? '/' : `/category/${cat.id}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onFilterChange({ selectedCategory: cat.id });
+                }}
+                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shrink-0 shadow-2xs border cursor-pointer ${
                   isSelected
                     ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-500/25'
                     : 'bg-white hover:bg-slate-50 text-slate-800 border-slate-300/80 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700/80 hover:border-indigo-400'
@@ -120,7 +124,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 }`}>
                   {count}
                 </span>
-              </button>
+              </a>
             );
           })}
         </div>

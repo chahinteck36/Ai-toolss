@@ -69,23 +69,31 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </div>
 
           {onSelectCategory && (
-            <button
-              onClick={() => onSelectCategory('ai_alternatives')}
+            <a
+              href="/category/ai_alternatives"
+              onClick={(e) => {
+                e.preventDefault();
+                onSelectCategory('ai_alternatives');
+              }}
               className="inline-flex items-center gap-1.5 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold bg-purple-500/15 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-700/70 hover:scale-105 transition-all shadow-2xs cursor-pointer"
             >
               <Repeat className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 animate-pulse" />
               <span>⚡ منصة البدائل 2026</span>
-            </button>
+            </a>
           )}
 
           {onSelectCategory && (
-            <button
-              onClick={() => onSelectCategory('academic_scholar')}
+            <a
+              href="/category/academic_scholar"
+              onClick={(e) => {
+                e.preventDefault();
+                onSelectCategory('academic_scholar');
+              }}
               className="inline-flex items-center gap-1.5 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/70 hover:scale-105 transition-all shadow-2xs cursor-pointer"
             >
               <GraduationCap className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span>🎓 حقيبة الطلبة والأساتذة</span>
-            </button>
+            </a>
           )}
 
           {onOpenPromptsLibrary && (

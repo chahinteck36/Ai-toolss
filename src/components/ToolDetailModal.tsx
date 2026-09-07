@@ -34,6 +34,9 @@ import {
 import { AiTool, PricingType, Advertisement, CategoryId } from '../types';
 import { CATEGORIES } from '../data/toolsData';
 import { SponsoredBanner } from './SponsoredBanner';
+import { SEO } from './SEO';
+import { getToolSEO } from '../lib/seoHelpers';
+import { SupportedLanguage } from '../lib/i18n';
 
 interface ToolDetailModalProps {
   tool: AiTool | null;
@@ -52,6 +55,7 @@ interface ToolDetailModalProps {
   allTools: AiTool[];
   advertisements?: Advertisement[];
   isDarkMode: boolean;
+  lang?: SupportedLanguage;
 }
 
 interface AudienceItem {
@@ -123,7 +127,8 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
   onSelectTag,
   allTools,
   advertisements = [],
-  isDarkMode
+  isDarkMode,
+  lang = 'ar' as SupportedLanguage
 }) => {
   const [noteText, setNoteText] = useState(userNote);
   const [copied, setCopied] = useState(false);
@@ -151,74 +156,6 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
-
-  // SEO: Update Title, Meta Description, Canonical Link & JSON-LD Structured Data
-  useEffect(() => {
-    if (!isOpen || !tool) return;
-
-    const prevTitle = document.title;
-    const metaDesc = document.querySelector('meta[name="description"]');
-    const prevDesc = metaDesc ? metaDesc.getAttribute('content') : '';
-    const canonicalLink = document.querySelector('link[rel="canonical"]');
-    const prevCanonical = canonicalLink ? canonicalLink.getAttribute('href') : '';
-
-    // Set unique SEO Title & Description
-    const seoTitle = `${tool.nameAr} (${tool.nameEn}) | مراجعة شاملة، بدائل ومميزات الأداة - أدواتي AI`;
-    document.title = seoTitle;
-
-    const seoDesc = `${tool.nameAr} (${tool.nameEn}) - ${tool.taglineAr}. استكشف أهم المميزات والسلبيات، خطط الأسعار، وأقوى البدائل المناسبة على دليل أدواتي.`;
-    if (metaDesc) {
-      metaDesc.setAttribute('content', seoDesc);
-    }
-
-    const toolCanonical = `https://adawatai.online/?tool=${tool.id}`;
-    if (canonicalLink) {
-      canonicalLink.setAttribute('href', toolCanonical);
-    }
-
-    // Inject JSON-LD Schema for SoftwareApplication
-    const schemaScriptId = 'tool-schema-jsonld';
-    let scriptTag = document.getElementById(schemaScriptId) as HTMLScriptElement | null;
-    if (!scriptTag) {
-      scriptTag = document.createElement('script');
-      scriptTag.id = schemaScriptId;
-      scriptTag.type = 'application/ld+json';
-      document.head.appendChild(scriptTag);
-    }
-
-    const jsonLdData = {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": tool.nameEn,
-      "alternateName": tool.nameAr,
-      "description": tool.descriptionAr,
-      "applicationCategory": tool.category,
-      "operatingSystem": tool.platforms?.join(', ') || 'Web',
-      "url": tool.websiteUrl,
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": tool.rating || 4.8,
-        "reviewCount": tool.reviewsCount || 120,
-        "bestRating": "5",
-        "worstRating": "1"
-      },
-      "offers": {
-        "@type": "Offer",
-        "price": tool.pricing === 'free' ? "0" : undefined,
-        "priceCurrency": "USD",
-        "category": tool.pricingAr
-      }
-    };
-    scriptTag.text = JSON.stringify(jsonLdData);
-
-    return () => {
-      document.title = prevTitle;
-      if (metaDesc && prevDesc) metaDesc.setAttribute('content', prevDesc);
-      if (canonicalLink && prevCanonical) canonicalLink.setAttribute('href', prevCanonical);
-      const existingScript = document.getElementById(schemaScriptId);
-      if (existingScript) existingScript.remove();
-    };
-  }, [isOpen, tool]);
 
   // Target audiences mapping based on category, tags, and use cases
   const targetAudiences = useMemo<AudienceItem[]>(() => {
@@ -438,7 +375,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
   if (!isOpen || !tool) return null;
 
   const handleCopyLink = () => {
-    const shareUrl = `https://adawatai.online/?tool=${tool.id}`;
+    const shareUrl = `https://adawatai.online/tools/${tool.id}`;
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -464,6 +401,13 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
   } catch (e) {}
   const faviconUrl = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : '';
 
+  // Generate dynamic SEO metadata and structured JSON-LD for this tool
+  const currentLang: SupportedLanguage = lang || 'ar';
+  const seoData = useMemo(() => {
+    if (!tool) return null;
+    return getToolSEO(tool, categoryObj, currentLang);
+  }, [tool, categoryObj, currentLang]);
+
   // In-article ads if enabled
   const inArticleTopAd = advertisements.find((a) => a.isActive && a.placement === 'in_article_top');
   const inArticleBottomAd = advertisements.find((a) => a.isActive && a.placement === 'in_article_bottom');
@@ -475,6 +419,21 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
       aria-modal="true"
       aria-labelledby="tool-title-h1"
     >
+      {/* Dynamic SEO Head Management */}
+      {seoData && (
+        <SEO
+          title={seoData.title}
+          description={seoData.description}
+          canonical={seoData.canonical}
+          robots={seoData.robots}
+          image={seoData.image}
+          type="product"
+          jsonLd={seoData.jsonLd}
+          lang={lang}
+          keywords={seoData.keywords}
+        />
+      )}
+
       {/* Click outside backdrop */}
       <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
 
@@ -507,15 +466,21 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
 
           {/* Breadcrumbs Navigation */}
           <nav aria-label="مسار التصفح" className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-4 flex-wrap">
-            <button 
-              onClick={onClose}
+            <a 
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                onClose();
+              }}
               className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
             >
               الرئيسية
-            </button>
+            </a>
             <span className="text-slate-400">/</span>
-            <button 
-              onClick={() => {
+            <a 
+              href={`/category/${tool.category}`}
+              onClick={(e) => {
+                e.preventDefault();
                 if (onSelectCategory) {
                   onClose();
                   onSelectCategory(tool.category);
@@ -524,7 +489,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
               className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium cursor-pointer"
             >
               {categoryObj?.nameAr || 'دليل الأدوات'}
-            </button>
+            </a>
             <span className="text-slate-400">/</span>
             <span className="text-slate-900 dark:text-white font-semibold truncate max-w-[240px]">
               {tool.nameAr}
@@ -953,9 +918,13 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {alternatives.map((altTool) => (
-                  <button
+                  <a
                     key={altTool.id}
-                    onClick={() => onSelectTool(altTool)}
+                    href={`/tools/${encodeURIComponent(altTool.id)}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onSelectTool(altTool);
+                    }}
                     className={`p-3.5 rounded-2xl border text-right transition-all hover:border-indigo-400 hover:shadow-md flex flex-col justify-between gap-3 group cursor-pointer ${
                       isDarkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-white border-slate-200'
                     }`}
@@ -993,7 +962,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                         <ChevronLeft className="w-3.5 h-3.5" />
                       </span>
                     </div>
-                  </button>
+                  </a>
                 ))}
               </div>
             </section>
@@ -1007,8 +976,10 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                   <Compass className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                   <span>أدوات ذات صلة في تصنيف {categoryObj?.nameAr || 'القسم'}</span>
                 </h2>
-                <button
-                  onClick={() => {
+                <a
+                  href={`/category/${tool.category}`}
+                  onClick={(e) => {
+                    e.preventDefault();
                     if (onSelectCategory) {
                       onClose();
                       onSelectCategory(tool.category);
@@ -1018,14 +989,18 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                 >
                   <span>استعراض كل القسم</span>
                   <ChevronLeft className="w-3.5 h-3.5" />
-                </button>
+                </a>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {relatedTools.map((relTool) => (
-                  <button
+                  <a
                     key={relTool.id}
-                    onClick={() => onSelectTool(relTool)}
+                    href={`/tools/${encodeURIComponent(relTool.id)}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onSelectTool(relTool);
+                    }}
                     className={`p-3 rounded-xl border text-right transition-all hover:border-indigo-400 hover:shadow-sm flex flex-col justify-between gap-2 group cursor-pointer ${
                       isDarkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-white border-slate-200'
                     }`}
@@ -1043,7 +1018,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                         </span>
                       </div>
                     </div>
-                  </button>
+                  </a>
                 ))}
               </div>
             </section>
