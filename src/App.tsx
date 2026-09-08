@@ -31,9 +31,13 @@ import { SponsoredBanner } from './components/SponsoredBanner';
 import { StickyBottomAd } from './components/StickyBottomAd';
 import { Footer } from './components/Footer';
 import { NotFoundPage } from './components/NotFoundPage';
+import { KnowledgeHub } from './components/knowledge/KnowledgeHub';
+import { ArticleView } from './components/knowledge/ArticleView';
+import { getArticleBySlug } from './articles/articleData';
+import { getLocalizedArticle } from './articles/articleTranslations';
 import { SEO } from './components/SEO';
 import { getHomeSEO, getCategorySEO } from './lib/seoHelpers';
-import { SupportedLanguage } from './lib/i18n';
+import { SupportedLanguage, TRANSLATIONS } from './lib/i18n';
 import { 
   fetchToolsFromFirestore, 
   saveToolToFirestore, 
@@ -185,6 +189,8 @@ export default function App() {
   const [isSmartFinderOpen, setIsSmartFinderOpen] = useState(false);
   const [isPromptsLibraryOpen, setIsPromptsLibraryOpen] = useState(false);
   const [promptsLibraryToolFilter, setPromptsLibraryToolFilter] = useState('all');
+  const [isKnowledgeHubOpen, setIsKnowledgeHubOpen] = useState(false);
+  const [selectedKnowledgeArticleSlug, setSelectedKnowledgeArticleSlug] = useState<string | null>(null);
   const [globalNotification, setGlobalNotification] = useState<string | null>(null);
 
   // Language state (ar / en / fr)
@@ -294,6 +300,105 @@ export default function App() {
     } catch (e) {}
   }, [filterState.selectedCategory]);
 
+  // Handler: Open Knowledge Center Root (/knowledge)
+  const handleOpenKnowledgeCenter = useCallback(() => {
+    setIsKnowledgeHubOpen(true);
+    setSelectedKnowledgeArticleSlug(null);
+    setSelectedToolForModal(null);
+    setSelectedDigitalTool(null);
+    setIsAboutUsOpen(false);
+    setIsPrivacyPolicyOpen(false);
+    setIsContactModalOpen(false);
+    setIsPromptsLibraryOpen(false);
+    setIs404(false);
+    try {
+      const currentUrl = new URL(window.location.href);
+      currentUrl.pathname = '/knowledge';
+      const cleanSearch = currentUrl.searchParams.toString();
+      const targetUrl = currentUrl.pathname + (cleanSearch ? `?${cleanSearch}` : '');
+      window.history.pushState(null, '', targetUrl);
+    } catch (e) {}
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  // Handler: Select Knowledge Article (/knowledge/:slug)
+  const handleSelectKnowledgeArticle = useCallback((slug: string) => {
+    setIsKnowledgeHubOpen(true);
+    setSelectedKnowledgeArticleSlug(slug);
+    setSelectedToolForModal(null);
+    setSelectedDigitalTool(null);
+    setIs404(false);
+    try {
+      const currentUrl = new URL(window.location.href);
+      currentUrl.pathname = `/knowledge/${slug}`;
+      const cleanSearch = currentUrl.searchParams.toString();
+      const targetUrl = currentUrl.pathname + (cleanSearch ? `?${cleanSearch}` : '');
+      window.history.pushState(null, '', targetUrl);
+    } catch (e) {}
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  // Handler: Close Knowledge Center and return to homepage
+  const handleCloseKnowledgeCenter = useCallback(() => {
+    setIsKnowledgeHubOpen(false);
+    setSelectedKnowledgeArticleSlug(null);
+    try {
+      const currentUrl = new URL(window.location.href);
+      currentUrl.pathname = '/';
+      const cleanSearch = currentUrl.searchParams.toString();
+      const targetUrl = '/' + (cleanSearch ? `?${cleanSearch}` : '');
+      window.history.pushState(null, '', targetUrl);
+    } catch (e) {}
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  // Handler: Navigate to tool from internal article link
+  const handleNavigateToolFromArticle = useCallback((toolUrl: string) => {
+    setIsKnowledgeHubOpen(false);
+    setSelectedKnowledgeArticleSlug(null);
+    
+    // Extract slug
+    const cleanUrl = toolUrl.split('?')[0].split('#')[0];
+    const parts = cleanUrl.split('/').filter(Boolean);
+    const slug = parts[parts.length - 1];
+
+    if (!slug) return;
+
+    // Check if it matches a digital tool
+    const digitalFound = getDigitalToolBySlug(slug);
+    if (digitalFound) {
+      setSelectedDigitalTool(digitalFound);
+      setSelectedToolForModal(null);
+      setIs404(false);
+      try {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.pathname = `/tools/${digitalFound.slug}`;
+        window.history.pushState({ toolId: digitalFound.slug }, '', currentUrl.pathname + currentUrl.search);
+      } catch (e) {}
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // Check if it matches an AI tool
+    const currentToolsList = toolsRef.current.length > 0 ? toolsRef.current : ALL_BUILTIN_TOOLS;
+    const aiToolFound = currentToolsList.find(
+      (t) => t.id.toLowerCase() === slug.toLowerCase() ||
+             t.nameEn.toLowerCase() === slug.toLowerCase() ||
+             (t.digitalToolSlug && t.digitalToolSlug.toLowerCase() === slug.toLowerCase())
+    );
+
+    if (aiToolFound) {
+      handleOpenToolDetails(aiToolFound);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // Fallback: direct browser navigation
+    try {
+      window.location.href = toolUrl;
+    } catch (e) {}
+  }, [handleOpenToolDetails]);
+
   // Check URL parameters / hash on mount & popstate for direct navigation
   useEffect(() => {
     const handleUrlRoutes = () => {
@@ -351,28 +456,81 @@ export default function App() {
       }
 
       // Standalone pages
+      if (cleanPath === '/knowledge') {
+        setIsKnowledgeHubOpen(true);
+        setSelectedKnowledgeArticleSlug(null);
+        setSelectedToolForModal(null);
+        setSelectedDigitalTool(null);
+        setIs404(false);
+        return;
+      }
+
+      const knowledgePathMatch = cleanPath.match(/^\/knowledge\/([^/]+)/i);
+      if (knowledgePathMatch) {
+        const articleSlug = decodeURIComponent(knowledgePathMatch[1]).toLowerCase();
+        const articleFound = getArticleBySlug(articleSlug);
+        if (articleFound) {
+          setIsKnowledgeHubOpen(true);
+          setSelectedKnowledgeArticleSlug(articleFound.slug);
+          setSelectedToolForModal(null);
+          setSelectedDigitalTool(null);
+          setIs404(false);
+          return;
+        } else {
+          setIsKnowledgeHubOpen(false);
+          setSelectedKnowledgeArticleSlug(null);
+          setIs404(true);
+          return;
+        }
+      }
+
+      // Digital tools direct prefix: /digital-tools/{slug}
+      const digToolMatch = cleanPath.match(/^\/digital-tools\/([^/]+)/i);
+      if (digToolMatch) {
+        const digSlug = decodeURIComponent(digToolMatch[1]);
+        const digitalFound = getDigitalToolBySlug(digSlug);
+        if (digitalFound) {
+          setSelectedDigitalTool(digitalFound);
+          setSelectedToolForModal(null);
+          setIsKnowledgeHubOpen(false);
+          setSelectedKnowledgeArticleSlug(null);
+          setIs404(false);
+          return;
+        }
+      }
+
       if (cleanPath === '/about') {
         setIsAboutUsOpen(true);
+        setIsKnowledgeHubOpen(false);
+        setSelectedKnowledgeArticleSlug(null);
         setIs404(false);
         return;
       }
       if (cleanPath === '/privacy') {
         setIsPrivacyPolicyOpen(true);
+        setIsKnowledgeHubOpen(false);
+        setSelectedKnowledgeArticleSlug(null);
         setIs404(false);
         return;
       }
       if (cleanPath === '/contact') {
         setIsContactModalOpen(true);
+        setIsKnowledgeHubOpen(false);
+        setSelectedKnowledgeArticleSlug(null);
         setIs404(false);
         return;
       }
       if (cleanPath === '/prompts') {
         setIsPromptsLibraryOpen(true);
+        setIsKnowledgeHubOpen(false);
+        setSelectedKnowledgeArticleSlug(null);
         setIs404(false);
         return;
       }
       if (cleanPath === '/categories') {
         setFilterState((prev) => ({ ...prev, selectedCategory: 'all' }));
+        setIsKnowledgeHubOpen(false);
+        setSelectedKnowledgeArticleSlug(null);
         setIs404(false);
         return;
       }
@@ -475,10 +633,14 @@ export default function App() {
       if (cleanPath === '/' || cleanPath === '') {
         setSelectedToolForModal(null);
         setSelectedDigitalTool(null);
+        setIsKnowledgeHubOpen(false);
+        setSelectedKnowledgeArticleSlug(null);
         setIs404(false);
       } else {
         setSelectedToolForModal(null);
         setSelectedDigitalTool(null);
+        setIsKnowledgeHubOpen(false);
+        setSelectedKnowledgeArticleSlug(null);
         setIs404(true);
       }
     };
@@ -1097,13 +1259,26 @@ export default function App() {
     return getHomeSEO(lang, tools.length);
   }, [activeCategoryObj, lang, tools.length]);
 
+  // Selected Knowledge Article resolution
+  const selectedKnowledgeArticle = useMemo(() => {
+    if (!selectedKnowledgeArticleSlug) return null;
+    return getArticleBySlug(selectedKnowledgeArticleSlug) || null;
+  }, [selectedKnowledgeArticleSlug]);
+
+  const localizedSelectedArticle = useMemo(() => {
+    if (!selectedKnowledgeArticle) return null;
+    return getLocalizedArticle(selectedKnowledgeArticle, lang);
+  }, [selectedKnowledgeArticle, lang]);
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.ar;
+
   return (
     <div className={`min-h-screen transition-colors duration-200 ${
       isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-[#f4f6f8] text-slate-900'
     }`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       
       {/* Dynamic Root SEO for Home or Active Category */}
-      {!selectedToolForModal && !selectedDigitalTool && !is404 && (
+      {!selectedToolForModal && !selectedDigitalTool && !isKnowledgeHubOpen && !is404 && (
         <SEO
           title={rootSeoData.title}
           description={rootSeoData.description}
@@ -1114,6 +1289,102 @@ export default function App() {
           jsonLd={rootSeoData.jsonLd}
           lang={lang}
           keywords={rootSeoData.keywords}
+        />
+      )}
+
+      {/* Dynamic SEO for Knowledge Center Hub */}
+      {isKnowledgeHubOpen && !selectedKnowledgeArticle && !is404 && (
+        <SEO
+          title={lang === 'ar' ? 'مركز المعرفة والأدلة الرقمية الشاملة | أدواتي AI' : lang === 'fr' ? 'Centre de connaissances et guides pratiques | Adawatai AI' : 'Knowledge Center & Practical Tech Guides | Adawatai AI'}
+          description={t.knowledgeCenterDesc}
+          canonical="https://adawatai.online/knowledge"
+          robots="index, follow"
+          type="website"
+          lang={lang}
+          keywords={['مركز المعرفة', 'شروحات الذكاء الاصطناعي', 'أدوات مجانية', 'شروحات تقنية', 'knowledge center', 'guides']}
+          jsonLd={{
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: t.knowledgeCenter,
+            description: t.knowledgeCenterDesc,
+            url: 'https://adawatai.online/knowledge'
+          }}
+        />
+      )}
+
+      {/* Dynamic SEO for Knowledge Article */}
+      {isKnowledgeHubOpen && selectedKnowledgeArticle && localizedSelectedArticle && !is404 && (
+        <SEO
+          title={`${localizedSelectedArticle.seoTitle} | adawatai.online`}
+          description={localizedSelectedArticle.seoDescription}
+          canonical={`https://adawatai.online/knowledge/${selectedKnowledgeArticle.slug}`}
+          robots="index, follow"
+          type="article"
+          keywords={selectedKnowledgeArticle.keywords}
+          lang={lang}
+          jsonLd={[
+            {
+              '@context': 'https://schema.org',
+              '@type': 'Article',
+              headline: localizedSelectedArticle.title,
+              description: localizedSelectedArticle.description,
+              datePublished: selectedKnowledgeArticle.publishedAt,
+              dateModified: selectedKnowledgeArticle.updatedAt,
+              author: {
+                '@type': 'Organization',
+                name: selectedKnowledgeArticle.author.name
+              },
+              publisher: {
+                '@type': 'Organization',
+                name: 'Adawatai AI',
+                url: 'https://adawatai.online',
+                logo: {
+                  '@type': 'ImageObject',
+                  url: 'https://adawatai.online/logo.svg'
+                }
+              },
+              mainEntityOfPage: {
+                '@type': 'WebPage',
+                '@id': `https://adawatai.online/knowledge/${selectedKnowledgeArticle.slug}`
+              }
+            },
+            {
+              '@context': 'https://schema.org',
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                {
+                  '@type': 'ListItem',
+                  position: 1,
+                  name: t.backToHome,
+                  item: 'https://adawatai.online/'
+                },
+                {
+                  '@type': 'ListItem',
+                  position: 2,
+                  name: t.knowledgeCenter,
+                  item: 'https://adawatai.online/knowledge'
+                },
+                {
+                  '@type': 'ListItem',
+                  position: 3,
+                  name: localizedSelectedArticle.title,
+                  item: `https://adawatai.online/knowledge/${selectedKnowledgeArticle.slug}`
+                }
+              ]
+            },
+            ...(selectedKnowledgeArticle.faq && selectedKnowledgeArticle.faq.length > 0 ? [{
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              mainEntity: selectedKnowledgeArticle.faq.map((f) => ({
+                '@type': 'Question',
+                name: f.question,
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: f.answer
+                }
+              }))
+            }] : [])
+          ]}
         />
       )}
 
@@ -1140,6 +1411,7 @@ export default function App() {
           setPromptsLibraryToolFilter('all');
           setIsPromptsLibraryOpen(true);
         }}
+        onOpenKnowledgeCenter={handleOpenKnowledgeCenter}
         onOpenAboutUs={() => setIsAboutUsOpen(true)}
         onOpenPrivacyPolicy={() => setIsPrivacyPolicyOpen(true)}
         onOpenContact={() => setIsContactModalOpen(true)}
@@ -1155,6 +1427,8 @@ export default function App() {
         <NotFoundPage
           onBackHome={() => {
             setIs404(false);
+            setIsKnowledgeHubOpen(false);
+            setSelectedKnowledgeArticleSlug(null);
             setFilterState((prev) => ({ ...prev, selectedCategory: 'all', searchQuery: '' }));
             const currentUrl = new URL(window.location.href);
             currentUrl.pathname = '/';
@@ -1166,16 +1440,43 @@ export default function App() {
           }}
           onSearch={(q) => {
             setIs404(false);
+            setIsKnowledgeHubOpen(false);
+            setSelectedKnowledgeArticleSlug(null);
             handleFilterChange({ searchQuery: q });
           }}
           onSelectTool={(tool) => {
             setIs404(false);
+            setIsKnowledgeHubOpen(false);
+            setSelectedKnowledgeArticleSlug(null);
             handleOpenToolDetails(tool);
           }}
           suggestedTools={tools.slice(0, 4)}
           lang={lang}
           isDarkMode={isDarkMode}
         />
+      ) : isKnowledgeHubOpen ? (
+        selectedKnowledgeArticle ? (
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <ArticleView
+              article={selectedKnowledgeArticle}
+              lang={lang}
+              isDarkMode={isDarkMode}
+              onNavigateHome={handleCloseKnowledgeCenter}
+              onNavigateKnowledge={handleOpenKnowledgeCenter}
+              onSelectArticle={handleSelectKnowledgeArticle}
+              onNavigateTool={handleNavigateToolFromArticle}
+            />
+          </main>
+        ) : (
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <KnowledgeHub
+              lang={lang}
+              isDarkMode={isDarkMode}
+              onSelectArticle={handleSelectKnowledgeArticle}
+              onNavigateHome={handleCloseKnowledgeCenter}
+            />
+          </main>
+        )
       ) : selectedDigitalTool ? (
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <DigitalToolPage
@@ -1471,6 +1772,7 @@ export default function App() {
           setPromptsLibraryToolFilter('all');
           setIsPromptsLibraryOpen(true);
         }}
+        onOpenKnowledgeCenter={handleOpenKnowledgeCenter}
         onOpenAboutUs={() => setIsAboutUsOpen(true)}
         onOpenPrivacyPolicy={() => setIsPrivacyPolicyOpen(true)}
         onOpenContact={() => setIsContactModalOpen(true)}

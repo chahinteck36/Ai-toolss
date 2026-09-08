@@ -53,6 +53,14 @@ export interface Translations {
   academicSuite: string;
   aiAlternatives: string;
   shareTool: string;
+  knowledgeCenter: string;
+  knowledgeCenterDesc: string;
+  searchArticles: string;
+  tableOfContents: string;
+  relatedArticles: string;
+  needToolNow: string;
+  lastUpdated: string;
+  minRead: string;
 }
 
 export const TRANSLATIONS: Record<SupportedLanguage, Translations> = {
@@ -99,7 +107,15 @@ export const TRANSLATIONS: Record<SupportedLanguage, Translations> = {
     resetFilters: 'إعادة تعيين الفلاتر',
     academicSuite: 'حقيبة الطلبة والأساتذة',
     aiAlternatives: 'منصة البدائل 2026',
-    shareTool: 'مشاركة الأداة'
+    shareTool: 'مشاركة الأداة',
+    knowledgeCenter: 'مركز المعرفة',
+    knowledgeCenterDesc: 'مقالات وأدلة وشروحات تقنية شاملة لاحتراف أدوات الذكاء الاصطناعي ومعالجة الملفات والإنتاجية',
+    searchArticles: 'ابحث في مقالات وشروحات مركز المعرفة...',
+    tableOfContents: 'فهرس المحتويات',
+    relatedArticles: 'مقالات وشروحات ذات صلة',
+    needToolNow: 'هل تحتاج الأداة الآن؟',
+    lastUpdated: 'آخر تحديث',
+    minRead: 'دقائق قراءة'
   },
   en: {
     siteName: 'Adawatai AI',
@@ -144,7 +160,15 @@ export const TRANSLATIONS: Record<SupportedLanguage, Translations> = {
     resetFilters: 'Reset Filters',
     academicSuite: 'Academic & Scholar Suite',
     aiAlternatives: 'AI Alternatives 2026',
-    shareTool: 'Share Tool'
+    shareTool: 'Share Tool',
+    knowledgeCenter: 'Knowledge Center',
+    knowledgeCenterDesc: 'In-depth articles, tutorials, and practical guides to master AI tools, PDF processing, and productivity workflows',
+    searchArticles: 'Search Knowledge Center articles and guides...',
+    tableOfContents: 'Table of Contents',
+    relatedArticles: 'Related Articles & Guides',
+    needToolNow: 'Need the tool right now?',
+    lastUpdated: 'Last updated',
+    minRead: 'min read'
   },
   fr: {
     siteName: 'Adawatai AI',
@@ -189,7 +213,15 @@ export const TRANSLATIONS: Record<SupportedLanguage, Translations> = {
     resetFilters: 'Réinitialiser les filtres',
     academicSuite: 'Suite Académique & Étudiants',
     aiAlternatives: 'Alternatives IA 2026',
-    shareTool: 'Partager l\'outil'
+    shareTool: 'Partager l\'outil',
+    knowledgeCenter: 'Centre de connaissances',
+    knowledgeCenterDesc: 'Articles approfondis, tutoriels et guides pratiques pour maîtriser l\'IA, les outils PDF et la productivité',
+    searchArticles: 'Rechercher dans les articles et guides...',
+    tableOfContents: 'Sommaire',
+    relatedArticles: 'Articles et guides connexes',
+    needToolNow: 'Besoin de cet outil maintenant ?',
+    lastUpdated: 'Dernière mise à jour',
+    minRead: 'min de lecture'
   }
 };
 

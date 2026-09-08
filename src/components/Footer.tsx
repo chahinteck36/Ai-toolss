@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Heart, Globe, ArrowUp, Github, Lock, Info, ShieldCheck, PlusCircle, Mail, Terminal } from 'lucide-react';
+import { Sparkles, Heart, Globe, ArrowUp, Github, Lock, Info, ShieldCheck, PlusCircle, Mail, Terminal, BookOpen } from 'lucide-react';
 import { Category, CategoryId } from '../types';
 import { SupportedLanguage, SUPPORTED_LANGUAGES, TRANSLATIONS } from '../lib/i18n';
 
@@ -8,6 +8,7 @@ interface FooterProps {
   onSelectCategory: (catId: CategoryId) => void;
   isDarkMode: boolean;
   onOpenPromptsLibrary?: () => void;
+  onOpenKnowledgeCenter?: () => void;
   onOpenAboutUs?: () => void;
   onOpenPrivacyPolicy?: () => void;
   onOpenContact?: () => void;
@@ -22,6 +23,7 @@ export const Footer: React.FC<FooterProps> = ({
   onSelectCategory,
   isDarkMode,
   onOpenPromptsLibrary,
+  onOpenKnowledgeCenter,
   onOpenAboutUs,
   onOpenPrivacyPolicy,
   onOpenContact,
@@ -123,6 +125,17 @@ export const Footer: React.FC<FooterProps> = ({
               روابط المنصة الرسمية
             </h4>
             <ul className="space-y-2 text-xs">
+              {onOpenKnowledgeCenter && (
+                <li>
+                  <button
+                    onClick={onOpenKnowledgeCenter}
+                    className="flex items-center gap-1.5 font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors cursor-pointer"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>{t.knowledgeCenter} (Knowledge Hub)</span>
+                  </button>
+                </li>
+              )}
               {onOpenPromptsLibrary && (
                 <li>
                   <button

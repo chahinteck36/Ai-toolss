@@ -51,6 +51,44 @@ function extractToolsAndCategories() {
   return { categoryIds, tools };
 }
 
+function extractDigitalTools() {
+  const registryPath = path.join(rootDir, 'src', 'data', 'digitalToolsRegistry.ts');
+  if (!fs.existsSync(registryPath)) return [];
+  const content = fs.readFileSync(registryPath, 'utf8');
+
+  const tools = [];
+  const slugMatches = content.matchAll(/slug:\s*['"]([a-z0-9_-]+)['"]/g);
+  for (const m of slugMatches) {
+    const slug = m[1];
+    if (!tools.includes(slug)) {
+      tools.push(slug);
+    }
+  }
+  return tools;
+}
+
+function extractKnowledgeArticles() {
+  const articlesPath = path.join(rootDir, 'src', 'articles', 'articleData.ts');
+  if (!fs.existsSync(articlesPath)) return [];
+  const content = fs.readFileSync(articlesPath, 'utf8');
+
+  const articles = [];
+  const slugMatches = content.matchAll(/slug:\s*['"]([a-z0-9_-]+)['"]/g);
+  for (const m of slugMatches) {
+    const slug = m[1];
+    if (!articles.some(a => a.slug === slug)) {
+      // Find date near slug
+      const idx = content.indexOf(m[0]);
+      const chunk = content.slice(idx, idx + 600);
+      const updatedMatch = chunk.match(/updatedAt:\s*['"]([^'"]+)['"]/);
+      const publishedMatch = chunk.match(/publishedAt:\s*['"]([^'"]+)['"]/);
+      const date = updatedMatch ? updatedMatch[1] : (publishedMatch ? publishedMatch[1] : new Date().toISOString().split('T')[0]);
+      articles.push({ slug, date });
+    }
+  }
+  return articles;
+}
+
 function formatDate(dateStr) {
   try {
     const d = new Date(dateStr);
@@ -63,6 +101,8 @@ function formatDate(dateStr) {
 
 function generateSitemapXml() {
   const { categoryIds, tools } = extractToolsAndCategories();
+  const digitalTools = extractDigitalTools();
+  const articles = extractKnowledgeArticles();
   const today = new Date().toISOString().split('T')[0];
 
   const urls = [];
@@ -75,7 +115,26 @@ function generateSitemapXml() {
     <priority>1.0</priority>
   </url>`);
 
-  // 2. Categories
+  // 2. Knowledge Center Hub
+  urls.push(`  <url>
+    <loc>${BASE_URL}/knowledge</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>`);
+
+  // 3. Knowledge Articles
+  for (const article of articles) {
+    const lastmod = formatDate(article.date);
+    urls.push(`  <url>
+    <loc>${BASE_URL}/knowledge/${encodeURIComponent(article.slug)}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>`);
+  }
+
+  // 4. Categories
   for (const catId of categoryIds) {
     urls.push(`  <url>
     <loc>${BASE_URL}/category/${catId}</loc>
@@ -85,14 +144,37 @@ function generateSitemapXml() {
   </url>`);
   }
 
-  // 3. Tools
-  for (const tool of tools) {
-    const lastmod = formatDate(tool.addedDate);
+  // 5. Digital Tools
+  for (const slug of digitalTools) {
     urls.push(`  <url>
+    <loc>${BASE_URL}/tools/${encodeURIComponent(slug)}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>`);
+  }
+
+  // 6. General Tools (exclude if already included via digital tools)
+  for (const tool of tools) {
+    if (!digitalTools.includes(tool.id)) {
+      const lastmod = formatDate(tool.addedDate);
+      urls.push(`  <url>
     <loc>${BASE_URL}/tools/${encodeURIComponent(tool.id)}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>`);
+    }
+  }
+
+  // 7. Core Static Pages
+  const staticPages = ['prompts', 'about', 'privacy', 'contact'];
+  for (const sp of staticPages) {
+    urls.push(`  <url>
+    <loc>${BASE_URL}/${sp}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>`);
   }
 

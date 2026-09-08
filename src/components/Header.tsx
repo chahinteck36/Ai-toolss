@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Bookmark, PlusCircle, Compass, Moon, Sun, Layers, Cpu, Database, Info, ShieldCheck, Terminal, Globe } from 'lucide-react';
+import { Sparkles, Bookmark, PlusCircle, Compass, Moon, Sun, Layers, Cpu, Database, Info, ShieldCheck, Terminal, Globe, BookOpen } from 'lucide-react';
 import { SupportedLanguage, SUPPORTED_LANGUAGES, TRANSLATIONS } from '../lib/i18n';
 
 interface HeaderProps {
@@ -13,6 +13,7 @@ interface HeaderProps {
   onOpenAddModal: () => void;
   onOpenSmartFinder: () => void;
   onOpenPromptsLibrary?: () => void;
+  onOpenKnowledgeCenter?: () => void;
   onOpenAboutUs?: () => void;
   onOpenPrivacyPolicy?: () => void;
   onOpenContact?: () => void;
@@ -35,6 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAddModal,
   onOpenSmartFinder,
   onOpenPromptsLibrary,
+  onOpenKnowledgeCenter,
   onOpenAboutUs,
   onOpenPrivacyPolicy,
   onOpenContact,
@@ -107,6 +109,20 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span>تواصل معنا</span>
+              </button>
+            )}
+
+            {/* Knowledge Center Link */}
+            {onOpenKnowledgeCenter && (
+              <button
+                id="header-knowledge-center-btn"
+                onClick={onOpenKnowledgeCenter}
+                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
+                title={t.knowledgeCenter}
+              >
+                <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-600 dark:text-indigo-400" />
+                <span className="hidden lg:inline">{t.knowledgeCenter}</span>
+                <span className="lg:hidden">{lang === 'ar' ? 'المعرفة' : 'Articles'}</span>
               </button>
             )}
 
