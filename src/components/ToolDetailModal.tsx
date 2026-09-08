@@ -372,6 +372,16 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
       .slice(0, 4);
   }, [tool, allTools, alternatives]);
 
+  // Find category object
+  const categoryObj = CATEGORIES.find((c) => tool ? c.id === tool.category : false);
+
+  // Generate dynamic SEO metadata and structured JSON-LD for this tool
+  const currentLang: SupportedLanguage = lang || 'ar';
+  const seoData = useMemo(() => {
+    if (!tool) return null;
+    return getToolSEO(tool, categoryObj, currentLang);
+  }, [tool, categoryObj, currentLang]);
+
   if (!isOpen || !tool) return null;
 
   const handleCopyLink = () => {
@@ -388,8 +398,6 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
     setTimeout(() => setNoteSavedToast(false), 2500);
   };
 
-  // Find category object
-  const categoryObj = CATEGORIES.find((c) => c.id === tool.category);
   const displayRating = userRating || tool.rating;
 
   // Derive domain for official favicon logo
@@ -400,13 +408,6 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
     }
   } catch (e) {}
   const faviconUrl = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : '';
-
-  // Generate dynamic SEO metadata and structured JSON-LD for this tool
-  const currentLang: SupportedLanguage = lang || 'ar';
-  const seoData = useMemo(() => {
-    if (!tool) return null;
-    return getToolSEO(tool, categoryObj, currentLang);
-  }, [tool, categoryObj, currentLang]);
 
   // In-article ads if enabled
   const inArticleTopAd = advertisements.find((a) => a.isActive && a.placement === 'in_article_top');

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { CATEGORIES, INITIAL_TOOLS } from './data/toolsData';
 import { 
   AiTool, 
@@ -215,7 +215,53 @@ export default function App() {
     }
   }, [isDarkMode]);
 
-  // Check URL parameters / hash on mount & hashchange for direct navigation (Admin, About, Privacy, Prompts, Tools)
+  // Stable ref for tools to prevent re-attaching or triggering URL listeners on tool updates
+  const toolsRef = useRef<AiTool[]>(tools);
+  useEffect(() => {
+    toolsRef.current = tools;
+  }, [tools]);
+
+  // Handler: Open tool details with clean URL push
+  const handleOpenToolDetails = useCallback((tool: AiTool) => {
+    recordToolClick(tool.id);
+    setTools((prev) =>
+      prev.map((t) => (t.id === tool.id ? { ...t, clicksCount: (t.clicksCount || 0) + 1 } : t))
+    );
+    setSelectedToolForModal(tool);
+    setIs404(false);
+
+    try {
+      const currentUrl = new URL(window.location.href);
+      const targetPath = `/tools/${tool.id}`;
+      if (currentUrl.pathname !== targetPath) {
+        currentUrl.pathname = targetPath;
+        currentUrl.searchParams.delete('tool');
+        const cleanSearch = currentUrl.searchParams.toString();
+        const targetUrl = currentUrl.pathname + (cleanSearch ? `?${cleanSearch}` : '') + currentUrl.hash;
+        window.history.pushState({ toolId: tool.id }, '', targetUrl);
+      }
+    } catch (e) {}
+  }, []);
+
+  // Handler: Close tool details with clean URL return
+  const handleCloseToolDetails = useCallback(() => {
+    setSelectedToolForModal(null);
+    try {
+      const currentUrl = new URL(window.location.href);
+      if (currentUrl.pathname.startsWith('/tools/')) {
+        const returnPath = filterState.selectedCategory !== 'all'
+          ? `/category/${filterState.selectedCategory}`
+          : '/';
+        currentUrl.pathname = returnPath;
+        currentUrl.searchParams.delete('tool');
+        const cleanSearch = currentUrl.searchParams.toString();
+        const targetUrl = currentUrl.pathname + (cleanSearch ? `?${cleanSearch}` : '') + currentUrl.hash;
+        window.history.pushState(null, '', targetUrl);
+      }
+    } catch (e) {}
+  }, [filterState.selectedCategory]);
+
+  // Check URL parameters / hash on mount & popstate for direct navigation
   useEffect(() => {
     const handleUrlRoutes = () => {
       const hash = window.location.hash.toLowerCase();
@@ -260,20 +306,54 @@ export default function App() {
         setFilterState((prev) => ({ ...prev, searchQuery: qParam }));
       }
 
-      const pathname = window.location.pathname;
-      if (pathname === '/404' || search.includes('404')) {
+      const rawPath = window.location.pathname || '/';
+      const cleanPath = rawPath
+        .replace(/\/index\.html$/i, '')
+        .replace(/\/+$/, '') || '/';
+
+      if (cleanPath === '/404' || search.includes('404')) {
         setIs404(true);
+        setSelectedToolForModal(null);
+        return;
+      }
+
+      // Standalone pages
+      if (cleanPath === '/about') {
+        setIsAboutUsOpen(true);
+        setIs404(false);
+        return;
+      }
+      if (cleanPath === '/privacy') {
+        setIsPrivacyPolicyOpen(true);
+        setIs404(false);
+        return;
+      }
+      if (cleanPath === '/contact') {
+        setIsContactModalOpen(true);
+        setIs404(false);
+        return;
+      }
+      if (cleanPath === '/prompts') {
+        setIsPromptsLibraryOpen(true);
+        setIs404(false);
+        return;
+      }
+      if (cleanPath === '/categories') {
+        setFilterState((prev) => ({ ...prev, selectedCategory: 'all' }));
+        setIs404(false);
         return;
       }
 
       // Check path-based routing: /category/{slug}
-      const catPathMatch = pathname.match(/^\/category\/([^/]+)/i);
+      const catPathMatch = cleanPath.match(/^\/category\/([^/]+)/i);
       if (catPathMatch) {
         const catSlug = decodeURIComponent(catPathMatch[1]).toLowerCase();
         const catFound = CATEGORIES.find((c) => c.id.toLowerCase() === catSlug);
         if (catFound) {
           setFilterState((prev) => ({ ...prev, selectedCategory: catFound.id }));
+          setSelectedToolForModal(null);
           setIs404(false);
+          return;
         } else {
           setIs404(true);
           return;
@@ -285,22 +365,23 @@ export default function App() {
           const catFound = CATEGORIES.find((c) => c.id.toLowerCase() === catParam.toLowerCase());
           if (catFound) {
             setFilterState((prev) => ({ ...prev, selectedCategory: catFound.id }));
+            setSelectedToolForModal(null);
             setIs404(false);
-          } else {
-            setIs404(true);
             return;
           }
         }
       }
 
       // Check path-based routing: /tools/{slug}
-      const toolPathMatch = pathname.match(/^\/tools\/([^/]+)/i);
+      const toolPathMatch = cleanPath.match(/^\/tools\/([^/]+)/i);
       const toolSlugFromPath = toolPathMatch ? decodeURIComponent(toolPathMatch[1]) : null;
 
       // Check for direct tool parameter (?tool=id), clean path (/tools/id), or hash (#tool-id)
       const toolParam = urlParams.get('tool') || toolSlugFromPath;
+      const currentToolsList = toolsRef.current.length > 0 ? toolsRef.current : INITIAL_TOOLS;
+
       if (toolParam) {
-        const found = tools.find(
+        const found = currentToolsList.find(
           (t) => t.id.toLowerCase() === toolParam.toLowerCase() ||
                  t.nameEn.toLowerCase() === toolParam.toLowerCase()
         );
@@ -311,9 +392,10 @@ export default function App() {
           setSelectedToolForModal(null);
           setIs404(true);
         }
+        return;
       } else if (hash.startsWith('#tool-')) {
         const toolId = hash.replace('#tool-', '');
-        const found = tools.find(
+        const found = currentToolsList.find(
           (t) => t.id.toLowerCase() === toolId.toLowerCase() ||
                  t.nameEn.toLowerCase() === toolId.toLowerCase()
         );
@@ -324,13 +406,16 @@ export default function App() {
           setSelectedToolForModal(null);
           setIs404(true);
         }
+        return;
+      }
+
+      // Root / home
+      if (cleanPath === '/' || cleanPath === '') {
+        setSelectedToolForModal(null);
+        setIs404(false);
       } else {
         setSelectedToolForModal(null);
-        if (!catPathMatch && !urlParams.get('category') && pathname !== '/' && pathname !== '' && pathname !== '/404') {
-          setIs404(true);
-        } else if (pathname !== '/404') {
-          setIs404(false);
-        }
+        setIs404(true);
       }
     };
 
@@ -341,41 +426,7 @@ export default function App() {
       window.removeEventListener('hashchange', handleUrlRoutes);
       window.removeEventListener('popstate', handleUrlRoutes);
     };
-  }, [tools]);
-
-  // Sync URL when selectedToolForModal changes
-  useEffect(() => {
-    if (selectedToolForModal) {
-      const currentUrl = new URL(window.location.href);
-      const targetPath = `/tools/${selectedToolForModal.id}`;
-      if (currentUrl.pathname !== targetPath || currentUrl.searchParams.has('tool')) {
-        currentUrl.pathname = targetPath;
-        currentUrl.searchParams.delete('tool');
-        const cleanSearch = currentUrl.searchParams.toString();
-        const targetUrl = currentUrl.pathname + (cleanSearch ? `?${cleanSearch}` : '') + currentUrl.hash;
-        window.history.pushState(null, '', targetUrl);
-      }
-    } else {
-      const currentUrl = new URL(window.location.href);
-      let changed = false;
-      if (currentUrl.searchParams.has('tool')) {
-        currentUrl.searchParams.delete('tool');
-        changed = true;
-      }
-      if (currentUrl.pathname.startsWith('/tools/')) {
-        const returnPath = filterState.selectedCategory !== 'all'
-          ? `/category/${filterState.selectedCategory}`
-          : '/';
-        currentUrl.pathname = returnPath;
-        changed = true;
-      }
-      if (changed) {
-        const cleanSearch = currentUrl.searchParams.toString();
-        const targetUrl = currentUrl.pathname + (cleanSearch ? `?${cleanSearch}` : '') + currentUrl.hash;
-        window.history.pushState(null, '', targetUrl);
-      }
-    }
-  }, [selectedToolForModal, filterState.selectedCategory]);
+  }, []);
 
   // Keyboard shortcut listener for Secret Admin Access (Ctrl+Shift+A or Alt+A)
   useEffect(() => {
@@ -1051,7 +1102,7 @@ export default function App() {
           }}
           onSelectTool={(tool) => {
             setIs404(false);
-            setSelectedToolForModal(tool);
+            handleOpenToolDetails(tool);
           }}
           suggestedTools={tools.slice(0, 4)}
           lang={lang}
@@ -1126,8 +1177,7 @@ export default function App() {
                     onToggleFavorite={handleToggleFavorite}
                     onRateTool={handleRateTool}
                     onOpenDetails={(t) => {
-                      handleToolClick(t.id);
-                      setSelectedToolForModal(t);
+                      handleOpenToolDetails(t);
                     }}
                     onTagClick={(tag) => handleFilterChange({ searchQuery: tag })}
                     viewMode={viewMode}
@@ -1184,7 +1234,7 @@ export default function App() {
       <ToolDetailModal
         tool={selectedToolForModal}
         isOpen={!!selectedToolForModal}
-        onClose={() => setSelectedToolForModal(null)}
+        onClose={handleCloseToolDetails}
         isFavorite={selectedToolForModal ? !!favorites[selectedToolForModal.id] : false}
         userRating={selectedToolForModal ? userRatings[selectedToolForModal.id] : undefined}
         userNote={selectedToolForModal ? userNotes[selectedToolForModal.id] || '' : ''}
@@ -1192,21 +1242,20 @@ export default function App() {
         onRateTool={handleRateTool}
         onSaveNote={handleSaveNote}
         onSelectTool={(tool) => {
-          handleToolClick(tool.id);
-          setSelectedToolForModal(tool);
+          handleOpenToolDetails(tool);
         }}
         onOpenPromptsForTool={(toolName) => {
           setPromptsLibraryToolFilter(toolName);
           setIsPromptsLibraryOpen(true);
         }}
         onSelectCategory={(catId) => {
-          setSelectedToolForModal(null);
+          handleCloseToolDetails();
           handleFilterChange({ selectedCategory: catId, searchQuery: '' });
           const el = document.getElementById('tools-catalog');
           if (el) el.scrollIntoView({ behavior: 'smooth' });
         }}
         onSelectTag={(tag) => {
-          setSelectedToolForModal(null);
+          handleCloseToolDetails();
           handleFilterChange({ searchQuery: tag });
           const el = document.getElementById('tools-catalog');
           if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -1271,8 +1320,7 @@ export default function App() {
         allTools={tools}
         onSelectTool={(tool) => {
           setIsSmartFinderOpen(false);
-          handleToolClick(tool.id);
-          setSelectedToolForModal(tool);
+          handleOpenToolDetails(tool);
         }}
         isDarkMode={isDarkMode}
       />
