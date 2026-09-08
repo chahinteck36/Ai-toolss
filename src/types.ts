@@ -7,6 +7,16 @@ export type PricingType =
 
 export type CategoryId = 
   | 'all'
+  | 'pdf_documents' // PDF & Documents
+  | 'image_tools' // Image Tools
+  | 'text_tools' // Text Tools
+  | 'calculators' // Calculators
+  | 'developer_tools' // Developer Tools
+  | 'seo_marketing' // SEO & Marketing
+  | 'business_tools' // Business Tools
+  | 'career_tools' // Career Tools
+  | 'education_tools' // Education Tools
+  | 'ai_tools' // AI Tools
   | 'academic_scholar' // حقيبة الطلبة والجامعيين والأساتذة
   | 'ai_alternatives' // منصة بدائل الذكاء الاصطناعي 2026
   | 'text_writing'
@@ -25,9 +35,49 @@ export interface Category {
   id: CategoryId;
   nameAr: string;
   nameEn: string;
+  nameFr?: string;
   iconName: string;
   descriptionAr: string;
+  descriptionEn?: string;
   color: string;
+}
+
+export interface DigitalToolStep {
+  step: number;
+  title: string;
+  desc: string;
+}
+
+export interface DigitalToolFaq {
+  question: string;
+  answer: string;
+}
+
+export interface DigitalTool {
+  id: string;
+  slug: string;
+  category: CategoryId;
+  nameAr: string;
+  nameEn: string;
+  nameFr?: string;
+  taglineAr: string;
+  taglineEn: string;
+  descriptionAr: string;
+  descriptionEn: string;
+  icon: string;
+  seoTitleAr: string;
+  seoTitleEn: string;
+  seoDescriptionAr: string;
+  seoDescriptionEn: string;
+  keywords: string[];
+  isClientSide: boolean;
+  howToUseAr: DigitalToolStep[];
+  howToUseEn: DigitalToolStep[];
+  featuresAr: string[];
+  featuresEn: string[];
+  faqAr: DigitalToolFaq[];
+  faqEn: DigitalToolFaq[];
+  relatedToolSlugs: string[];
 }
 
 export interface AiTool {
@@ -65,6 +115,8 @@ export interface AiTool {
   isAlternative?: boolean;
   academicFocus?: boolean;
   academicTags?: string[];
+  isDigitalTool?: boolean;
+  digitalToolSlug?: string;
 }
 
 export interface FilterState {

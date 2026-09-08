@@ -10,6 +10,30 @@ export const CATEGORIES: Category[] = [
     color: 'from-slate-600 to-slate-800'
   },
   {
+    id: 'pdf_documents',
+    nameAr: 'أدوات PDF والمستندات',
+    nameEn: 'PDF & Documents',
+    iconName: 'FileText',
+    descriptionAr: 'دمج، تقسيم، ضغط، تحويل وتعديل ملفات PDF مجاناً في المتصفح',
+    color: 'from-rose-600 to-red-700'
+  },
+  {
+    id: 'image_tools',
+    nameAr: 'أدوات معالجة الصور',
+    nameEn: 'Image Tools',
+    iconName: 'Image',
+    descriptionAr: 'ضغط الصور، تغيير المقاسات، تحويل الصيغ، وقص الصور وتوليد QR',
+    color: 'from-blue-600 to-cyan-700'
+  },
+  {
+    id: 'text_tools',
+    nameAr: 'أدوات النصوص والتحرير',
+    nameEn: 'Text & Content Tools',
+    iconName: 'AlignLeft',
+    descriptionAr: 'عد الكلمات، تحويل الحروف، تنظيف وترتيب الأسطر وتوليد الروابط',
+    color: 'from-indigo-600 to-purple-700'
+  },
+  {
     id: 'ai_alternatives',
     nameAr: 'منصة البدائل 2026',
     nameEn: 'AI Alternatives Hub',

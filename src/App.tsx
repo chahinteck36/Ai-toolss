@@ -7,8 +7,11 @@ import {
   ToolSubmission, 
   Advertisement, 
   Member, 
-  SiteSettings 
+  SiteSettings,
+  DigitalTool
 } from './types';
+import { DIGITAL_TOOLS, getDigitalToolBySlug, digitalToolToAiTool } from './data/digitalToolsRegistry';
+import { DigitalToolPage } from './components/digital-tools/DigitalToolPage';
 import { Header } from './components/Header';
 import { HeroSection } from './components/HeroSection';
 import { FilterBar } from './components/FilterBar';
@@ -54,6 +57,9 @@ import {
 import { ToolSearchEngine } from './lib/searchEngine';
 import { Sparkles, SearchX, RotateCcw, PlusCircle, CheckCircle2, AlertCircle } from 'lucide-react';
 
+const DIGITAL_AI_TOOLS: AiTool[] = DIGITAL_TOOLS.map(digitalToolToAiTool);
+const ALL_BUILTIN_TOOLS: AiTool[] = [...DIGITAL_AI_TOOLS, ...INITIAL_TOOLS];
+
 export default function App() {
   // Core Data States
   const [tools, setTools] = useState<AiTool[]>(() => {
@@ -61,10 +67,12 @@ export default function App() {
       const savedCustom = localStorage.getItem('ai_directory_custom_tools');
       if (savedCustom) {
         const parsed = JSON.parse(savedCustom);
-        return [...parsed, ...INITIAL_TOOLS];
+        const existingIds = new Set(parsed.map((p: any) => p.id));
+        const missingBuiltins = ALL_BUILTIN_TOOLS.filter((b) => !existingIds.has(b.id));
+        return [...parsed, ...missingBuiltins];
       }
     } catch (e) {}
-    return INITIAL_TOOLS;
+    return ALL_BUILTIN_TOOLS;
   });
 
   const [submissions, setSubmissions] = useState<ToolSubmission[]>([]);
@@ -168,6 +176,7 @@ export default function App() {
   const [isPrivacyPolicyOpen, setIsPrivacyPolicyOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [selectedToolForModal, setSelectedToolForModal] = useState<AiTool | null>(null);
+  const [selectedDigitalTool, setSelectedDigitalTool] = useState<DigitalTool | null>(null);
   const [isToolFormOpen, setIsToolFormOpen] = useState(false);
   const [editingTool, setEditingTool] = useState<AiTool | null>(null);
   const [isVisitorSubmitOpen, setIsVisitorSubmitOpen] = useState(false);
@@ -227,6 +236,29 @@ export default function App() {
     setTools((prev) =>
       prev.map((t) => (t.id === tool.id ? { ...t, clicksCount: (t.clicksCount || 0) + 1 } : t))
     );
+
+    // Check if this tool is a Digital Tool
+    const digital = getDigitalToolBySlug(tool.digitalToolSlug || tool.id);
+    if (digital) {
+      setSelectedDigitalTool(digital);
+      setSelectedToolForModal(null);
+      setIs404(false);
+
+      try {
+        const currentUrl = new URL(window.location.href);
+        const targetPath = `/tools/${digital.slug}`;
+        if (currentUrl.pathname !== targetPath) {
+          currentUrl.pathname = targetPath;
+          currentUrl.searchParams.delete('tool');
+          const cleanSearch = currentUrl.searchParams.toString();
+          const targetUrl = currentUrl.pathname + (cleanSearch ? `?${cleanSearch}` : '') + currentUrl.hash;
+          window.history.pushState({ toolId: digital.slug }, '', targetUrl);
+        }
+      } catch (e) {}
+      return;
+    }
+
+    setSelectedDigitalTool(null);
     setSelectedToolForModal(tool);
     setIs404(false);
 
@@ -246,6 +278,7 @@ export default function App() {
   // Handler: Close tool details with clean URL return
   const handleCloseToolDetails = useCallback(() => {
     setSelectedToolForModal(null);
+    setSelectedDigitalTool(null);
     try {
       const currentUrl = new URL(window.location.href);
       if (currentUrl.pathname.startsWith('/tools/')) {
@@ -378,32 +411,61 @@ export default function App() {
 
       // Check for direct tool parameter (?tool=id), clean path (/tools/id), or hash (#tool-id)
       const toolParam = urlParams.get('tool') || toolSlugFromPath;
-      const currentToolsList = toolsRef.current.length > 0 ? toolsRef.current : INITIAL_TOOLS;
+      const currentToolsList = toolsRef.current.length > 0 ? toolsRef.current : ALL_BUILTIN_TOOLS;
 
       if (toolParam) {
+        // 1. Check digital tools registry first
+        const digitalFound = getDigitalToolBySlug(toolParam);
+        if (digitalFound) {
+          setSelectedDigitalTool(digitalFound);
+          setSelectedToolForModal(null);
+          setIs404(false);
+          return;
+        }
+
+        // 2. Check general tools list
         const found = currentToolsList.find(
           (t) => t.id.toLowerCase() === toolParam.toLowerCase() ||
-                 t.nameEn.toLowerCase() === toolParam.toLowerCase()
+                 t.nameEn.toLowerCase() === toolParam.toLowerCase() ||
+                 (t.digitalToolSlug && t.digitalToolSlug.toLowerCase() === toolParam.toLowerCase())
         );
         if (found) {
-          setSelectedToolForModal(found);
+          const digitalFromFound = getDigitalToolBySlug(found.digitalToolSlug || found.id);
+          if (digitalFromFound) {
+            setSelectedDigitalTool(digitalFromFound);
+            setSelectedToolForModal(null);
+          } else {
+            setSelectedToolForModal(found);
+            setSelectedDigitalTool(null);
+          }
           setIs404(false);
         } else {
           setSelectedToolForModal(null);
+          setSelectedDigitalTool(null);
           setIs404(true);
         }
         return;
       } else if (hash.startsWith('#tool-')) {
         const toolId = hash.replace('#tool-', '');
+        const digitalFound = getDigitalToolBySlug(toolId);
+        if (digitalFound) {
+          setSelectedDigitalTool(digitalFound);
+          setSelectedToolForModal(null);
+          setIs404(false);
+          return;
+        }
+
         const found = currentToolsList.find(
           (t) => t.id.toLowerCase() === toolId.toLowerCase() ||
                  t.nameEn.toLowerCase() === toolId.toLowerCase()
         );
         if (found) {
           setSelectedToolForModal(found);
+          setSelectedDigitalTool(null);
           setIs404(false);
         } else {
           setSelectedToolForModal(null);
+          setSelectedDigitalTool(null);
           setIs404(true);
         }
         return;
@@ -412,9 +474,11 @@ export default function App() {
       // Root / home
       if (cleanPath === '/' || cleanPath === '') {
         setSelectedToolForModal(null);
+        setSelectedDigitalTool(null);
         setIs404(false);
       } else {
         setSelectedToolForModal(null);
+        setSelectedDigitalTool(null);
         setIs404(true);
       }
     };
@@ -478,7 +542,9 @@ export default function App() {
       ]);
 
       if (firestoreTools.length > 0) {
-        setTools(firestoreTools);
+        const firestoreIds = new Set(firestoreTools.map((t) => t.id));
+        const missingBuiltins = ALL_BUILTIN_TOOLS.filter((b) => !firestoreIds.has(b.id));
+        setTools([...missingBuiltins, ...firestoreTools]);
       }
       if (firestoreSubmissions.length > 0) {
         setSubmissions(firestoreSubmissions);
@@ -524,7 +590,9 @@ export default function App() {
 
     const unsubscribeTools = subscribeToTools((liveTools) => {
       if (liveTools && liveTools.length > 0) {
-        setTools(liveTools);
+        const firestoreIds = new Set(liveTools.map((t) => t.id));
+        const missingBuiltins = ALL_BUILTIN_TOOLS.filter((b) => !firestoreIds.has(b.id));
+        setTools([...missingBuiltins, ...liveTools]);
       }
     });
 
@@ -1035,7 +1103,7 @@ export default function App() {
     }`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       
       {/* Dynamic Root SEO for Home or Active Category */}
-      {!selectedToolForModal && !is404 && (
+      {!selectedToolForModal && !selectedDigitalTool && !is404 && (
         <SEO
           title={rootSeoData.title}
           description={rootSeoData.description}
@@ -1108,6 +1176,24 @@ export default function App() {
           lang={lang}
           isDarkMode={isDarkMode}
         />
+      ) : selectedDigitalTool ? (
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <DigitalToolPage
+            tool={selectedDigitalTool}
+            lang={lang}
+            isDarkMode={isDarkMode}
+            onSelectTool={(tool) => {
+              setSelectedDigitalTool(tool);
+              try {
+                const currentUrl = new URL(window.location.href);
+                currentUrl.pathname = `/tools/${tool.slug}`;
+                currentUrl.searchParams.delete('tool');
+                window.history.pushState({ toolId: tool.slug }, '', currentUrl.toString());
+              } catch (e) {}
+            }}
+            onBackToHome={handleCloseToolDetails}
+          />
+        </main>
       ) : (
         <>
           {/* Hero Section with Fuse.js instant fuzzy search */}

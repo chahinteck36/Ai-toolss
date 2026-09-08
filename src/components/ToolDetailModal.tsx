@@ -608,13 +608,21 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
               {/* 10. Official Website CTA (Header) */}
               <a
                 id="modal-visit-btn-top"
-                href={tool.websiteUrl}
-                target="_blank"
+                href={tool.isDigitalTool ? `/tools/${tool.digitalToolSlug || tool.id}` : tool.websiteUrl}
+                onClick={(e) => {
+                  if (tool.isDigitalTool) {
+                    e.preventDefault();
+                    onClose();
+                    window.history.pushState(null, '', `/tools/${tool.digitalToolSlug || tool.id}`);
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                  }
+                }}
+                target={tool.isDigitalTool ? '_self' : '_blank'}
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-indigo-600/20 transition-all hover:scale-[1.02] cursor-pointer"
               >
-                <span>زيارة الموقع الرسمي</span>
-                <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>{tool.isDigitalTool ? 'استخدام الأداة مجاناً الآن' : 'زيارة الموقع الرسمي'}</span>
+                {tool.isDigitalTool ? <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300" /> : <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
               </a>
             </div>
           </div>
@@ -1135,13 +1143,21 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
           {/* 10. Official Website CTA (Prominent Bottom Button) */}
           <a
             id="modal-visit-btn-bottom"
-            href={tool.websiteUrl}
-            target="_blank"
+            href={tool.isDigitalTool ? `/tools/${tool.digitalToolSlug || tool.id}` : tool.websiteUrl}
+            onClick={(e) => {
+              if (tool.isDigitalTool) {
+                e.preventDefault();
+                onClose();
+                window.history.pushState(null, '', `/tools/${tool.digitalToolSlug || tool.id}`);
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }
+            }}
+            target={tool.isDigitalTool ? '_self' : '_blank'}
             rel="noopener noreferrer"
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-600/25 transition-all hover:scale-[1.02] cursor-pointer"
           >
-            <span>زيارة الموقع الرسمي</span>
-            <ExternalLink className="w-4 h-4" />
+            <span>{tool.isDigitalTool ? 'استخدام الأداة مجاناً الآن' : 'زيارة الموقع الرسمي'}</span>
+            {tool.isDigitalTool ? <Sparkles className="w-4 h-4 text-amber-300" /> : <ExternalLink className="w-4 h-4" />}
           </a>
         </footer>
       </div>
