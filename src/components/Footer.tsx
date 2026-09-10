@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Heart, Globe, ArrowUp, Github, Lock, Info, ShieldCheck, PlusCircle, Mail, Terminal, BookOpen } from 'lucide-react';
+import { Sparkles, Heart, Globe, ArrowUp, Github, Info, ShieldCheck, PlusCircle, Mail, Terminal, BookOpen } from 'lucide-react';
 import { Category, CategoryId } from '../types';
 import { SupportedLanguage, SUPPORTED_LANGUAGES, TRANSLATIONS } from '../lib/i18n';
 
@@ -13,7 +13,6 @@ interface FooterProps {
   onOpenPrivacyPolicy?: () => void;
   onOpenContact?: () => void;
   onOpenAddModal?: () => void;
-  onOpenSecretAdmin?: () => void;
   lang?: SupportedLanguage;
   onLanguageChange?: (lang: SupportedLanguage) => void;
 }
@@ -28,7 +27,6 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenPrivacyPolicy,
   onOpenContact,
   onOpenAddModal,
-  onOpenSecretAdmin,
   lang = 'ar',
   onLanguageChange
 }) => {
@@ -239,17 +237,6 @@ export const Footer: React.FC<FooterProps> = ({
 
           <div className="flex items-center gap-3">
             <span>دليل الذكاء الاصطناعي العربي الشامل</span>
-            {onOpenSecretAdmin && (
-              <button
-                id="footer-secret-admin-trigger"
-                onClick={onOpenSecretAdmin}
-                className="p-1 rounded text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 opacity-60 hover:opacity-100 transition-all"
-                title="الدخول الإداري السري (Ctrl+Shift+A)"
-                aria-label="Secret Admin Login"
-              >
-                <Lock className="w-3.5 h-3.5" />
-              </button>
-            )}
           </div>
         </div>
       </div>

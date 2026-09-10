@@ -23,89 +23,196 @@ export interface LocalizedArticleContent {
 export const ARTICLE_TRANSLATIONS: Record<string, Partial<Record<SupportedLanguage, LocalizedArticleContent>>> = {
   'best-ai-tools-for-students-2026': {
     en: {
-      title: 'Top AI Tools for Students in 2026 (Research, Summarization & Study Workflows)',
-      description: 'A comprehensive guide to the best artificial intelligence apps and tools students need in 2026 for verified academic sources, book summaries, and clear writing.',
-      seoTitle: 'Best AI Tools for Students in 2026 | Free Academic Research Guide',
-      seoDescription: 'Discover the top AI tools for students in 2026 for literature review, academic citations, paper summarization, and studying effectively.',
-      intro: 'In 2026, using artificial intelligence in education is no longer a luxury; it is an indispensable personal research assistant for every student and scholar. The true challenge is selecting tools that provide accurate, peer-reviewed citations rather than generic chat models that hallucinate fake references.',
+      title: 'Best AI Tools for Students in 2026',
+      description: 'Discover the best AI tools for students in 2026 for studying, writing, translation, presentations, and coding, with in-depth comparisons and selection guidance.',
+      seoTitle: 'Best AI Tools for Students in 2026 | Adawatai',
+      seoDescription: 'Discover the best AI tools for students in 2026 for studying, writing, translation, presentations, and coding, with comparisons and workflow tips.',
+      intro: 'In 2026, using artificial intelligence in education is no longer a gimmick or a way to get quick homework answers; it has evolved into a personal tutor, study partner, and research assistant. However, relying on a single general chat app often results in inaccurate citations, poorly formatted presentations, or unnatural translations. This comprehensive guide highlights the best AI tools tailored for students in 2026 across studying, writing, languages, presentations, coding, and academic research.',
       sections: [
         {
-          id: 'academic-search',
-          heading: '1. Verified Academic Search Engines (Research & Citations)',
-          subheading: 'Reasoning models linked directly to original papers',
+          id: 'study-comprehension',
+          heading: '1. Best AI Tools for Studying and Comprehension',
+          subheading: 'Demystifying complex concepts, active learning, and personalized tutoring',
           paragraphs: [
-            'Unlike general chat assistants, dedicated academic search engines query scientific literature repositories (such as Semantic Scholar, PubMed, and CrossRef), providing direct DOI links, author names, and publication dates in standard APA or MLA formats.',
-            'Leading solutions featured on Adawatai include Perplexity AI and Consensus AI, which verify scientific consensus across millions of clinical trials and published papers.'
+            'Active study is about understanding deep principles rather than rote memorization. In 2026, conversational AI tools act as Socratic mentors: prompting you with thought-provoking questions, identifying gaps in your understanding, and providing intuitive analogies.',
+            'Leading tools like Google Gemini, Claude, and NotebookLM handle massive volumes of lecture notes and textbook chapters, generating custom quizzes and guided explanations.'
           ],
           bulletPoints: [
-            'Perplexity AI: Ideal for exploring complex topics with direct source links.',
-            'Consensus AI: Searches over 200 million papers with a visual Consensus Meter.',
-            'Elicit AI: Extracts methodologies, findings, and sample sizes with one click.'
+            'Use the Feynman Technique: Ask the AI to explain advanced concepts in simple terms, then try explaining them back to verify your grasp.',
+            'Generate custom practice exams: Provide your lecture transcripts and request 10 multiple-choice questions with answer rationales.',
+            'Multimodal diagram analysis: Upload photos of hand-drawn circuits, equations, or biological diagrams for step-by-step breakdowns.'
           ]
         },
         {
-          id: 'paper-summarization',
-          heading: '2. Book and Research Paper Summarization Tools (PDF Summarizers)',
-          subheading: 'Reading dense documents and extracting core arguments',
+          id: 'writing-summarization',
+          heading: '2. Best AI Tools for Writing and Summarization',
+          subheading: 'Drafting outlines, synthesizing research, and polishing academic prose',
           paragraphs: [
-            'Students often encounter 50+ page specialized monographs. Intelligent summarizers allow you to upload files and receive executive summaries organized by hypotheses, methodologies, findings, and study limitations.'
+            'Academic writing requires structured logic, coherent paragraph flow, and adherence to scholarly standards. AI writing companions should never replace your voice; rather, they serve as editorial coaches that help organize outlines, refine sentence variety, and detect inconsistencies.',
+            'When dealing with lengthy 50-page articles, specialized summarizers quickly distill core hypotheses, methodologies, and findings without losing crucial nuance.'
           ],
           bulletPoints: [
-            'Claude 3.7 Sonnet: Features a 200k+ token context window capable of analyzing full books.',
-            'Adawatai Client-side PDF Text Extractor: Extracts text locally without external server uploads.'
+            'Outlining & Brainstorming: Use AI to structure comprehensive thesis proposals and research papers.',
+            'Style & Tone Polishing: Rephrase awkward passages into lucid, objective academic prose.',
+            'Grammar & Proofreading: Catch subtle syntax errors, punctuation slips, and inconsistent terminology.'
           ]
         },
         {
-          id: 'writing-editing',
-          heading: '3. Academic Editing and Word Counter Utilities',
-          subheading: 'Refining grammar and sentence flow while adhering to academic integrity',
+          id: 'translation-languages',
+          heading: '3. Best AI Tools for Translation and Language Learning',
+          subheading: 'Contextual, high-precision translation of scholarly papers and technical terms',
           paragraphs: [
-            'After drafting your paper, inspect sentence structure, eliminate filler words, and verify word limits using the free Word Counter tool on Adawatai.'
+            'Most cutting-edge academic literature is published in English or French. Traditional translation tools often fail when translating specialized jargon into Arabic, producing clumsy or misleading literal translations.',
+            'Modern neural translation tools like DeepL Translator and ChatGPT understand domain-specific nuances across medicine, law, engineering, and the humanities, preserving the exact layout of translated PDF and Word files.'
+          ]
+        },
+        {
+          id: 'presentation-creation',
+          heading: '4. Best AI Tools for Presentation Creation',
+          subheading: 'Transforming outlines into stunning visual slide decks in seconds',
+          paragraphs: [
+            'Students often spend countless hours formatting slide shapes, font pairings, and alignments instead of rehearsing their presentation. Modern AI presentation apps like Gamma App turn notes into engaging visual narratives with full Arabic RTL support and instant PowerPoint export.'
+          ]
+        },
+        {
+          id: 'coding-development',
+          heading: '5. Best AI Tools for Coding and Tech Projects',
+          subheading: 'Intelligent pair programming, debugging, and algorithm analysis',
+          paragraphs: [
+            'For computer science and engineering students, AI agents have revolutionized software development. Intelligent IDEs like Cursor and GitHub Copilot understand entire codebases, assist with multithreaded debugging, and explain algorithmic time complexities.'
+          ]
+        },
+        {
+          id: 'research-organization',
+          heading: '6. Best AI Tools for Research & Citation Discovery',
+          subheading: 'Verified literature reviews with direct DOI links and consensus metrics',
+          paragraphs: [
+            'Unlike general chatbots that may fabricate fake citations, dedicated academic search engines like Perplexity AI and Consensus query vetted databases (PubMed, Semantic Scholar), providing direct DOI links and consensus indicators.'
+          ]
+        },
+        {
+          id: 'free-student-tools',
+          heading: '7. Top 100% Free AI Tools for Students',
+          subheading: 'Maximizing academic productivity on a zero-dollar budget',
+          paragraphs: [
+            'Students do not need expensive subscriptions to succeed. High-tier models like DeepSeek-R1 and V3 are available completely free, GitHub Copilot is free through the GitHub Student Developer Pack, Google NotebookLM is 100% free, and Hugging Face offers thousands of open-source models.'
+          ]
+        },
+        {
+          id: 'how-to-choose-tool',
+          heading: '8. How to Choose the Right AI Tool for Your Task',
+          subheading: 'Decision matrix: pick the right tool based on your specific academic workflow',
+          paragraphs: [
+            'Success comes from matching each task to the ideal specialized tool rather than relying on one general chatbot for everything.'
           ]
         }
       ],
-      conclusion: 'AI provides immense leverage for student productivity when applied with academic integrity and thoughtful methodology. Explore the tools cataloged on Adawatai to save hours of manual busywork.',
+      conclusion: 'Artificial intelligence in 2026 is an incredible multiplier for academic growth when used thoughtfully. Match each tool to your specific task, verify citations, and uphold academic integrity. Explore the full AI directory on Adawatai to elevate your academic journey.',
       faq: [
         {
-          question: 'Can universities detect AI-generated academic text?',
-          answer: 'Yes, modern academic plagiarism checkers detect AI statistical phrasing patterns. The recommended approach is using AI for research and brainstorming, then writing the final draft in your own words.'
+          question: 'What is the best AI tool for students in 2026?',
+          answer: 'There is no single best tool: for studying and note review, NotebookLM and Google Gemini excel; for verified academic research, Perplexity AI is king; for writing and drafting, Claude and ChatGPT lead; and for presentations, Gamma App is the top choice.'
         },
         {
-          question: 'What is the best free tool for real scientific citations?',
-          answer: 'Perplexity AI and Consensus AI are the best free tools for retrieving real, peer-reviewed academic papers with direct DOI links.'
+          question: 'Are there free AI tools for students?',
+          answer: 'Yes! NotebookLM is 100% free, DeepSeek provides cutting-edge reasoning at zero cost, Hugging Face hosts open-source tools, and GitHub Copilot is free for students via the GitHub Student Developer Pack.'
+        },
+        {
+          question: 'What is the best AI tool for translating academic papers?',
+          answer: 'DeepL Translator is widely regarded as the most accurate tool for academic translation, preserving file formatting and technical terminology.'
+        },
+        {
+          question: 'What is the best AI tool for presentations?',
+          answer: 'Gamma App is the premier AI presentation tool for students, turning text notes into beautiful slides with full Arabic RTL support and PowerPoint export.'
+        },
+        {
+          question: 'What are the best AI tools for coding?',
+          answer: 'Cursor IDE is the most advanced agentic code editor, alongside GitHub Copilot (free for students) and DeepSeek-R1 for algorithmic logic.'
+        },
+        {
+          question: 'How can I avoid academic plagiarism when using AI tools?',
+          answer: 'Use AI as a brainstorming and comprehension partner rather than having it write your paper. Always write final drafts in your own voice and verify citations through academic engines like Perplexity or Consensus.'
         }
       ],
-      readingTimeText: '7 min read',
+      readingTimeText: '12 min read',
       needToolPrompt: 'Need the tool right now?'
     },
     fr: {
-      title: 'Meilleurs outils d\'IA pour étudiants en 2026 (Recherche, Synthèse & Études)',
-      description: 'Guide complet des meilleurs outils d\'intelligence artificielle pour les étudiants et chercheurs en 2026 pour trouver des sources fiables et synthétiser des documents.',
-      seoTitle: 'Meilleurs outils d\'IA pour étudiants en 2026 | Guide académique gratuit',
-      seoDescription: 'Découvrez les meilleurs outils d\'intelligence artificielle pour étudiants en 2026 pour la recherche académique, la rédaction et la synthèse de documents.',
-      intro: 'En 2026, l\'intelligence artificielle est devenue un assistant de recherche indispensable pour chaque étudiant. L\'enjeu est de choisir des outils qui fournissent des références vérifiées et scientifiques plutôt que des chatbots généralistes sujets aux hallucinations.',
+      title: 'Meilleurs outils d\'IA pour étudiants en 2026',
+      description: 'Découvrez les meilleurs outils d\'intelligence artificielle pour étudiants en 2026 pour étudier, rédiger, traduire, créer des présentations et programmer.',
+      seoTitle: 'Meilleurs outils d\'IA pour étudiants en 2026 | Adawatai',
+      seoDescription: 'Découvrez les meilleurs outils d\'intelligence artificielle pour étudiants en 2026 pour étudier, rédiger, traduire et programmer.',
+      intro: 'En 2026, l\'intelligence artificielle est devenue un assistant d\'étude incontournable pour chaque étudiant. Ce guide complet présente les meilleurs outils adaptés à chaque besoin académique.',
       sections: [
         {
-          id: 'academic-search',
-          heading: '1. Moteurs de recherche académique vérifiés',
+          id: 'study-comprehension',
+          heading: '1. Meilleurs outils d\'IA pour étudier et comprendre les cours',
           paragraphs: [
-            'Contrairement aux chatbots généralistes, les moteurs spécialisés interrogent des millions d\'articles scientifiques (PubMed, Semantic Scholar) et fournissent des liens DOI directs.',
-            'Parmi les meilleures solutions disponibles sur Adawatai figurent Perplexity AI et Consensus AI.'
-          ],
-          bulletPoints: [
-            'Perplexity AI : Idéal pour explorer des sujets complexes avec des sources web en temps réel.',
-            'Consensus AI : Analyse plus de 200 millions d\'articles scientifiques avec indicateur de consensus.'
+            'L\'apprentissage actif consiste à comprendre les principes fondamentaux. Des outils comme Google Gemini, Claude et NotebookLM transforment vos notes de cours en séances d\'étude interactives et génèrent des quiz personnalisés.'
+          ]
+        },
+        {
+          id: 'writing-summarization',
+          heading: '2. Meilleurs outils d\'IA pour la rédaction et la synthèse',
+          paragraphs: [
+            'La rédaction académique exige rigueur et clarté. Utilisez l\'IA pour structurer vos plans et affiner vos arguments avec ChatGPT et Claude.'
+          ]
+        },
+        {
+          id: 'translation-languages',
+          heading: '3. Meilleurs outils d\'IA pour la traduction et les langues',
+          paragraphs: [
+            'DeepL Translator offre la traduction neuronale la plus précise pour les articles scientifiques, en préservant la mise en page des fichiers PDF et Word.'
+          ]
+        },
+        {
+          id: 'presentation-creation',
+          heading: '4. Meilleurs outils d\'IA pour créer des présentations',
+          paragraphs: [
+            'Gamma App transforme vos notes et idées en présentations visuelles percutantes avec support complet de la langue arabe et export PowerPoint.'
+          ]
+        },
+        {
+          id: 'coding-development',
+          heading: '5. Meilleurs outils d\'IA pour la programmation',
+          paragraphs: [
+            'Cursor IDE et GitHub Copilot (gratuit pour les étudiants) accompagnent les étudiants en informatique dans le développement et le débogage de leurs projets.'
+          ]
+        },
+        {
+          id: 'research-organization',
+          heading: '6. Meilleurs outils d\'IA pour la recherche académique vérifiée',
+          paragraphs: [
+            'Perplexity AI et Consensus interrogent directement les bases de données d\'articles évalués par les pairs avec liens DOI vérifiés.'
+          ]
+        },
+        {
+          id: 'free-student-tools',
+          heading: '7. Meilleurs outils d\'IA 100% gratuits pour étudiants',
+          paragraphs: [
+            'Profitez des modèles DeepSeek-R1 gratuits, du GitHub Student Developer Pack et de Google NotebookLM sans frais.'
+          ]
+        },
+        {
+          id: 'how-to-choose-tool',
+          heading: '8. Comment choisir l\'outil d\'IA adapté à vos besoins ?',
+          paragraphs: [
+            'Choisissez chaque outil en fonction de votre tâche : recherche avec Perplexity, synthèse avec NotebookLM, et diapositives avec Gamma.'
           ]
         }
       ],
-      conclusion: 'L\'IA représente un accélérateur remarquable pour les étudiants lorsqu\'elle est utilisée avec rigueur méthodologique.',
+      conclusion: 'L\'IA en 2026 offre un levier exceptionnel pour réussir vos études en combinant rigueur académique et outils adaptés.',
       faq: [
         {
-          question: 'Les universités détectent-elles les textes générés par IA ?',
-          answer: 'Oui, les détecteurs académiques repèrent les structures statistiques de l\'IA. Il est conseillé d\'utiliser l\'IA pour la recherche et de rédiger le contenu final soi-même.'
+          question: 'Quel est le meilleur outil d\'IA pour les étudiants en 2026 ?',
+          answer: 'Il n\'y a pas un seul outil universel : NotebookLM pour les cours, Perplexity pour la recherche vérifiée, Claude pour la rédaction, et Gamma pour les présentations.'
+        },
+        {
+          question: 'Existe-t-il des outils d\'IA gratuits pour les étudiants ?',
+          answer: 'Oui, notamment NotebookLM, DeepSeek, Hugging Face, et GitHub Copilot gratuit avec une adresse email universitaire.'
         }
       ],
-      readingTimeText: '7 min de lecture',
+      readingTimeText: '12 min de lecture',
       needToolPrompt: 'Besoin de cet outil maintenant ?'
     }
   },

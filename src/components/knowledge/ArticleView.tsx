@@ -46,7 +46,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
   const resolvedRelatedTools = (article.relatedTools || [])
     .map((tid) => resolveToolById(tid, lang))
     .filter((t): t is NonNullable<typeof t> => t !== null)
-    .slice(0, 4);
+    .slice(0, 8);
 
   const currentCategory = ARTICLE_CATEGORIES.find((c) => c.id === article.category);
   const categoryName = currentCategory
@@ -70,6 +70,56 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+  };
+
+  const renderFormattedText = (text: string) => {
+    const regex = /(\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*)/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(text.substring(lastIndex, match.index));
+      }
+
+      if (match[2] && match[3]) {
+        const label = match[2];
+        const url = match[3];
+        const isInternal = url.startsWith('/');
+        parts.push(
+          <a
+            key={match.index}
+            href={url}
+            onClick={(e) => {
+              if (isInternal) {
+                e.preventDefault();
+                onNavigateTool(url);
+              }
+            }}
+            target={isInternal ? undefined : '_blank'}
+            rel={isInternal ? undefined : 'noopener noreferrer'}
+            className="text-indigo-600 dark:text-indigo-400 font-semibold underline decoration-indigo-400/40 hover:decoration-indigo-600 underline-offset-2 transition-colors cursor-pointer"
+          >
+            {label}
+          </a>
+        );
+      } else if (match[4]) {
+        parts.push(
+          <strong key={match.index} className="font-bold text-slate-900 dark:text-white">
+            {match[4]}
+          </strong>
+        );
+      }
+
+      lastIndex = regex.lastIndex;
+    }
+
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+
+    return <>{parts}</>;
   };
 
   return (
@@ -210,7 +260,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
 
                   {sec.paragraphs.map((para, pIdx) => (
                     <p key={pIdx} className="text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed">
-                      {para}
+                      {renderFormattedText(para)}
                     </p>
                   ))}
 
@@ -220,10 +270,76 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                       {sec.bulletPoints.map((bp, bIdx) => (
                         <li key={bIdx} className="flex items-start gap-2.5 text-sm sm:text-base text-slate-700 dark:text-slate-300">
                           <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 mt-2 shrink-0" />
-                          <span>{bp}</span>
+                          <span>{renderFormattedText(bp)}</span>
                         </li>
                       ))}
                     </ul>
+                  )}
+
+                  {/* Section Tools Cards (if any) */}
+                  {originalSec?.tools && originalSec.tools.length > 0 && (
+                    <div className="space-y-4 my-6">
+                      {originalSec.tools.map((tool) => (
+                        <div
+                          key={tool.id}
+                          className={`p-5 sm:p-6 rounded-2xl border transition-all ${
+                            isDarkMode ? 'bg-slate-900/90 border-slate-800 hover:border-slate-700' : 'bg-white border-slate-200 hover:border-indigo-200 shadow-xs'
+                          }`}
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                            <h4 className="text-lg font-bold text-slate-900 dark:text-white">
+                              {tool.name}
+                            </h4>
+                            <span className="inline-flex text-xs px-2.5 py-1 rounded-lg font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/40 self-start sm:self-auto">
+                              {tool.pricingCategory}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 my-4 text-xs sm:text-sm">
+                            <div className={`p-3.5 rounded-xl ${isDarkMode ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
+                              <span className="block font-bold text-slate-900 dark:text-white mb-1">
+                                {lang === 'ar' ? 'فيمَ تفيدك الأداة؟' : 'Useful for:'}
+                              </span>
+                              <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-xs sm:text-sm">
+                                {tool.usefulFor}
+                              </p>
+                            </div>
+
+                            <div className={`p-3.5 rounded-xl ${isDarkMode ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
+                              <span className="block font-bold text-slate-900 dark:text-white mb-1">
+                                {lang === 'ar' ? 'أفضل استخدام للطلاب:' : 'Best for students:'}
+                              </span>
+                              <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-xs sm:text-sm">
+                                {tool.bestUse}
+                              </p>
+                            </div>
+
+                            <div className={`p-3.5 rounded-xl ${isDarkMode ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
+                              <span className="block font-bold text-indigo-600 dark:text-indigo-400 mb-1">
+                                {lang === 'ar' ? 'الميزة الأبرز:' : 'Main advantage:'}
+                              </span>
+                              <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-xs sm:text-sm font-medium">
+                                {tool.advantage}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 flex items-center justify-end">
+                            <a
+                              href={tool.toolUrl}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                onNavigateTool(tool.toolUrl);
+                              }}
+                              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 group cursor-pointer"
+                            >
+                              <span>{lang === 'ar' ? 'عرض تفاصيل الأداة في أدواتي' : 'View tool on Adawatai'}</span>
+                              <ArrowIcon className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                            </a>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   )}
 
                   {/* Steps (if any) */}
@@ -244,7 +360,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                               {step.title}
                             </h4>
                             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                              {step.desc}
+                              {renderFormattedText(step.desc)}
                             </p>
                           </div>
                         </div>
@@ -273,7 +389,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                           {originalSec.callout.title}
                         </strong>
                         <p className="leading-relaxed opacity-95">
-                          {originalSec.callout.text}
+                          {renderFormattedText(originalSec.callout.text)}
                         </p>
                       </div>
                     </div>
@@ -349,10 +465,42 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                   {lang === 'ar' ? 'خلاصة القول' : lang === 'fr' ? 'Conclusion' : 'Final Takeaway'}
                 </h3>
                 <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                  {loc.conclusion}
+                  {renderFormattedText(loc.conclusion)}
                 </p>
               </div>
             )}
+
+            {/* Discovery Directory CTA */}
+            <div className={`p-6 sm:p-8 rounded-3xl border text-center space-y-4 my-8 ${
+              isDarkMode 
+                ? 'bg-gradient-to-b from-slate-900 to-slate-950 border-slate-800' 
+                : 'bg-gradient-to-b from-indigo-50/50 to-white border-indigo-100 shadow-xs'
+            }`}>
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 mx-auto">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <div className="space-y-2 max-w-xl mx-auto">
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                  {lang === 'ar' ? 'هل تبحث عن أداة محددة؟' : lang === 'fr' ? 'Vous cherchez un outil spécifique ?' : 'Looking for a specific tool?'}
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                  {lang === 'ar' 
+                    ? 'استخدم دليل أدوات الذكاء الاصطناعي في Adawatai لاكتشاف المزيد من الأدوات حسب احتياجك الدراسي والمهني.'
+                    : lang === 'fr'
+                    ? 'Utilisez l\'annuaire des outils IA sur Adawatai pour découvrir d\'autres solutions adaptées à vos besoins.'
+                    : 'Explore the full AI tools directory on Adawatai to discover more tools customized for your study and work needs.'}
+                </p>
+              </div>
+              <div className="pt-2">
+                <button
+                  onClick={onNavigateHome}
+                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md shadow-indigo-600/25 hover:shadow-indigo-600/40 transition-all cursor-pointer"
+                >
+                  <span>{lang === 'ar' ? 'اكتشف أدوات الذكاء الاصطناعي' : lang === 'fr' ? 'Découvrir les outils IA' : 'Explore AI Tools Directory'}</span>
+                  <ArrowIcon className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
 
             {/* FAQ Accordion Section */}
             {loc.faq && loc.faq.length > 0 && (

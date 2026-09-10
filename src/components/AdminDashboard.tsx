@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { adminLogout, adminChangePassword } from '../lib/adminApi';
 import { 
   AiTool, 
   Category, 
@@ -46,7 +47,9 @@ import {
   Globe,
   Percent,
   Zap,
-  Maximize2
+  Maximize2,
+  Lock,
+  KeyRound
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -132,6 +135,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // Settings form state
   const [settingsForm, setSettingsForm] = useState<SiteSettings>(settings);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
+
+  // Admin Password Change state
+  const [pwdCurrent, setPwdCurrent] = useState('');
+  const [pwdNew, setPwdNew] = useState('');
+  const [pwdConfirm, setPwdConfirm] = useState('');
+  const [pwdLoading, setPwdLoading] = useState(false);
+  const [pwdFeedback, setPwdFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pwdNew.length < 8) {
+      setPwdFeedback({ type: 'error', text: 'كلمة المرور الجديدة يجب ألا تقل عن 8 أحرف.' });
+      return;
+    }
+    if (pwdNew !== pwdConfirm) {
+      setPwdFeedback({ type: 'error', text: 'كلمتا المرور غير متطابقتين.' });
+      return;
+    }
+    setPwdLoading(true);
+    setPwdFeedback(null);
+    const res = await adminChangePassword(pwdCurrent, pwdNew);
+    setPwdLoading(false);
+    if (res.success) {
+      setPwdFeedback({ type: 'success', text: res.message || 'تم تحديث كلمة المرور بنجاح.' });
+      setPwdCurrent('');
+      setPwdNew('');
+      setPwdConfirm('');
+    } else {
+      setPwdFeedback({ type: 'error', text: res.error || 'فشل في تحديث كلمة المرور.' });
+    }
+  };
 
   // In-App Safe Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState<{
@@ -416,7 +450,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       } px-4 sm:px-6 py-2.5 flex items-center justify-between shadow-md`}>
         <div className="flex items-center gap-4">
           <button
-            onClick={onClose}
+            onClick={() => {
+              if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/control')) {
+                window.history.pushState(null, '', '/');
+              }
+              window.location.hash = '';
+              onClose();
+            }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/80 hover:bg-indigo-600 text-white text-xs font-bold transition-colors"
           >
             <ArrowRight className="w-4 h-4" />
@@ -480,16 +520,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           {/* Logout / Lock Button */}
           <button
-            onClick={() => {
-              sessionStorage.removeItem('ai_directory_admin_auth');
+            onClick={async () => {
+              try {
+                await adminLogout();
+              } catch (e) {}
+              if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/control')) {
+                window.history.pushState(null, '', '/');
+              }
               window.location.hash = '';
               onClose();
             }}
             className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold rounded-md bg-rose-900/60 hover:bg-rose-800 text-rose-200 border border-rose-700 transition-colors"
-            title="تسجيل الخروج وقفل لوحة التحكم"
+            title="تسجيل الخروج الآمن وإبطال الجلسة"
           >
             <XCircle className="w-3.5 h-3.5 text-rose-400" />
-            <span className="hidden sm:inline">قفل وخروج</span>
+            <span className="hidden sm:inline">تسجيل الخروج</span>
           </button>
         </div>
       </header>
@@ -1996,6 +2041,87 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <span>{isSavingSettings ? 'جاري الحفظ...' : 'حفظ الإعدادات في Firestore'}</span>
                 </button>
               </form>
+
+              {/* Password & Security Section */}
+              <div className="pt-6 border-t border-slate-200 dark:border-slate-800 max-w-2xl">
+                <div className="mb-4">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <KeyRound className="w-4 h-4 text-indigo-500" />
+                    <span>أمان حساب الإدارة وتغيير كلمة المرور</span>
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    تحديث كلمة مرور الدخول الإدارية المحمية بتشفير خادمي متقدم (Scrypt)
+                  </p>
+                </div>
+
+                {pwdFeedback && (
+                  <div className={`mb-4 p-3 rounded-xl text-xs flex items-center gap-2 ${
+                    pwdFeedback.type === 'success'
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                      : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                  }`}>
+                    {pwdFeedback.type === 'success' ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertTriangle className="w-4 h-4 shrink-0" />}
+                    <span>{pwdFeedback.text}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handlePasswordChange} className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      كلمة المرور الحالية
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      dir="ltr"
+                      value={pwdCurrent}
+                      onChange={(e) => setPwdCurrent(e.target.value)}
+                      placeholder="••••••••••••"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-indigo-500 font-mono"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        كلمة المرور الجديدة (8 أحرف على الأقل)
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        dir="ltr"
+                        value={pwdNew}
+                        onChange={(e) => setPwdNew(e.target.value)}
+                        placeholder="••••••••••••"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-indigo-500 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        تأكيد كلمة المرور الجديدة
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        dir="ltr"
+                        value={pwdConfirm}
+                        onChange={(e) => setPwdConfirm(e.target.value)}
+                        placeholder="••••••••••••"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-indigo-500 font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={pwdLoading}
+                    className="mt-2 px-5 py-2.5 text-xs font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-white flex items-center gap-2 transition-all disabled:opacity-50"
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>{pwdLoading ? 'جاري التحديث...' : 'تحديث كلمة المرور'}</span>
+                  </button>
+                </form>
+              </div>
             </div>
           )}
 

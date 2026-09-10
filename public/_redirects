@@ -1,1 +1,3 @@
-/*    /index.html   200
+# Cloudflare Pages Routing: API Functions take precedence, all client routes fallback to SPA
+/api/*  /api/:splat  200
+/*      /index.html  200

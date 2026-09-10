@@ -17,7 +17,6 @@ interface HeaderProps {
   onOpenAboutUs?: () => void;
   onOpenPrivacyPolicy?: () => void;
   onOpenContact?: () => void;
-  onOpenAdminDashboard?: () => void;
   onlyFavorites: boolean;
   onToggleFavoritesOnly: () => void;
   isAdmin?: boolean;
@@ -40,7 +39,6 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAboutUs,
   onOpenPrivacyPolicy,
   onOpenContact,
-  onOpenAdminDashboard,
   onlyFavorites,
   onToggleFavoritesOnly,
   isAdmin = true,

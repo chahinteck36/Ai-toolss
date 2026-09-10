@@ -39,12 +39,23 @@ export interface ArticleStep {
   desc: string;
 }
 
+export interface ArticleToolItem {
+  id: string;
+  name: string;
+  usefulFor: string;
+  bestUse: string;
+  advantage: string;
+  pricingCategory: string;
+  toolUrl: string;
+}
+
 export interface ArticleSection {
   id: string;
   heading: string;
   subheading?: string;
   paragraphs: string[];
   bulletPoints?: string[];
+  tools?: ArticleToolItem[];
   steps?: ArticleStep[];
   callout?: {
     type: 'tip' | 'warning' | 'info';

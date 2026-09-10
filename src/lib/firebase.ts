@@ -96,35 +96,7 @@ export const INITIAL_ADS: Advertisement[] = [
 ];
 
 // Initial Members
-export const INITIAL_MEMBERS: Member[] = [
-  {
-    id: 'mem-admin-1',
-    email: 'admin@aidirectory.ar',
-    displayName: 'مدير الدليل الرئيسي (Super Admin)',
-    role: 'admin',
-    joinedAt: '2026-01-01',
-    lastActive: 'الآن',
-    status: 'active'
-  },
-  {
-    id: 'mem-editor-1',
-    email: 'editor@aidirectory.ar',
-    displayName: 'محرر المحتوى والتقييمات',
-    role: 'editor',
-    joinedAt: '2026-02-15',
-    lastActive: 'منذ ساعتين',
-    status: 'active'
-  },
-  {
-    id: 'mem-user-1',
-    email: 'gmouhamed36@gmail.com',
-    displayName: 'محمد (عضو مسجل)',
-    role: 'admin',
-    joinedAt: '2026-03-01',
-    lastActive: 'الآن',
-    status: 'active'
-  }
-];
+export const INITIAL_MEMBERS: Member[] = [];
 
 // Default Settings
 export const DEFAULT_SETTINGS: SiteSettings = {

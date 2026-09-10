@@ -23,7 +23,8 @@ import { VisitorSubmitModal } from './components/VisitorSubmitModal';
 import { QuickAIAssistantModal } from './components/QuickAIAssistantModal';
 import { PromptsLibraryModal } from './components/PromptsLibraryModal';
 import { AdminDashboard } from './components/AdminDashboard';
-import { SecretAdminAuthModal } from './components/SecretAdminAuthModal';
+import { AdminLoginView } from './components/AdminLoginView';
+import { checkAdminAuth, adminLogout } from './lib/adminApi';
 import { AboutUsModal } from './components/AboutUsModal';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
 import { ContactModal } from './components/ContactModal';
@@ -175,7 +176,8 @@ export default function App() {
   
   // Modals & Navigation states
   const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
-  const [isSecretAuthModalOpen, setIsSecretAuthModalOpen] = useState(false);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [isCheckingAdminAuth, setIsCheckingAdminAuth] = useState(false);
   const [isAboutUsOpen, setIsAboutUsOpen] = useState(false);
   const [isPrivacyPolicyOpen, setIsPrivacyPolicyOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
@@ -405,13 +407,43 @@ export default function App() {
       const hash = window.location.hash.toLowerCase();
       const search = window.location.search.toLowerCase();
       
-      const isAdminRoute = hash.includes('admin') || search.includes('admin');
+      // Check URL search parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      const langParam = urlParams.get('lang');
+      if (langParam === 'en' || langParam === 'fr' || langParam === 'ar') {
+        setLang(langParam);
+      }
+
+      const qParam = urlParams.get('q');
+      if (qParam) {
+        setFilterState((prev) => ({ ...prev, searchQuery: qParam }));
+      }
+
+      const rawPath = window.location.pathname || '/';
+      const cleanPath = rawPath
+        .replace(/\/index\.html$/i, '')
+        .replace(/\/+$/, '') || '/';
+
+      // Admin portal routes: /admin, /dashboard, /control, /cp, #admin
+      const isAdminRoute = 
+        cleanPath === '/admin' || 
+        cleanPath === '/dashboard' || 
+        cleanPath === '/control' || 
+        cleanPath === '/cp' ||
+        cleanPath.startsWith('/admin/') ||
+        hash.includes('admin');
+
       if (isAdminRoute) {
-        const isAuth = sessionStorage.getItem('ai_directory_admin_auth') === 'true';
-        if (isAuth) {
-          setIsAdminDashboardOpen(true);
-        } else {
-          setIsSecretAuthModalOpen(true);
+        setIsAdminDashboardOpen(true);
+        setIs404(false);
+        setIsKnowledgeHubOpen(false);
+        setSelectedKnowledgeArticleSlug(null);
+        setSelectedToolForModal(null);
+        setSelectedDigitalTool(null);
+        verifyAdminSession();
+        if (cleanPath === '/admin' || cleanPath === '/dashboard' || cleanPath === '/control' || cleanPath.startsWith('/admin/')) {
+          return;
         }
       }
 
@@ -430,24 +462,6 @@ export default function App() {
       if (hash.includes('prompts') || hash.includes('prompt') || search.includes('prompts')) {
         setIsPromptsLibraryOpen(true);
       }
-
-      // Check URL search parameters
-      const urlParams = new URLSearchParams(window.location.search);
-      
-      const langParam = urlParams.get('lang');
-      if (langParam === 'en' || langParam === 'fr' || langParam === 'ar') {
-        setLang(langParam);
-      }
-
-      const qParam = urlParams.get('q');
-      if (qParam) {
-        setFilterState((prev) => ({ ...prev, searchQuery: qParam }));
-      }
-
-      const rawPath = window.location.pathname || '/';
-      const cleanPath = rawPath
-        .replace(/\/index\.html$/i, '')
-        .replace(/\/+$/, '') || '/';
 
       if (cleanPath === '/404' || search.includes('404')) {
         setIs404(true);
@@ -654,37 +668,23 @@ export default function App() {
     };
   }, []);
 
-  // Keyboard shortcut listener for Secret Admin Access (Ctrl+Shift+A or Alt+A)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+Shift+A or Cmd+Shift+A or Alt+A
-      if (
-        ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) ||
-        (e.altKey && (e.key === 'A' || e.key === 'a'))
-      ) {
-        e.preventDefault();
-        setIsSecretAuthModalOpen((prev) => !prev);
+  // Server-Authoritative Admin Session Verification
+  const verifyAdminSession = useCallback(async () => {
+    setIsCheckingAdminAuth(true);
+    try {
+      const res = await checkAdminAuth();
+      if (res.authenticated && res.user) {
+        setIsAdminAuthenticated(true);
+        setCurrentUserRole(res.user.role || 'admin');
+      } else {
+        setIsAdminAuthenticated(false);
       }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  // Handler for Successful Secret Authentication
-  const handleSecretAuthSuccess = (openInNewTab: boolean) => {
-    setIsSecretAuthModalOpen(false);
-    sessionStorage.setItem('ai_directory_admin_auth', 'true');
-
-    if (openInNewTab) {
-      const standaloneUrl = `${window.location.origin}${window.location.pathname}#admin_portal`;
-      window.open(standaloneUrl, '_blank');
-      showNotification('جاري فتح لوحة الإدارة المستقلة في تبويب متصفح جديد...');
-    } else {
-      setIsAdminDashboardOpen(true);
-      showNotification('مرحباً بك في لوحة الإدارة والتحكم المستقلة');
+    } catch (e) {
+      setIsAdminAuthenticated(false);
+    } finally {
+      setIsCheckingAdminAuth(false);
     }
-  };
+  }, []);
 
   // Show Toast Alert
   const showNotification = useCallback((msg: string) => {
@@ -1154,8 +1154,69 @@ export default function App() {
   const topAd = advertisements.find((a) => a.placement === 'top_banner' && a.isActive);
   const gridAd = advertisements.find((a) => a.placement === 'grid_sponsored' && a.isActive);
 
-  // If Admin Dashboard is open, render the full WordPress-style CMS view with interactive modals
+  // Active Category object for SEO
+  const activeCategoryObj = useMemo(() => {
+    if (filterState.selectedCategory === 'all') return null;
+    return CATEGORIES.find((c) => c.id === filterState.selectedCategory) || null;
+  }, [filterState.selectedCategory]);
+
+  // Root SEO: dynamically compute for Category or Home
+  const rootSeoData = useMemo(() => {
+    if (activeCategoryObj) {
+      return getCategorySEO(activeCategoryObj, lang);
+    }
+    return getHomeSEO(lang, tools.length);
+  }, [activeCategoryObj, lang, tools.length]);
+
+  // Selected Knowledge Article resolution
+  const selectedKnowledgeArticle = useMemo(() => {
+    if (!selectedKnowledgeArticleSlug) return null;
+    return getArticleBySlug(selectedKnowledgeArticleSlug) || null;
+  }, [selectedKnowledgeArticleSlug]);
+
+  const localizedSelectedArticle = useMemo(() => {
+    if (!selectedKnowledgeArticle) return null;
+    return getLocalizedArticle(selectedKnowledgeArticle, lang);
+  }, [selectedKnowledgeArticle, lang]);
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.ar;
+
+  // If Admin route is accessed, verify authentication and render either login or full CMS
   if (isAdminDashboardOpen) {
+    if (isCheckingAdminAuth) {
+      return (
+        <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`} dir="rtl">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs font-semibold text-slate-400">جاري التحقق من جلسة الإدارة الآمنة...</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (!isAdminAuthenticated) {
+      return (
+        <AdminLoginView
+          onLoginSuccess={(user) => {
+            setIsAdminAuthenticated(true);
+            setCurrentUserRole(user.role || 'admin');
+            showNotification('تم تسجيل الدخول بنجاح. أهلاً بك في لوحة الإدارة.');
+          }}
+          onBackToHome={() => {
+            setIsAdminDashboardOpen(false);
+            setIsAdminAuthenticated(false);
+            if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/control')) {
+              window.history.pushState(null, '', '/');
+            }
+            if (window.location.hash.includes('admin')) {
+              window.history.pushState(null, '', window.location.pathname);
+            }
+          }}
+          isDarkMode={isDarkMode}
+        />
+      );
+    }
+
     return (
       <div className={`min-h-screen ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`} dir="rtl">
         {/* Global Notification Toast */}
@@ -1174,7 +1235,19 @@ export default function App() {
           members={members}
           settings={siteSettings}
           isDarkMode={isDarkMode}
-          onClose={() => setIsAdminDashboardOpen(false)}
+          onClose={async () => {
+            try {
+              await adminLogout();
+            } catch (e) {}
+            setIsAdminDashboardOpen(false);
+            setIsAdminAuthenticated(false);
+            if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/control')) {
+              window.history.pushState(null, '', '/');
+            }
+            if (window.location.hash.includes('admin')) {
+              window.history.pushState(null, '', window.location.pathname);
+            }
+          }}
           onOpenAddTool={() => {
             setEditingTool(null);
             setIsToolFormOpen(true);
@@ -1245,33 +1318,6 @@ export default function App() {
     );
   }
 
-  // Active Category object for SEO
-  const activeCategoryObj = useMemo(() => {
-    if (filterState.selectedCategory === 'all') return null;
-    return CATEGORIES.find((c) => c.id === filterState.selectedCategory) || null;
-  }, [filterState.selectedCategory]);
-
-  // Root SEO: dynamically compute for Category or Home
-  const rootSeoData = useMemo(() => {
-    if (activeCategoryObj) {
-      return getCategorySEO(activeCategoryObj, lang);
-    }
-    return getHomeSEO(lang, tools.length);
-  }, [activeCategoryObj, lang, tools.length]);
-
-  // Selected Knowledge Article resolution
-  const selectedKnowledgeArticle = useMemo(() => {
-    if (!selectedKnowledgeArticleSlug) return null;
-    return getArticleBySlug(selectedKnowledgeArticleSlug) || null;
-  }, [selectedKnowledgeArticleSlug]);
-
-  const localizedSelectedArticle = useMemo(() => {
-    if (!selectedKnowledgeArticle) return null;
-    return getLocalizedArticle(selectedKnowledgeArticle, lang);
-  }, [selectedKnowledgeArticle, lang]);
-
-  const t = TRANSLATIONS[lang] || TRANSLATIONS.ar;
-
   return (
     <div className={`min-h-screen transition-colors duration-200 ${
       isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-[#f4f6f8] text-slate-900'
@@ -1315,7 +1361,11 @@ export default function App() {
       {/* Dynamic SEO for Knowledge Article */}
       {isKnowledgeHubOpen && selectedKnowledgeArticle && localizedSelectedArticle && !is404 && (
         <SEO
-          title={`${localizedSelectedArticle.seoTitle} | adawatai.online`}
+          title={
+            localizedSelectedArticle.seoTitle.toLowerCase().includes('adawatai')
+              ? localizedSelectedArticle.seoTitle
+              : `${localizedSelectedArticle.seoTitle} | Adawatai`
+          }
           description={localizedSelectedArticle.seoDescription}
           canonical={`https://adawatai.online/knowledge/${selectedKnowledgeArticle.slug}`}
           robots="index, follow"
@@ -1415,10 +1465,9 @@ export default function App() {
         onOpenAboutUs={() => setIsAboutUsOpen(true)}
         onOpenPrivacyPolicy={() => setIsPrivacyPolicyOpen(true)}
         onOpenContact={() => setIsContactModalOpen(true)}
-        onOpenAdminDashboard={() => setIsAdminDashboardOpen(true)}
         onlyFavorites={filterState.onlyFavorites}
         onToggleFavoritesOnly={() => handleFilterChange({ onlyFavorites: !filterState.onlyFavorites })}
-        isAdmin={currentUserRole === 'admin' || currentUserRole === 'editor'}
+        isAdmin={false}
         lang={lang}
         onLanguageChange={handleLanguageChange}
       />
@@ -1712,14 +1761,6 @@ export default function App() {
         isDarkMode={isDarkMode}
       />
 
-      {/* Secret Admin Authentication Modal */}
-      <SecretAdminAuthModal
-        isOpen={isSecretAuthModalOpen}
-        onClose={() => setIsSecretAuthModalOpen(false)}
-        onAuthenticateSuccess={handleSecretAuthSuccess}
-        isDarkMode={isDarkMode}
-      />
-
       {/* About Us Modal (adawatai.online) */}
       <AboutUsModal
         isOpen={isAboutUsOpen}
@@ -1777,7 +1818,6 @@ export default function App() {
         onOpenPrivacyPolicy={() => setIsPrivacyPolicyOpen(true)}
         onOpenContact={() => setIsContactModalOpen(true)}
         onOpenAddModal={() => setIsVisitorSubmitOpen(true)}
-        onOpenSecretAdmin={() => setIsSecretAuthModalOpen(true)}
         lang={lang}
         onLanguageChange={handleLanguageChange}
       />
