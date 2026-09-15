@@ -356,15 +356,34 @@ export default function App() {
 
   // Handler: Navigate to tool from internal article link
   const handleNavigateToolFromArticle = useCallback((toolUrl: string) => {
-    setIsKnowledgeHubOpen(false);
-    setSelectedKnowledgeArticleSlug(null);
-    
     // Extract slug
     const cleanUrl = toolUrl.split('?')[0].split('#')[0];
     const parts = cleanUrl.split('/').filter(Boolean);
     const slug = parts[parts.length - 1];
 
     if (!slug) return;
+
+    // Check if it's a knowledge article link
+    if (cleanUrl.startsWith('/knowledge/')) {
+      const articleFound = getArticleBySlug(slug);
+      if (articleFound) {
+        setIsKnowledgeHubOpen(true);
+        setSelectedKnowledgeArticleSlug(articleFound.slug);
+        setSelectedToolForModal(null);
+        setSelectedDigitalTool(null);
+        setIs404(false);
+        try {
+          const currentUrl = new URL(window.location.href);
+          currentUrl.pathname = `/knowledge/${articleFound.slug}`;
+          window.history.pushState(null, '', currentUrl.pathname + currentUrl.search);
+        } catch (e) {}
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+    }
+
+    setIsKnowledgeHubOpen(false);
+    setSelectedKnowledgeArticleSlug(null);
 
     // Check if it matches a digital tool
     const digitalFound = getDigitalToolBySlug(slug);

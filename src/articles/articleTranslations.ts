@@ -1,5 +1,6 @@
 import { SupportedLanguage } from '../lib/i18n';
 import { KnowledgeArticle } from './types';
+import { CLUSTER_ARTICLE_TRANSLATIONS } from './cluster/translations';
 
 export interface LocalizedArticleContent {
   title: string;
@@ -13,6 +14,10 @@ export interface LocalizedArticleContent {
     subheading?: string;
     paragraphs: string[];
     bulletPoints?: string[];
+    comparisonTable?: {
+      headers: string[];
+      rows: string[][];
+    };
   }[];
   conclusion?: string;
   faq: { question: string; answer: string }[];
@@ -21,6 +26,7 @@ export interface LocalizedArticleContent {
 }
 
 export const ARTICLE_TRANSLATIONS: Record<string, Partial<Record<SupportedLanguage, LocalizedArticleContent>>> = {
+  ...CLUSTER_ARTICLE_TRANSLATIONS,
   'best-ai-tools-for-students-2026': {
     en: {
       title: 'Best AI Tools for Students in 2026',
@@ -508,7 +514,8 @@ export const getLocalizedArticle = (
         heading: s.heading,
         subheading: s.subheading,
         paragraphs: s.paragraphs,
-        bulletPoints: s.bulletPoints
+        bulletPoints: s.bulletPoints,
+        comparisonTable: s.comparisonTable
       })),
       conclusion: article.content.conclusion,
       faq: article.faq,

@@ -1,5 +1,6 @@
 import { ArticleCategory, KnowledgeArticle } from './types';
 import { SupportedLanguage } from '../lib/i18n';
+import { STUDENT_CLUSTER_ARTICLES } from './cluster';
 
 export const ARTICLE_CATEGORIES: ArticleCategory[] = [
   {
@@ -95,6 +96,7 @@ export const ARTICLE_CATEGORIES: ArticleCategory[] = [
 ];
 
 export const KNOWLEDGE_ARTICLES: KnowledgeArticle[] = [
+  ...STUDENT_CLUSTER_ARTICLES,
   // =========================================================================
   // ARTICLE 1: أفضل أدوات الذكاء الاصطناعي للطلاب في 2026
   // =========================================================================
@@ -130,8 +132,12 @@ export const KNOWLEDGE_ARTICLES: KnowledgeArticle[] = [
       'consensus'
     ],
     relatedArticles: [
+      'best-free-ai-tools-for-students-2026',
+      'best-ai-tools-for-academic-research-2026',
+      'best-ai-tools-for-summarizing-pdfs-2026',
+      'best-ai-note-taking-tools-for-students-2026',
+      'best-ai-presentation-tools-for-students-2026',
       'best-chatgpt-alternatives-2026',
-      'how-to-convert-pdf-to-word-easily',
       'best-ai-tools-for-presentations'
     ],
     seoTitle: 'أفضل أدوات الذكاء الاصطناعي للطلاب في 2026 | Adawatai',
@@ -988,12 +994,12 @@ export const getRelatedArticlesForArticle = (article: KnowledgeArticle): Knowled
     .map((s) => getArticleBySlug(s))
     .filter((a): a is KnowledgeArticle => a !== undefined);
 
-  if (bySlug.length >= 3) return bySlug.slice(0, 3);
+  if (bySlug.length >= 6) return bySlug.slice(0, 6);
 
   // Fill up with same category articles
   const sameCategory = KNOWLEDGE_ARTICLES.filter(
     (a) => a.id !== article.id && a.isPublished && a.category === article.category && !bySlug.some((b) => b.id === a.id)
   );
 
-  return [...bySlug, ...sameCategory].slice(0, 3);
+  return [...bySlug, ...sameCategory].slice(0, 6);
 };

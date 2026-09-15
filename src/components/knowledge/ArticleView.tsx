@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BookOpen, Clock, Calendar, ChevronRight, ArrowLeft, ArrowRight, 
   Share2, Check, ExternalLink, Sparkles, HelpCircle, 
@@ -56,6 +56,129 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
       ? currentCategory.nameFr
       : currentCategory.nameAr
     : article.category;
+
+  // SEO metadata & Structured Data (JSON-LD) Injection
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    // 1. Page Title
+    const originalTitle = document.title;
+    const pageTitle = loc.seoTitle || `${loc.title} | Adawatai`;
+    document.title = pageTitle;
+
+    // 2. Meta Description
+    const metaDescription = document.querySelector('meta[name="description"]');
+    const prevDescription = metaDescription?.getAttribute('content') || '';
+    if (metaDescription) {
+      metaDescription.setAttribute('content', loc.seoDescription || loc.description);
+    }
+
+    // 3. OpenGraph Tags
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', pageTitle);
+
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute('content', loc.seoDescription || loc.description);
+
+    // 4. Structured Data (Schema.org JSON-LD)
+    const canonicalUrl = `https://adawatai.online/knowledge/${article.slug}`;
+    const structuredData = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Article',
+          '@id': `${canonicalUrl}#article`,
+          isPartOf: {
+            '@type': 'WebSite',
+            '@id': 'https://adawatai.online/#website',
+            name: 'Adawatai',
+            url: 'https://adawatai.online/'
+          },
+          headline: loc.title,
+          description: loc.seoDescription || loc.description,
+          inLanguage: lang === 'ar' ? 'ar' : lang === 'fr' ? 'fr' : 'en',
+          mainEntityOfPage: canonicalUrl,
+          datePublished: article.publishedAt,
+          dateModified: article.updatedAt,
+          author: {
+            '@type': 'Organization',
+            name: article.author.name,
+            url: 'https://adawatai.online'
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: 'Adawatai',
+            url: 'https://adawatai.online',
+            logo: {
+              '@type': 'ImageObject',
+              url: 'https://adawatai.online/logo.svg'
+            }
+          }
+        },
+        {
+          '@type': 'BreadcrumbList',
+          '@id': `${canonicalUrl}#breadcrumb`,
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: lang === 'ar' ? 'الرئيسية' : 'Home',
+              item: 'https://adawatai.online/'
+            },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: lang === 'ar' ? 'مركز المعرفة' : 'Knowledge',
+              item: 'https://adawatai.online/knowledge'
+            },
+            {
+              '@type': 'ListItem',
+              position: 3,
+              name: loc.title,
+              item: canonicalUrl
+            }
+          ]
+        },
+        ...(loc.faq && loc.faq.length > 0
+          ? [
+              {
+                '@type': 'FAQPage',
+                '@id': `${canonicalUrl}#faq`,
+                mainEntity: loc.faq.map((f) => ({
+                  '@type': 'Question',
+                  name: f.question,
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: f.answer
+                  }
+                }))
+              }
+            ]
+          : [])
+      ]
+    };
+
+    const scriptId = 'article-structured-data';
+    let scriptTag = document.getElementById(scriptId) as HTMLScriptElement | null;
+    if (!scriptTag) {
+      scriptTag = document.createElement('script');
+      scriptTag.id = scriptId;
+      scriptTag.type = 'application/ld+json';
+      document.head.appendChild(scriptTag);
+    }
+    scriptTag.textContent = JSON.stringify(structuredData);
+
+    return () => {
+      document.title = originalTitle;
+      if (metaDescription && prevDescription) {
+        metaDescription.setAttribute('content', prevDescription);
+      }
+      const existingScript = document.getElementById(scriptId);
+      if (existingScript) {
+        existingScript.remove();
+      }
+    };
+  }, [article.slug, article.publishedAt, article.updatedAt, article.author.name, loc, lang]);
 
   const handleCopyLink = () => {
     if (typeof window !== 'undefined') {
@@ -396,32 +519,35 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                   )}
 
                   {/* Comparison table */}
-                  {originalSec?.comparisonTable && (
-                    <div className="my-6 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
-                      <table className="w-full text-right text-xs sm:text-sm">
-                        <thead className={`border-b ${isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-slate-100 border-slate-200 text-slate-800'}`}>
-                          <tr>
-                            {originalSec.comparisonTable.headers.map((h, hIdx) => (
-                              <th key={hIdx} className="p-3.5 font-bold">
-                                {h}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody className={`divide-y ${isDarkMode ? 'divide-slate-800 bg-slate-950/60' : 'divide-slate-200 bg-white'}`}>
-                          {originalSec.comparisonTable.rows.map((row, rIdx) => (
-                            <tr key={rIdx} className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
-                              {row.map((cell, cIdx) => (
-                                <td key={cIdx} className={`p-3.5 ${cIdx === 0 ? 'font-bold text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300'}`}>
-                                  {cell}
-                                </td>
+                  {((sec as any).comparisonTable || originalSec?.comparisonTable) && (() => {
+                    const table = (sec as any).comparisonTable || originalSec?.comparisonTable;
+                    return (
+                      <div className="my-6 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+                        <table className="w-full min-w-[580px] text-right text-xs sm:text-sm">
+                          <thead className={`border-b ${isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-slate-100 border-slate-200 text-slate-800'}`}>
+                            <tr>
+                              {table.headers.map((h: string, hIdx: number) => (
+                                <th key={hIdx} className="p-3.5 font-bold whitespace-nowrap">
+                                  {h}
+                                </th>
                               ))}
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+                          </thead>
+                          <tbody className={`divide-y ${isDarkMode ? 'divide-slate-800 bg-slate-950/60' : 'divide-slate-200 bg-white'}`}>
+                            {table.rows.map((row: string[], rIdx: number) => (
+                              <tr key={rIdx} className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+                                {row.map((cell: string, cIdx: number) => (
+                                  <td key={cIdx} className={`p-3.5 ${cIdx === 0 ? 'font-bold text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300'}`}>
+                                    {renderFormattedText(cell)}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })()}
                 </section>
               );
             })}
