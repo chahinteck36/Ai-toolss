@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { CATEGORIES, INITIAL_TOOLS } from './data/toolsData';
 import { 
   AiTool, 
@@ -11,37 +11,22 @@ import {
   DigitalTool
 } from './types';
 import { DIGITAL_TOOLS, getDigitalToolBySlug, digitalToolToAiTool } from './data/digitalToolsRegistry';
-import { DigitalToolPage } from './components/digital-tools/DigitalToolPage';
 import { Header } from './components/Header';
 import { HeroSection } from './components/HeroSection';
 import { FilterBar } from './components/FilterBar';
 import { ToolCard } from './components/ToolCard';
-import { ToolDetailModal } from './components/ToolDetailModal';
-import { ToolFormModal } from './components/ToolFormModal';
-import { AdFormModal } from './components/AdFormModal';
-import { VisitorSubmitModal } from './components/VisitorSubmitModal';
-import { QuickAIAssistantModal } from './components/QuickAIAssistantModal';
-import { PromptsLibraryModal } from './components/PromptsLibraryModal';
-import { AdminDashboard } from './components/AdminDashboard';
-import { AdminLoginView } from './components/AdminLoginView';
-import { checkAdminAuth, adminLogout } from './lib/adminApi';
-import { AboutUsModal } from './components/AboutUsModal';
-import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
-import { ContactModal } from './components/ContactModal';
 import { SponsoredBanner } from './components/SponsoredBanner';
 import { StickyBottomAd } from './components/StickyBottomAd';
 import { Footer } from './components/Footer';
-import { NotFoundPage } from './components/NotFoundPage';
-import { KnowledgeHub } from './components/knowledge/KnowledgeHub';
-import { ArticleView } from './components/knowledge/ArticleView';
-import { getArticleBySlug, KNOWLEDGE_ARTICLES } from './articles/articleData';
-import { getLocalizedArticle } from './articles/articleTranslations';
 import { CategoriesSection } from './components/home/CategoriesSection';
 import { ValuePropositionSection } from './components/home/ValuePropositionSection';
 import { HomeKnowledgeSection } from './components/home/HomeKnowledgeSection';
 import { SEO } from './components/SEO';
 import { getHomeSEO, getCategorySEO } from './lib/seoHelpers';
 import { SupportedLanguage, TRANSLATIONS } from './lib/i18n';
+import { checkAdminAuth, adminLogout } from './lib/adminApi';
+import { getArticleBySlug, KNOWLEDGE_ARTICLES } from './articles/articleData';
+import { getLocalizedArticle } from './articles/articleTranslations';
 import { 
   fetchToolsFromFirestore, 
   saveToolToFirestore, 
@@ -63,7 +48,35 @@ import {
   DEFAULT_SETTINGS 
 } from './lib/firebase';
 import { ToolSearchEngine } from './lib/searchEngine';
-import { Sparkles, SearchX, RotateCcw, PlusCircle, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Sparkles, SearchX, RotateCcw, PlusCircle, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+
+// Lazy-loaded Views and Modals for Fast Initial Page Load
+const DigitalToolPage = lazy(() => import('./components/digital-tools/DigitalToolPage').then(m => ({ default: m.DigitalToolPage })));
+const ToolDetailModal = lazy(() => import('./components/ToolDetailModal').then(m => ({ default: m.ToolDetailModal })));
+const ToolFormModal = lazy(() => import('./components/ToolFormModal').then(m => ({ default: m.ToolFormModal })));
+const AdFormModal = lazy(() => import('./components/AdFormModal').then(m => ({ default: m.AdFormModal })));
+const VisitorSubmitModal = lazy(() => import('./components/VisitorSubmitModal').then(m => ({ default: m.VisitorSubmitModal })));
+const QuickAIAssistantModal = lazy(() => import('./components/QuickAIAssistantModal').then(m => ({ default: m.QuickAIAssistantModal })));
+const PromptsLibraryModal = lazy(() => import('./components/PromptsLibraryModal').then(m => ({ default: m.PromptsLibraryModal })));
+const AdminDashboard = lazy(() => import('./components/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const AdminLoginView = lazy(() => import('./components/AdminLoginView').then(m => ({ default: m.AdminLoginView })));
+const AboutUsModal = lazy(() => import('./components/AboutUsModal').then(m => ({ default: m.AboutUsModal })));
+const PrivacyPolicyModal = lazy(() => import('./components/PrivacyPolicyModal').then(m => ({ default: m.PrivacyPolicyModal })));
+const ContactModal = lazy(() => import('./components/ContactModal').then(m => ({ default: m.ContactModal })));
+const NotFoundPage = lazy(() => import('./components/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
+const KnowledgeHub = lazy(() => import('./components/knowledge/KnowledgeHub').then(m => ({ default: m.KnowledgeHub })));
+const ArticleView = lazy(() => import('./components/knowledge/ArticleView').then(m => ({ default: m.ArticleView })));
+
+const ViewLoadingFallback: React.FC<{ isDarkMode: boolean; isAr: boolean }> = ({ isDarkMode, isAr }) => (
+  <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+    <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shadow-xs">
+      <Loader2 className="w-5 h-5 animate-spin" />
+    </div>
+    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+      {isAr ? 'جارٍ التحميل...' : 'Loading...'}
+    </span>
+  </div>
+);
 
 const DIGITAL_AI_TOOLS: AiTool[] = DIGITAL_TOOLS.map(digitalToolToAiTool);
 const ALL_BUILTIN_TOOLS: AiTool[] = [...DIGITAL_AI_TOOLS, ...INITIAL_TOOLS];
@@ -732,26 +745,26 @@ export default function App() {
     setTimeout(() => setGlobalNotification(null), 4500);
   }, []);
 
-  // Fetch Firestore Data on Mount & Sync
+  // Fetch Firestore Data on Mount & Sync (Optimized with in-memory caching)
   const loadFirestoreData = useCallback(async () => {
     try {
       setIsSyncingFirestore(true);
       const [firestoreTools, firestoreSubmissions, firestoreAds, settings] = await Promise.all([
         fetchToolsFromFirestore(),
-        fetchSubmissions(),
+        isAdminAuthenticated ? fetchSubmissions() : Promise.resolve([]),
         fetchAds(),
         fetchSiteSettings()
       ]);
 
-      if (firestoreTools.length > 0) {
+      if (firestoreTools && firestoreTools.length > 0) {
         const firestoreIds = new Set(firestoreTools.map((t) => t.id));
         const missingBuiltins = ALL_BUILTIN_TOOLS.filter((b) => !firestoreIds.has(b.id));
         setTools([...missingBuiltins, ...firestoreTools]);
       }
-      if (firestoreSubmissions.length > 0) {
+      if (firestoreSubmissions && firestoreSubmissions.length > 0) {
         setSubmissions(firestoreSubmissions);
       }
-      if (firestoreAds.length > 0) {
+      if (firestoreAds && firestoreAds.length > 0) {
         setAdvertisements(firestoreAds);
         try {
           localStorage.setItem('ai_directory_ads_synced', 'true');
@@ -766,12 +779,17 @@ export default function App() {
     } finally {
       setIsSyncingFirestore(false);
     }
-  }, []);
+  }, [isAdminAuthenticated]);
 
+  // Load published data once on mount without permanent listeners for regular visitors
   useEffect(() => {
     loadFirestoreData();
+  }, [loadFirestoreData]);
 
-    // Set up real-time live synchronization for Ads and Tools across all visitors
+  // Real-time live synchronization is strictly restricted to authenticated Admin Dashboard
+  useEffect(() => {
+    if (!isAdminDashboardOpen || !isAdminAuthenticated) return;
+
     const unsubscribeAds = subscribeToAds((liveAds) => {
       if (liveAds && liveAds.length > 0) {
         setAdvertisements(liveAds);
@@ -802,7 +820,7 @@ export default function App() {
       unsubscribeAds();
       unsubscribeTools();
     };
-  }, [loadFirestoreData]);
+  }, [isAdminDashboardOpen, isAdminAuthenticated]);
 
   // Fuse.js Search Engine instance
   const searchEngine = useMemo(() => {
@@ -1247,127 +1265,137 @@ export default function App() {
 
     if (!isAdminAuthenticated) {
       return (
-        <AdminLoginView
-          onLoginSuccess={(user) => {
-            setIsAdminAuthenticated(true);
-            setCurrentUserRole(user.role || 'admin');
-            showNotification('تم تسجيل الدخول بنجاح. أهلاً بك في لوحة الإدارة.');
-          }}
-          onBackToHome={() => {
-            setIsAdminDashboardOpen(false);
-            setIsAdminAuthenticated(false);
-            if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/control')) {
-              window.history.pushState(null, '', '/');
-            }
-            if (window.location.hash.includes('admin')) {
-              window.history.pushState(null, '', window.location.pathname);
-            }
-          }}
-          isDarkMode={isDarkMode}
-          lang={lang}
-        />
+        <Suspense fallback={<ViewLoadingFallback isDarkMode={isDarkMode} isAr={lang === 'ar'} />}>
+          <AdminLoginView
+            onLoginSuccess={(user) => {
+              setIsAdminAuthenticated(true);
+              setCurrentUserRole(user.role || 'admin');
+              showNotification('تم تسجيل الدخول بنجاح. أهلاً بك في لوحة الإدارة.');
+            }}
+            onBackToHome={() => {
+              setIsAdminDashboardOpen(false);
+              setIsAdminAuthenticated(false);
+              if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/control')) {
+                window.history.pushState(null, '', '/');
+              }
+              if (window.location.hash.includes('admin')) {
+                window.history.pushState(null, '', window.location.pathname);
+              }
+            }}
+            isDarkMode={isDarkMode}
+            lang={lang}
+          />
+        </Suspense>
       );
     }
 
     return (
-      <div className={`min-h-screen ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-        {/* Global Notification Toast */}
-        {globalNotification && (
-          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-slate-900 text-white border border-indigo-500 shadow-2xl flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-top duration-200" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>{globalNotification}</span>
-          </div>
-        )}
+      <Suspense fallback={<ViewLoadingFallback isDarkMode={isDarkMode} isAr={lang === 'ar'} />}>
+        <div className={`min-h-screen ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+          {/* Global Notification Toast */}
+          {globalNotification && (
+            <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-slate-900 text-white border border-indigo-500 shadow-2xl flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-top duration-200" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>{globalNotification}</span>
+            </div>
+          )}
 
-        <AdminDashboard
-          tools={tools}
-          categories={CATEGORIES}
-          submissions={submissions}
-          advertisements={advertisements}
-          members={members}
-          settings={siteSettings}
-          isDarkMode={isDarkMode}
-          onClose={async () => {
-            try {
-              await adminLogout();
-            } catch (e) {}
-            setIsAdminDashboardOpen(false);
-            setIsAdminAuthenticated(false);
-            if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/control')) {
-              window.history.pushState(null, '', '/');
-            }
-            if (window.location.hash.includes('admin')) {
-              window.history.pushState(null, '', window.location.pathname);
-            }
-          }}
-          onOpenAddTool={() => {
-            setEditingTool(null);
-            setIsToolFormOpen(true);
-          }}
-          onEditTool={(t) => {
-            setEditingTool(t);
-            setIsToolFormOpen(true);
-          }}
-          onDeleteTool={handleDeleteTool}
-          onToggleToolFeatured={handleToggleToolFeatured}
-          onApproveSubmission={handleApproveSubmission}
-          onRejectSubmission={handleRejectSubmission}
-          onDeleteSubmission={handleDeleteSubmission}
-          onOpenAddAd={() => {
-            setEditingAd(null);
-            setIsAdFormOpen(true);
-          }}
-          onEditAd={(ad) => {
-            setEditingAd(ad);
-            setIsAdFormOpen(true);
-          }}
-          onDeleteAd={handleDeleteAd}
-          onToggleAdStatus={handleToggleAdStatus}
-          onSeedInitialData={handleSeedInitialData}
-          onUpdateMemberRole={handleUpdateMemberRole}
-          onSaveSettings={handleSaveSiteSettings}
-          isSyncingFirestore={isSyncingFirestore}
-          onManualSync={loadFirestoreData}
-          onPushAdsToFirestore={handlePushAdsToFirestore}
-          onImportBackup={handleImportBackup}
-          currentRole={currentUserRole}
-          onRoleChange={setCurrentUserRole}
-        />
+          <AdminDashboard
+            tools={tools}
+            categories={CATEGORIES}
+            submissions={submissions}
+            advertisements={advertisements}
+            members={members}
+            settings={siteSettings}
+            isDarkMode={isDarkMode}
+            onClose={async () => {
+              try {
+                await adminLogout();
+              } catch (e) {}
+              setIsAdminDashboardOpen(false);
+              setIsAdminAuthenticated(false);
+              if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/control')) {
+                window.history.pushState(null, '', '/');
+              }
+              if (window.location.hash.includes('admin')) {
+                window.history.pushState(null, '', window.location.pathname);
+              }
+            }}
+            onOpenAddTool={() => {
+              setEditingTool(null);
+              setIsToolFormOpen(true);
+            }}
+            onEditTool={(t) => {
+              setEditingTool(t);
+              setIsToolFormOpen(true);
+            }}
+            onDeleteTool={handleDeleteTool}
+            onToggleToolFeatured={handleToggleToolFeatured}
+            onApproveSubmission={handleApproveSubmission}
+            onRejectSubmission={handleRejectSubmission}
+            onDeleteSubmission={handleDeleteSubmission}
+            onOpenAddAd={() => {
+              setEditingAd(null);
+              setIsAdFormOpen(true);
+            }}
+            onEditAd={(ad) => {
+              setEditingAd(ad);
+              setIsAdFormOpen(true);
+            }}
+            onDeleteAd={handleDeleteAd}
+            onToggleAdStatus={handleToggleAdStatus}
+            onSeedInitialData={handleSeedInitialData}
+            onUpdateMemberRole={handleUpdateMemberRole}
+            onSaveSettings={handleSaveSiteSettings}
+            isSyncingFirestore={isSyncingFirestore}
+            onManualSync={loadFirestoreData}
+            onPushAdsToFirestore={handlePushAdsToFirestore}
+            onImportBackup={handleImportBackup}
+            currentRole={currentUserRole}
+            onRoleChange={setCurrentUserRole}
+          />
 
-        {/* Admin Tool Create/Edit Modal */}
-        <ToolFormModal
-          isOpen={isToolFormOpen}
-          onClose={() => {
-            setIsToolFormOpen(false);
-            setEditingTool(null);
-          }}
-          onSave={handleSaveTool}
-          initialTool={editingTool}
-          categories={CATEGORIES}
-          isDarkMode={isDarkMode}
-        />
+          {/* Admin Tool Create/Edit Modal */}
+          {isToolFormOpen && (
+            <ToolFormModal
+              isOpen={isToolFormOpen}
+              onClose={() => {
+                setIsToolFormOpen(false);
+                setEditingTool(null);
+              }}
+              onSave={handleSaveTool}
+              initialTool={editingTool}
+              categories={CATEGORIES}
+              isDarkMode={isDarkMode}
+            />
+          )}
 
-        {/* Admin Ad Create/Edit Modal */}
-        <AdFormModal
-          isOpen={isAdFormOpen}
-          onClose={() => {
-            setIsAdFormOpen(false);
-            setEditingAd(null);
-          }}
-          onSave={handleSaveAd}
-          initialAd={editingAd}
-          isDarkMode={isDarkMode}
-        />
+          {/* Admin Ad Create/Edit Modal */}
+          {isAdFormOpen && (
+            <AdFormModal
+              isOpen={isAdFormOpen}
+              onClose={() => {
+                setIsAdFormOpen(false);
+                setEditingAd(null);
+              }}
+              onSave={handleSaveAd}
+              initialAd={editingAd}
+              isDarkMode={isDarkMode}
+            />
+          )}
 
-        {/* Prompts and Commands Library Modal */}
-        <PromptsLibraryModal
-          isOpen={isPromptsLibraryOpen}
-          onClose={() => setIsPromptsLibraryOpen(false)}
-          initialSelectedTool={promptsLibraryToolFilter}
-          isDarkMode={isDarkMode}
-          lang={lang}
-        />
-      </div>
+          {/* Prompts and Commands Library Modal */}
+          {isPromptsLibraryOpen && (
+            <PromptsLibraryModal
+              isOpen={isPromptsLibraryOpen}
+              onClose={() => setIsPromptsLibraryOpen(false)}
+              initialSelectedTool={promptsLibraryToolFilter}
+              isDarkMode={isDarkMode}
+              lang={lang}
+            />
+          )}
+        </div>
+      </Suspense>
     );
   }
 
@@ -1525,6 +1553,7 @@ export default function App() {
         onLanguageChange={handleLanguageChange}
       />
 
+      <Suspense fallback={<ViewLoadingFallback isDarkMode={isDarkMode} isAr={lang === 'ar'} />}>
       {is404 ? (
         <NotFoundPage
           onBackHome={() => {
@@ -1790,147 +1819,169 @@ export default function App() {
       </main>
       </>
       )}
+      </Suspense>
 
-      {/* Tool Detail Modal */}
-      <ToolDetailModal
-        tool={selectedToolForModal}
-        isOpen={!!selectedToolForModal}
-        onClose={handleCloseToolDetails}
-        isFavorite={selectedToolForModal ? !!favorites[selectedToolForModal.id] : false}
-        userRating={selectedToolForModal ? userRatings[selectedToolForModal.id] : undefined}
-        userNote={selectedToolForModal ? userNotes[selectedToolForModal.id] || '' : ''}
-        onToggleFavorite={handleToggleFavorite}
-        onRateTool={handleRateTool}
-        onSaveNote={handleSaveNote}
-        onSelectTool={(tool) => {
-          handleOpenToolDetails(tool);
-        }}
-        onOpenPromptsForTool={(toolName) => {
-          setPromptsLibraryToolFilter(toolName);
-          setIsPromptsLibraryOpen(true);
-        }}
-        onSelectCategory={(catId) => {
-          handleCloseToolDetails();
-          handleFilterChange({ selectedCategory: catId, searchQuery: '' });
-          const el = document.getElementById('tools-catalog');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }}
-        onSelectTag={(tag) => {
-          handleCloseToolDetails();
-          handleFilterChange({ searchQuery: tag });
-          const el = document.getElementById('tools-catalog');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }}
-        allTools={tools}
-        advertisements={advertisements}
-        isDarkMode={isDarkMode}
-        lang={lang}
-      />
+      {/* Lazy Modals Container */}
+      <Suspense fallback={null}>
+        {/* Tool Detail Modal */}
+        {selectedToolForModal && (
+          <ToolDetailModal
+            tool={selectedToolForModal}
+            isOpen={!!selectedToolForModal}
+            onClose={handleCloseToolDetails}
+            isFavorite={selectedToolForModal ? !!favorites[selectedToolForModal.id] : false}
+            userRating={selectedToolForModal ? userRatings[selectedToolForModal.id] : undefined}
+            userNote={selectedToolForModal ? userNotes[selectedToolForModal.id] || '' : ''}
+            onToggleFavorite={handleToggleFavorite}
+            onRateTool={handleRateTool}
+            onSaveNote={handleSaveNote}
+            onSelectTool={(tool) => {
+              handleOpenToolDetails(tool);
+            }}
+            onOpenPromptsForTool={(toolName) => {
+              setPromptsLibraryToolFilter(toolName);
+              setIsPromptsLibraryOpen(true);
+            }}
+            onSelectCategory={(catId) => {
+              handleCloseToolDetails();
+              handleFilterChange({ selectedCategory: catId, searchQuery: '' });
+              const el = document.getElementById('tools-catalog');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+            onSelectTag={(tag) => {
+              handleCloseToolDetails();
+              handleFilterChange({ searchQuery: tag });
+              const el = document.getElementById('tools-catalog');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+            allTools={tools}
+            advertisements={advertisements}
+            isDarkMode={isDarkMode}
+            lang={lang}
+          />
+        )}
 
-      {/* Prompts and Commands Library Modal (مكتبة الأوامر والبرومبتات) */}
-      <PromptsLibraryModal
-        isOpen={isPromptsLibraryOpen}
-        onClose={() => {
-          setIsPromptsLibraryOpen(false);
-          if (window.location.hash.includes('prompt')) {
-            window.location.hash = '';
-          }
-        }}
-        initialSelectedTool={promptsLibraryToolFilter}
-        isDarkMode={isDarkMode}
-        lang={lang}
-      />
+        {/* Prompts and Commands Library Modal (مكتبة الأوامر والبرومبتات) */}
+        {isPromptsLibraryOpen && (
+          <PromptsLibraryModal
+            isOpen={isPromptsLibraryOpen}
+            onClose={() => {
+              setIsPromptsLibraryOpen(false);
+              if (window.location.hash.includes('prompt')) {
+                window.location.hash = '';
+              }
+            }}
+            initialSelectedTool={promptsLibraryToolFilter}
+            isDarkMode={isDarkMode}
+            lang={lang}
+          />
+        )}
 
-      {/* Admin Tool Create/Edit Modal */}
-      <ToolFormModal
-        isOpen={isToolFormOpen}
-        onClose={() => {
-          setIsToolFormOpen(false);
-          setEditingTool(null);
-        }}
-        onSave={handleSaveTool}
-        initialTool={editingTool}
-        categories={CATEGORIES}
-        isDarkMode={isDarkMode}
-      />
+        {/* Admin Tool Create/Edit Modal */}
+        {isToolFormOpen && (
+          <ToolFormModal
+            isOpen={isToolFormOpen}
+            onClose={() => {
+              setIsToolFormOpen(false);
+              setEditingTool(null);
+            }}
+            onSave={handleSaveTool}
+            initialTool={editingTool}
+            categories={CATEGORIES}
+            isDarkMode={isDarkMode}
+          />
+        )}
 
-      {/* Admin Ad Create/Edit Modal */}
-      <AdFormModal
-        isOpen={isAdFormOpen}
-        onClose={() => {
-          setIsAdFormOpen(false);
-          setEditingAd(null);
-        }}
-        onSave={handleSaveAd}
-        initialAd={editingAd}
-        isDarkMode={isDarkMode}
-      />
+        {/* Admin Ad Create/Edit Modal */}
+        {isAdFormOpen && (
+          <AdFormModal
+            isOpen={isAdFormOpen}
+            onClose={() => {
+              setIsAdFormOpen(false);
+              setEditingAd(null);
+            }}
+            onSave={handleSaveAd}
+            initialAd={editingAd}
+            isDarkMode={isDarkMode}
+          />
+        )}
 
-      {/* Visitor Suggest Tool Modal */}
-      <VisitorSubmitModal
-        isOpen={isVisitorSubmitOpen}
-        onClose={() => setIsVisitorSubmitOpen(false)}
-        categories={CATEGORIES}
-        isDarkMode={isDarkMode}
-        lang={lang}
-        onSuccessNotification={showNotification}
-      />
+        {/* Visitor Suggest Tool Modal */}
+        {isVisitorSubmitOpen && (
+          <VisitorSubmitModal
+            isOpen={isVisitorSubmitOpen}
+            onClose={() => setIsVisitorSubmitOpen(false)}
+            categories={CATEGORIES}
+            isDarkMode={isDarkMode}
+            lang={lang}
+            onSuccessNotification={showNotification}
+          />
+        )}
 
-      {/* Quick AI Task Matcher / Assistant Modal */}
-      <QuickAIAssistantModal
-        isOpen={isSmartFinderOpen}
-        onClose={() => setIsSmartFinderOpen(false)}
-        allTools={tools}
-        onSelectTool={(tool) => {
-          setIsSmartFinderOpen(false);
-          handleOpenToolDetails(tool);
-        }}
-        isDarkMode={isDarkMode}
-        lang={lang}
-      />
+        {/* Quick AI Task Matcher / Assistant Modal */}
+        {isSmartFinderOpen && (
+          <QuickAIAssistantModal
+            isOpen={isSmartFinderOpen}
+            onClose={() => setIsSmartFinderOpen(false)}
+            allTools={tools}
+            onSelectTool={(tool) => {
+              setIsSmartFinderOpen(false);
+              handleOpenToolDetails(tool);
+            }}
+            isDarkMode={isDarkMode}
+            lang={lang}
+          />
+        )}
 
-      {/* About Us Modal (adawatai.online) */}
-      <AboutUsModal
-        isOpen={isAboutUsOpen}
-        onClose={() => {
-          setIsAboutUsOpen(false);
-          if (window.location.hash.includes('about')) {
-            window.location.hash = '';
-          }
-        }}
-        isDarkMode={isDarkMode}
-        lang={lang}
-        onOpenPrivacyPolicy={() => setIsPrivacyPolicyOpen(true)}
-        onOpenContact={() => setIsContactModalOpen(true)}
-        onOpenSuggestTool={() => setIsVisitorSubmitOpen(true)}
-      />
+        {/* About Us Modal (adawatai.online) */}
+        {isAboutUsOpen && (
+          <AboutUsModal
+            isOpen={isAboutUsOpen}
+            onClose={() => {
+              setIsAboutUsOpen(false);
+              if (window.location.hash.includes('about')) {
+                window.location.hash = '';
+              }
+            }}
+            isDarkMode={isDarkMode}
+            lang={lang}
+            onOpenPrivacyPolicy={() => setIsPrivacyPolicyOpen(true)}
+            onOpenContact={() => setIsContactModalOpen(true)}
+            onOpenSuggestTool={() => setIsVisitorSubmitOpen(true)}
+          />
+        )}
 
-      {/* Privacy Policy Modal (adawatai.online) */}
-      <PrivacyPolicyModal
-        isOpen={isPrivacyPolicyOpen}
-        onClose={() => {
-          setIsPrivacyPolicyOpen(false);
-          if (window.location.hash.includes('privacy')) {
-            window.location.hash = '';
-          }
-        }}
-        isDarkMode={isDarkMode}
-        lang={lang}
-        onOpenAboutUs={() => setIsAboutUsOpen(true)}
-      />
+        {/* Privacy Policy Modal (adawatai.online) */}
+        {isPrivacyPolicyOpen && (
+          <PrivacyPolicyModal
+            isOpen={isPrivacyPolicyOpen}
+            onClose={() => {
+              setIsPrivacyPolicyOpen(false);
+              if (window.location.hash.includes('privacy')) {
+                window.location.hash = '';
+              }
+            }}
+            isDarkMode={isDarkMode}
+            lang={lang}
+            onOpenAboutUs={() => setIsAboutUsOpen(true)}
+          />
+        )}
 
-      {/* Contact Admin Modal (gmouhamed36@gmail.com / contact@adawatai.online) */}
-      <ContactModal
-        isOpen={isContactModalOpen}
-        onClose={() => {
-          setIsContactModalOpen(false);
-          if (window.location.hash.includes('contact')) {
-            window.location.hash = '';
-          }
-        }}
-        isDarkMode={isDarkMode}
-        lang={lang}
-      />
+        {/* Contact Admin Modal (gmouhamed36@gmail.com / contact@adawatai.online) */}
+        {isContactModalOpen && (
+          <ContactModal
+            isOpen={isContactModalOpen}
+            onClose={() => {
+              setIsContactModalOpen(false);
+              if (window.location.hash.includes('contact')) {
+                window.location.hash = '';
+              }
+            }}
+            isDarkMode={isDarkMode}
+            lang={lang}
+          />
+        )}
+      </Suspense>
 
       {/* Footer */}
       <Footer

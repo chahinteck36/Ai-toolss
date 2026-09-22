@@ -109,14 +109,37 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   maintenanceMode: false
 };
 
+// ----------------- IN-MEMORY CACHE (HIGH PERFORMANCE) ----------------- //
+let cachedTools: AiTool[] | null = null;
+let lastToolsFetch = 0;
+let cachedAds: Advertisement[] | null = null;
+let lastAdsFetch = 0;
+let cachedSettings: SiteSettings | null = null;
+let lastSettingsFetch = 0;
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes cache for public read queries
+
+export function invalidateFirebaseCache(): void {
+  cachedTools = null;
+  cachedAds = null;
+  cachedSettings = null;
+  lastToolsFetch = 0;
+  lastAdsFetch = 0;
+  lastSettingsFetch = 0;
+}
+
 // ----------------- FIRESTORE DATA REPOSITORY ----------------- //
 
 // Tools API
-export async function fetchToolsFromFirestore(): Promise<AiTool[]> {
+export async function fetchToolsFromFirestore(forceRefresh = false): Promise<AiTool[]> {
+  if (!forceRefresh && cachedTools && (Date.now() - lastToolsFetch < CACHE_TTL_MS)) {
+    return cachedTools;
+  }
   try {
     const colRef = collection(db, 'tools');
     const snapshot = await getDocs(colRef);
     if (snapshot.empty) {
+      cachedTools = [];
+      lastToolsFetch = Date.now();
       return [];
     }
     const list: AiTool[] = [];
@@ -127,10 +150,12 @@ export async function fetchToolsFromFirestore(): Promise<AiTool[]> {
         ...data
       } as AiTool);
     });
+    cachedTools = list;
+    lastToolsFetch = Date.now();
     return list;
   } catch (error) {
     console.warn('Firestore fetch tools failed or offline, fallback', error);
-    return [];
+    return cachedTools || [];
   }
 }
 
@@ -138,12 +163,23 @@ export async function saveToolToFirestore(tool: AiTool): Promise<string> {
   try {
     const toolId = tool.id || `tool-${Date.now()}`;
     const docRef = doc(db, 'tools', toolId);
-    await setDoc(docRef, {
+    const toolToSave = {
       ...tool,
       id: toolId,
       status: tool.status || 'published',
       updatedAt: new Date().toISOString()
-    }, { merge: true });
+    };
+    await setDoc(docRef, toolToSave, { merge: true });
+
+    // Update in-memory cache immediately
+    if (cachedTools) {
+      const idx = cachedTools.findIndex(t => t.id === toolId);
+      if (idx >= 0) {
+        cachedTools[idx] = toolToSave as AiTool;
+      } else {
+        cachedTools.push(toolToSave as AiTool);
+      }
+    }
     return toolId;
   } catch (error) {
     console.error('Failed to save tool in firestore', error);
@@ -154,6 +190,9 @@ export async function saveToolToFirestore(tool: AiTool): Promise<string> {
 export async function deleteToolFromFirestore(toolId: string): Promise<void> {
   try {
     await deleteDoc(doc(db, 'tools', toolId));
+    if (cachedTools) {
+      cachedTools = cachedTools.filter(t => t.id !== toolId);
+    }
   } catch (error) {
     console.error('Failed to delete tool from firestore', error);
     throw error;
@@ -243,21 +282,28 @@ export async function deleteSubmission(subId: string): Promise<void> {
 }
 
 // Ads & Sponsors API
-export async function fetchAds(): Promise<Advertisement[]> {
+export async function fetchAds(forceRefresh = false): Promise<Advertisement[]> {
+  if (!forceRefresh && cachedAds && (Date.now() - lastAdsFetch < CACHE_TTL_MS)) {
+    return cachedAds;
+  }
   try {
     const colRef = collection(db, 'advertisements');
     const snapshot = await getDocs(colRef);
     if (snapshot.empty) {
+      cachedAds = [];
+      lastAdsFetch = Date.now();
       return [];
     }
     const list: Advertisement[] = [];
     snapshot.forEach((d) => {
       list.push({ id: d.id, ...d.data() } as Advertisement);
     });
+    cachedAds = list;
+    lastAdsFetch = Date.now();
     return list;
   } catch (error) {
-    console.warn('Firestore fetch ads failed or offline', error);
-    return [];
+    console.warn('Firestore fetch ads failed or offline, fallback', error);
+    return cachedAds || [];
   }
 }
 
@@ -265,7 +311,16 @@ export async function saveAd(ad: Advertisement): Promise<string> {
   try {
     const adId = ad.id || `ad-${Date.now()}`;
     const docRef = doc(db, 'advertisements', adId);
-    await setDoc(docRef, { ...ad, id: adId }, { merge: true });
+    const adToSave = { ...ad, id: adId };
+    await setDoc(docRef, adToSave, { merge: true });
+    if (cachedAds) {
+      const idx = cachedAds.findIndex(a => a.id === adId);
+      if (idx >= 0) {
+        cachedAds[idx] = adToSave;
+      } else {
+        cachedAds.push(adToSave);
+      }
+    }
     return adId;
   } catch (error) {
     console.error('Failed to save ad', error);
@@ -276,6 +331,9 @@ export async function saveAd(ad: Advertisement): Promise<string> {
 export async function deleteAd(adId: string): Promise<void> {
   try {
     await deleteDoc(doc(db, 'advertisements', adId));
+    if (cachedAds) {
+      cachedAds = cachedAds.filter(a => a.id !== adId);
+    }
   } catch (error) {
     console.error('Failed to delete ad', error);
     throw error;
@@ -361,16 +419,24 @@ export function subscribeToTools(
 }
 
 // Settings API
-export async function fetchSiteSettings(): Promise<SiteSettings> {
+export async function fetchSiteSettings(forceRefresh = false): Promise<SiteSettings> {
+  if (!forceRefresh && cachedSettings && (Date.now() - lastSettingsFetch < CACHE_TTL_MS)) {
+    return cachedSettings;
+  }
   try {
     const docRef = doc(db, 'settings', 'general');
     const snap = await getDoc(docRef);
     if (snap.exists()) {
-      return { ...DEFAULT_SETTINGS, ...snap.data() } as SiteSettings;
+      const data = { ...DEFAULT_SETTINGS, ...snap.data() } as SiteSettings;
+      cachedSettings = data;
+      lastSettingsFetch = Date.now();
+      return data;
     }
+    cachedSettings = DEFAULT_SETTINGS;
+    lastSettingsFetch = Date.now();
     return DEFAULT_SETTINGS;
   } catch (error) {
-    return DEFAULT_SETTINGS;
+    return cachedSettings || DEFAULT_SETTINGS;
   }
 }
 
@@ -378,6 +444,8 @@ export async function saveSiteSettings(settings: SiteSettings): Promise<void> {
   try {
     const docRef = doc(db, 'settings', 'general');
     await setDoc(docRef, settings, { merge: true });
+    cachedSettings = settings;
+    lastSettingsFetch = Date.now();
   } catch (error) {
     console.error('Failed to save site settings', error);
     throw error;
