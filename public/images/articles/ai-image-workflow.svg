@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 400" fill="none" width="100%" height="100%">
+  <defs>
+    <linearGradient id="awf-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0f19" />
+      <stop offset="100%" stop-color="#181336" />
+    </linearGradient>
+    <linearGradient id="awf-card-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="awf-purple-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="50%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#d946ef" />
+    </linearGradient>
+    <pattern id="awf-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#334155" stroke-width="0.75" stroke-opacity="0.3" />
+    </pattern>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="960" height="400" rx="18" fill="url(#awf-bg)" stroke="#334155" stroke-width="1.5" />
+  <rect width="960" height="400" rx="18" fill="url(#awf-grid)" />
+
+  <!-- Top Header Title -->
+  <g transform="translate(480, 42)">
+    <text x="0" y="0" fill="#f8fafc" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="800" text-anchor="middle" letter-spacing="0.5">
+      سير عمل توليد وتحسين صور الذكاء الاصطناعي (AI Image Production Pipeline)
+    </text>
+    <text x="0" y="24" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="12" text-anchor="middle">
+      Prompt ➔ AI Generation ➔ Neural Editing ➔ 4K Upscale ➔ WebP Optimization
+    </text>
+  </g>
+
+  <!-- Step 1: Prompt Specification -->
+  <g transform="translate(40, 110)">
+    <rect width="160" height="230" rx="16" fill="url(#awf-card-bg)" stroke="#6366f1" stroke-width="2" stroke-opacity="0.8" />
+    <rect x="14" y="14" width="42" height="22" rx="6" fill="#6366f1" />
+    <text x="35" y="29" fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="900" text-anchor="middle">01</text>
+    
+    <circle cx="80" cy="74" r="28" fill="#6366f1" fill-opacity="0.15" />
+    <!-- Terminal / Prompt Icon -->
+    <rect x="66" y="60" width="28" height="24" rx="4" stroke="#818cf8" stroke-width="2" fill="none" />
+    <path d="M71 69 L76 72 L71 75" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    <line x1="79" y1="76" x2="87" y2="76" stroke="#818cf8" stroke-width="2" stroke-linecap="round" />
+
+    <text x="80" y="125" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">1. الأمر (Prompt)</text>
+    <text x="80" y="145" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">وصف المشهد والإضاءة</text>
+    <text x="80" y="162" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">وزوايا الكاميرا والعدسة</text>
+
+    <rect x="18" y="185" width="124" height="26" rx="6" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1" />
+    <text x="80" y="202" fill="#c7d2fe" font-family="monospace" font-size="10" font-weight="700" text-anchor="middle">Text Semantics</text>
+  </g>
+
+  <!-- Arrow 1 -> 2 -->
+  <g transform="translate(204, 220)">
+    <path d="M 0 0 L 18 0" stroke="#8b5cf6" stroke-width="3" stroke-dasharray="4 4" />
+    <polygon points="22,0 14,-4 14,4" fill="#8b5cf6" />
+  </g>
+
+  <!-- Step 2: AI Generation -->
+  <g transform="translate(226, 110)">
+    <rect width="160" height="230" rx="16" fill="url(#awf-card-bg)" stroke="#8b5cf6" stroke-width="2" stroke-opacity="0.8" />
+    <rect x="14" y="14" width="42" height="22" rx="6" fill="#8b5cf6" />
+    <text x="35" y="29" fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="900" text-anchor="middle">02</text>
+    
+    <circle cx="80" cy="74" r="28" fill="#8b5cf6" fill-opacity="0.15" />
+    <!-- Sparkles AI Core -->
+    <path d="M80 58 L83 69 L94 72 L83 75 L80 86 L77 75 L66 72 L77 69 Z" fill="#c084fc" />
+
+    <text x="80" y="125" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">2. التوليد العصبي</text>
+    <text x="80" y="145" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">نماذج Diffusion / Flux</text>
+    <text x="80" y="162" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">إزالة التشويش الرقمي</text>
+
+    <rect x="18" y="185" width="124" height="26" rx="6" fill="#1e1b4b" stroke="#7c3aed" stroke-width="1" />
+    <text x="80" y="202" fill="#e9d5ff" font-family="monospace" font-size="10" font-weight="700" text-anchor="middle">Latent Denoising</text>
+  </g>
+
+  <!-- Arrow 2 -> 3 -->
+  <g transform="translate(390, 220)">
+    <path d="M 0 0 L 18 0" stroke="#8b5cf6" stroke-width="3" stroke-dasharray="4 4" />
+    <polygon points="22,0 14,-4 14,4" fill="#8b5cf6" />
+  </g>
+
+  <!-- Step 3: Editing (Inpainting) -->
+  <g transform="translate(412, 110)">
+    <rect width="160" height="230" rx="16" fill="url(#awf-card-bg)" stroke="#ec4899" stroke-width="2" stroke-opacity="0.8" />
+    <rect x="14" y="14" width="42" height="22" rx="6" fill="#ec4899" />
+    <text x="35" y="29" fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="900" text-anchor="middle">03</text>
+    
+    <circle cx="80" cy="74" r="28" fill="#ec4899" fill-opacity="0.15" />
+    <!-- Brush Icon -->
+    <path d="M72 82 C72 82 74 76 78 72 L88 62 C90 60 93 60 95 62 C97 64 97 67 95 69 L85 79 C81 83 76 84 76 84 Z" stroke="#f472b6" stroke-width="2" stroke-linejoin="round" fill="none" />
+    <circle cx="70" cy="85" r="3" fill="#f472b6" />
+
+    <text x="80" y="125" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">3. التحرير الذكي</text>
+    <text x="80" y="145" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">التعديل بالفرشاة</text>
+    <text x="80" y="162" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">وتوسيع الإطار الخارجي</text>
+
+    <rect x="18" y="185" width="124" height="26" rx="6" fill="#1e1b4b" stroke="#db2777" stroke-width="1" />
+    <text x="80" y="202" fill="#fbcfe8" font-family="monospace" font-size="10" font-weight="700" text-anchor="middle">Inpainting / Canvas</text>
+  </g>
+
+  <!-- Arrow 3 -> 4 -->
+  <g transform="translate(576, 220)">
+    <path d="M 0 0 L 18 0" stroke="#ec4899" stroke-width="3" stroke-dasharray="4 4" />
+    <polygon points="22,0 14,-4 14,4" fill="#ec4899" />
+  </g>
+
+  <!-- Step 4: Upscaling -->
+  <g transform="translate(598, 110)">
+    <rect width="160" height="230" rx="16" fill="url(#awf-card-bg)" stroke="#3b82f6" stroke-width="2" stroke-opacity="0.8" />
+    <rect x="14" y="14" width="42" height="22" rx="6" fill="#3b82f6" />
+    <text x="35" y="29" fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="900" text-anchor="middle">04</text>
+    
+    <circle cx="80" cy="74" r="28" fill="#3b82f6" fill-opacity="0.15" />
+    <!-- 4K / Upscale Icon -->
+    <rect x="66" y="60" width="28" height="24" rx="4" stroke="#60a5fa" stroke-width="2" fill="none" />
+    <path d="M72 74 L76 70 L80 74" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M84 74 L88 70 L92 74" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+
+    <text x="80" y="125" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">4. الترقية الفائقة</text>
+    <text x="80" y="145" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">مضاعفة البكسلات 4K</text>
+    <text x="80" y="162" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">واستعادة تفاصيل النسيج</text>
+
+    <rect x="18" y="185" width="124" height="26" rx="6" fill="#1e1b4b" stroke="#2563eb" stroke-width="1" />
+    <text x="80" y="202" fill="#bfdbfe" font-family="monospace" font-size="10" font-weight="700" text-anchor="middle">Super-Resolution</text>
+  </g>
+
+  <!-- Arrow 4 -> 5 -->
+  <g transform="translate(762, 220)">
+    <path d="M 0 0 L 18 0" stroke="#3b82f6" stroke-width="3" stroke-dasharray="4 4" />
+    <polygon points="22,0 14,-4 14,4" fill="#3b82f6" />
+  </g>
+
+  <!-- Step 5: WebP & Export -->
+  <g transform="translate(784, 110)">
+    <rect width="140" height="230" rx="16" fill="url(#awf-card-bg)" stroke="#10b981" stroke-width="2" stroke-opacity="0.8" />
+    <rect x="14" y="14" width="42" height="22" rx="6" fill="#10b981" />
+    <text x="35" y="29" fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="900" text-anchor="middle">05</text>
+    
+    <circle cx="70" cy="74" r="28" fill="#10b981" fill-opacity="0.15" />
+    <!-- Checkmark Download -->
+    <path d="M60 74 L68 82 L82 66" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+    <text x="70" y="125" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">5. تصدير WebP</text>
+    <text x="70" y="145" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">ضغط محلي فائق</text>
+    <text x="70" y="162" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">أدوات منصة أدواتي</text>
+
+    <rect x="12" y="185" width="116" height="26" rx="6" fill="#064e3b" stroke="#059669" stroke-width="1" />
+    <text x="70" y="202" fill="#a7f3d0" font-family="monospace" font-size="10" font-weight="700" text-anchor="middle">Web Optimized</text>
+  </g>
+
+  <!-- Bottom Subtitle Pill -->
+  <g transform="translate(480, 365)">
+    <text x="0" y="0" fill="#64748b" font-family="system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">
+      منهجية متكاملة لإنتاج صور ذكاء اصطناعي احترافية فائقة الدقة وسريعة التحميل على الويب
+    </text>
+  </g>
+</svg>

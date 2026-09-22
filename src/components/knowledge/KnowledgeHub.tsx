@@ -64,12 +64,14 @@ export const KnowledgeHub: React.FC<KnowledgeHubProps> = ({
     const cat = ARTICLE_CATEGORIES.find((c) => c.id === catId);
     if (!cat) return catId;
     if (lang === 'en') return cat.nameEn;
-    if (lang === 'fr') return cat.nameFr;
     return cat.nameAr;
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-200 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+    <div 
+      dir={isRtl ? 'rtl' : 'ltr'}
+      className={`min-h-screen transition-colors duration-200 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}
+    >
       {/* Breadcrumb Bar */}
       <div className={`border-b ${isDarkMode ? 'border-slate-800 bg-slate-900/50' : 'border-slate-200 bg-white'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
@@ -161,7 +163,7 @@ export const KnowledgeHub: React.FC<KnowledgeHubProps> = ({
 
           {ARTICLE_CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat.id;
-            const catName = lang === 'en' ? cat.nameEn : lang === 'fr' ? cat.nameFr : cat.nameAr;
+            const catName = lang === 'en' ? cat.nameEn : cat.nameAr;
             return (
               <button
                 key={cat.id}
@@ -185,7 +187,7 @@ export const KnowledgeHub: React.FC<KnowledgeHubProps> = ({
           <div className="space-y-3">
             <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
               <Sparkles className="w-4 h-4 text-amber-500" />
-              <span>{lang === 'ar' ? 'المقال المميز' : lang === 'fr' ? 'Article à la une' : 'Featured Guide'}</span>
+              <span>{lang === 'ar' ? 'المقال المميز' : 'Featured Guide'}</span>
             </div>
 
             {(() => {
@@ -224,7 +226,7 @@ export const KnowledgeHub: React.FC<KnowledgeHubProps> = ({
                       </p>
 
                       <div className="pt-2 flex items-center gap-2 text-xs sm:text-sm font-bold text-indigo-600 dark:text-indigo-400">
-                        <span>{lang === 'ar' ? 'قراءة الدليل بالكامل' : lang === 'fr' ? 'Lire le guide complet' : 'Read Full Guide'}</span>
+                        <span>{lang === 'ar' ? 'قراءة الدليل بالكامل' : 'Read Full Guide'}</span>
                         <ArrowIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                       </div>
                     </div>
@@ -239,7 +241,7 @@ export const KnowledgeHub: React.FC<KnowledgeHubProps> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-              {lang === 'ar' ? 'جميع المقالات والشروحات' : lang === 'fr' ? 'Tous les articles et guides' : 'All Articles & Tutorials'}
+              {lang === 'ar' ? 'جميع المقالات والشروحات' : 'All Articles & Tutorials'}
             </h3>
             <span className="text-xs text-slate-400">
               {filteredArticles.length} {lang === 'ar' ? 'مقال متوفر' : 'articles available'}
@@ -304,7 +306,7 @@ export const KnowledgeHub: React.FC<KnowledgeHubProps> = ({
                         {article.updatedAt}
                       </span>
                       <span className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 group-hover:gap-1.5 transition-all">
-                        <span>{lang === 'ar' ? 'قراءة' : lang === 'fr' ? 'Lire' : 'Read'}</span>
+                        <span>{lang === 'ar' ? 'قراءة' : 'Read'}</span>
                         <ArrowIcon className="w-3.5 h-3.5" />
                       </span>
                     </div>

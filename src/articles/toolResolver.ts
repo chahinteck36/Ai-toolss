@@ -14,7 +14,7 @@ export interface UnifiedToolCard {
   iconName?: string;
 }
 
-export function resolveToolById(id: string, lang: 'ar' | 'en' | 'fr' = 'ar'): UnifiedToolCard | null {
+export function resolveToolById(id: string, lang: 'ar' | 'en' = 'ar'): UnifiedToolCard | null {
   if (!id) return null;
 
   // 1. Check DIGITAL_TOOLS first (client-side utilities like pdf-to-word, compress-pdf, word-counter)
@@ -22,7 +22,7 @@ export function resolveToolById(id: string, lang: 'ar' | 'en' | 'fr' = 'ar'): Un
   if (digTool) {
     return {
       id: digTool.id,
-      name: lang === 'en' ? digTool.nameEn : lang === 'fr' ? (digTool.nameFr || digTool.nameEn) : digTool.nameAr,
+      name: lang === 'en' ? digTool.nameEn : digTool.nameAr,
       tagline: lang === 'en' ? digTool.taglineEn : digTool.taglineAr,
       category: digTool.category,
       rating: 4.9,
@@ -36,15 +36,23 @@ export function resolveToolById(id: string, lang: 'ar' | 'en' | 'fr' = 'ar'): Un
   // 2. Check INITIAL_TOOLS (AI directory tools like gamma-app, claude, deepseek, perplexity)
   const aiTool = INITIAL_TOOLS.find((t) => t.id === id);
   if (aiTool) {
+    const pricingMap: Record<string, string> = {
+      free: '100% Free',
+      freemium: 'Freemium',
+      paid: 'Paid',
+      free_trial: 'Free Trial',
+      open_source: 'Open Source'
+    };
+
     return {
       id: aiTool.id,
-      name: lang === 'en' || lang === 'fr' ? aiTool.nameEn : aiTool.nameAr,
-      tagline: aiTool.taglineAr,
+      name: lang === 'en' ? aiTool.nameEn : aiTool.nameAr,
+      tagline: lang === 'en' ? (aiTool.taglineEn || aiTool.descriptionEn || aiTool.nameEn) : aiTool.taglineAr,
       category: aiTool.category,
       rating: aiTool.rating,
       url: `/tools/${aiTool.id}`,
       isInternalUtility: false,
-      pricingText: aiTool.pricingAr,
+      pricingText: lang === 'ar' ? aiTool.pricingAr : (pricingMap[aiTool.pricing] || 'Freemium'),
       iconName: 'Sparkles'
     };
   }

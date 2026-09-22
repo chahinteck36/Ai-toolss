@@ -3,8 +3,10 @@ import { PromptItem, PromptCategoryKey } from '../types';
 export interface PromptCategoryInfo {
   id: PromptCategoryKey;
   nameAr: string;
+  nameEn: string;
   iconName: string;
   descriptionAr: string;
+  descriptionEn: string;
   count?: number;
 }
 
@@ -12,50 +14,66 @@ export const PROMPT_CATEGORIES: PromptCategoryInfo[] = [
   {
     id: 'all',
     nameAr: 'جميع الأوامر',
+    nameEn: 'All Prompts',
     iconName: 'Sparkles',
-    descriptionAr: 'استكشف كافة الأوامر والبرومبتات الحصرية'
+    descriptionAr: 'استكشف كافة الأوامر والبرومبتات الحصرية',
+    descriptionEn: 'Explore all curated AI prompts and templates'
   },
   {
     id: 'writing',
     nameAr: 'كتابة ومحتوى',
+    nameEn: 'Writing & Content',
     iconName: 'PenTool',
-    descriptionAr: 'مقالات، سيناريوهات، إعادة صياغة، تدقيق لغوي وبوستات'
+    descriptionAr: 'مقالات، سيناريوهات، إعادة صياغة، تدقيق لغوي وبوستات',
+    descriptionEn: 'Articles, copywriting, proofreading, and scripts'
   },
   {
     id: 'marketing',
     nameAr: 'تسويق وإعلانات',
+    nameEn: 'Marketing & Ads',
     iconName: 'Megaphone',
-    descriptionAr: 'إعلانات، خطط نمو، بريد إلكتروني، واستراتيجيات مبيعات'
+    descriptionAr: 'إعلانات، خطط نمو، بريد إلكتروني، واستراتيجيات مبيعات',
+    descriptionEn: 'Ad copy, growth plans, email campaigns, and sales'
   },
   {
     id: 'coding',
     nameAr: 'برمجة وتطوير',
+    nameEn: 'Coding & Dev',
     iconName: 'Code',
-    descriptionAr: 'كتابة كود، مراجعة وتصحيح، تصميم قواعد بيانات وشروحات'
+    descriptionAr: 'كتابة كود، مراجعة وتصحيح، تصميم قواعد بيانات وشروحات',
+    descriptionEn: 'Code generation, debugging, refactoring, and DB architecture'
   },
   {
     id: 'design_art',
     nameAr: 'توليد صور وفنون',
+    nameEn: 'Art & Image Prompts',
     iconName: 'Palette',
-    descriptionAr: 'برومبتات Midjourney, DALL-E, Flux وشعارات وخلفيات'
+    descriptionAr: 'برومبتات Midjourney, DALL-E, Flux وشعارات وخلفيات',
+    descriptionEn: 'Midjourney, DALL-E, Flux, logos, and digital art prompts'
   },
   {
     id: 'business',
     nameAr: 'إدارة وأعمال',
+    nameEn: 'Business & Strategy',
     iconName: 'Briefcase',
-    descriptionAr: 'دراسات جدوى، تحليل منافسين، عروض تقديمية، ومفاوضات'
+    descriptionAr: 'دراسات جدوى، تحليل منافسين، عروض تقديمية، ومفاوضات',
+    descriptionEn: 'Feasibility studies, competitive analysis, and pitch decks'
   },
   {
     id: 'education',
     nameAr: 'تعليم وبحث',
+    nameEn: 'Education & Research',
     iconName: 'GraduationCap',
-    descriptionAr: 'تلخيص أبحاث، شرح مفاهيم معقدة، خطط دراسية واختبارات'
+    descriptionAr: 'تلخيص أبحاث، شرح مفاهيم معقدة، خطط دراسية واختبارات',
+    descriptionEn: 'Research summarization, study plans, and complex explanations'
   },
   {
     id: 'productivity',
     nameAr: 'إنتاجية وتنظيم',
+    nameEn: 'Productivity & Planning',
     iconName: 'CheckCircle',
-    descriptionAr: 'إدارة وقت، جداول يومية، تنظيم مهام، وتفريغ ذهني'
+    descriptionAr: 'إدارة وقت، جداول يومية، تنظيم مهام، وتفريغ ذهني',
+    descriptionEn: 'Time management, daily planners, workflows, and task triage'
   }
 ];
 

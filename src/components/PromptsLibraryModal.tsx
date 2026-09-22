@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { PromptItem, PromptCategoryKey } from '../types';
+import { PromptItem, PromptCategoryKey, SupportedLanguage } from '../types';
 import { PROMPT_CATEGORIES, INITIAL_PROMPTS } from '../data/promptsData';
 import { 
   Sparkles, 
@@ -30,6 +30,7 @@ interface PromptsLibraryModalProps {
   onClose: () => void;
   initialSelectedTool?: string;
   isDarkMode?: boolean;
+  lang?: SupportedLanguage;
   onSelectPrompt?: (promptText: string) => void;
 }
 
@@ -49,8 +50,10 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
   onClose,
   initialSelectedTool,
   isDarkMode = false,
+  lang = 'ar',
   onSelectPrompt
 }) => {
+  const isAr = lang === 'ar';
   const [selectedCategory, setSelectedCategory] = useState<PromptCategoryKey>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedToolFilter, setSelectedToolFilter] = useState<string>(initialSelectedTool || 'all');
@@ -133,7 +136,7 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
   return (
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200"
-      dir="rtl"
+      dir={isAr ? 'rtl' : 'ltr'}
     >
       <div 
         className={`relative w-full max-w-5xl max-h-[92vh] flex flex-col rounded-3xl shadow-2xl border overflow-hidden transition-all my-auto ${
@@ -153,8 +156,8 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
           <button
             id="close-prompts-modal-btn"
             onClick={onClose}
-            className="absolute top-4 left-4 sm:top-6 sm:left-6 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/90 hover:text-white transition-all backdrop-blur-sm border border-white/10 z-10"
-            title="إغلاق المكتبة"
+            className={`absolute top-4 ${isAr ? 'left-4 sm:top-6 sm:left-6' : 'right-4 sm:top-6 sm:right-6'} p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/90 hover:text-white transition-all backdrop-blur-sm border border-white/10 z-10`}
+            title={isAr ? 'إغلاق المكتبة' : 'Close Library'}
           >
             <X className="w-5 h-5" />
           </button>
@@ -169,15 +172,17 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-                    مكتبة الأوامر والبرومبتات الحصرية
+                    {isAr ? 'مكتبة الأوامر والبرومبتات الحصرية' : 'AI Prompts & Templates Library'}
                   </h2>
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
                     <Sparkles className="w-3 h-3 text-amber-300" />
-                    جاهزة للنسخ والاستخدام
+                    {isAr ? 'جاهزة للنسخ والاستخدام' : 'Ready to Copy & Use'}
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-300 font-normal mt-1 leading-relaxed">
-                  مجموعة منتقاة ومجربة لأفضل أوامر ونماذج الذكاء الاصطناعي بالعربية والإنجليزية للحصول على أعلى دقة من النماذج.
+                  {isAr 
+                    ? 'مجموعة منتقاة ومجربة لأفضل أوامر ونماذج الذكاء الاصطناعي بالعربية والإنجليزية للحصول على أعلى دقة من النماذج.' 
+                    : 'Curated and tested high-precision prompts for ChatGPT, Claude, Midjourney, and top AI models.'}
                 </p>
               </div>
             </div>
@@ -187,20 +192,20 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
           <div className="mt-5 grid grid-cols-1 sm:grid-cols-12 gap-2.5">
             {/* Search Input */}
             <div className="relative sm:col-span-8">
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400">
+              <div className={`pointer-events-none absolute inset-y-0 ${isAr ? 'right-0 pr-3.5' : 'left-0 pl-3.5'} flex items-center text-slate-400`}>
                 <Search className="w-4 h-4" />
               </div>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ابحث عن أمر أو فكرة (مثال: سيو، إعلانات، كود، ريلز، ميدجورني)..."
-                className="w-full pr-10 pl-10 py-2.5 text-xs sm:text-sm rounded-xl bg-slate-800/80 border border-slate-700/80 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400/50 backdrop-blur-sm transition-all"
+                placeholder={isAr ? 'ابحث عن أمر أو فكرة (مثال: سيو، إعلانات، كود، ريلز، ميدجورني)...' : 'Search prompt or use case (e.g. SEO, ads, code, Midjourney)...'}
+                className={`w-full ${isAr ? 'pr-10 pl-10' : 'pl-10 pr-10'} py-2.5 text-xs sm:text-sm rounded-xl bg-slate-800/80 border border-slate-700/80 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400/50 backdrop-blur-sm transition-all`}
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 hover:text-white"
+                  className={`absolute inset-y-0 ${isAr ? 'left-0 pl-3' : 'right-0 pr-3'} flex items-center text-slate-400 hover:text-white`}
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -212,16 +217,16 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
               <select
                 value={selectedToolFilter}
                 onChange={(e) => setSelectedToolFilter(e.target.value)}
-                className="w-full appearance-none pr-8 pl-3 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-slate-800/80 border border-slate-700/80 text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-400/50 cursor-pointer"
+                className={`w-full appearance-none ${isAr ? 'pr-8 pl-3' : 'pl-8 pr-3'} py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-slate-800/80 border border-slate-700/80 text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-400/50 cursor-pointer`}
               >
-                <option value="all">جميع النماذج والأدوات</option>
+                <option value="all">{isAr ? 'جميع النماذج والأدوات' : 'All Models & Tools'}</option>
                 {allUniqueTools.map((t) => (
                   <option key={t} value={t}>
-                    مخصص لـ: {t}
+                    {isAr ? `مخصص لـ: ${t}` : `Tailored for: ${t}`}
                   </option>
                 ))}
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400">
+              <div className={`pointer-events-none absolute inset-y-0 ${isAr ? 'right-0 pr-2.5' : 'left-0 pl-2.5'} flex items-center text-slate-400`}>
                 <Zap className="w-3.5 h-3.5 text-amber-400" />
               </div>
             </div>
@@ -251,7 +256,7 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
                   }`}
                 >
                   <IconComponent className="w-3.5 h-3.5" />
-                  <span>{cat.nameAr}</span>
+                  <span>{isAr ? cat.nameAr : (cat.nameEn || cat.nameAr)}</span>
                   <span className={`px-1.5 py-0.2 rounded-md text-[11px] ${
                     isSelected 
                       ? 'bg-black/25 text-white' 
@@ -270,11 +275,15 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
           {/* Header info / count */}
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1">
             <span>
-              عرض <strong className="text-indigo-600 dark:text-indigo-400 font-bold text-sm">{filteredPrompts.length}</strong> أمر وبرومبت
+              {isAr ? (
+                <>عرض <strong className="text-indigo-600 dark:text-indigo-400 font-bold text-sm">{filteredPrompts.length}</strong> أمر وبرومبت</>
+              ) : (
+                <>Showing <strong className="text-indigo-600 dark:text-indigo-400 font-bold text-sm">{filteredPrompts.length}</strong> prompts</>
+              )}
             </span>
             <div className="flex items-center gap-1">
               <Info className="w-3.5 h-3.5 text-amber-500" />
-              <span>انقر فوق "نسخ الأمر" والصقه مباشرة في الأداة</span>
+              <span>{isAr ? 'انقر فوق "نسخ الأمر" والصقه مباشرة في الأداة' : 'Click "Copy Prompt" and paste into your AI tool'}</span>
             </div>
           </div>
 
@@ -282,10 +291,10 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
             <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
               <Search className="w-10 h-10 text-slate-400 mx-auto mb-3 opacity-60" />
               <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
-                لم يتم العثور على أوامر مطابقة
+                {isAr ? 'لم يتم العثور على أوامر مطابقة' : 'No matching prompts found'}
               </h3>
               <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                جرب تغيير خيارات التصفية أو مسح عبارة البحث للعثور على أوامر أخرى.
+                {isAr ? 'جرب تغيير خيارات التصفية أو مسح عبارة البحث للعثور على أوامر أخرى.' : 'Try changing your filters or clear your search term.'}
               </p>
               <button
                 onClick={() => {
@@ -296,7 +305,7 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
                 }}
                 className="mt-4 px-4 py-2 text-xs font-bold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
               >
-                إعادة ضبط خيارات البحث
+                {isAr ? 'إعادة ضبط خيارات البحث' : 'Reset search filters'}
               </button>
             </div>
           ) : (
@@ -326,7 +335,7 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
                             {prompt.isPopular && (
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
                                 <Flame className="w-3 h-3 text-amber-500" />
-                                الأكثر نسخاً
+                                {isAr ? 'الأكثر نسخاً' : 'Popular'}
                               </span>
                             )}
                             <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold ${
@@ -336,7 +345,9 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
                                   ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300'
                                   : 'bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300'
                             }`}>
-                              {prompt.difficulty}
+                              {isAr 
+                                ? prompt.difficulty 
+                                : prompt.difficulty === 'مبتدئ' ? 'Beginner' : prompt.difficulty === 'متوسط' ? 'Intermediate' : 'Advanced'}
                             </span>
                           </div>
 
@@ -353,7 +364,7 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
                               ? 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-950/50 dark:border-rose-800' 
                               : 'text-slate-400 hover:text-slate-600 border-transparent hover:bg-slate-100 dark:hover:bg-slate-700'
                           }`}
-                          title={isSaved ? 'محفوظ في المفضلة' : 'حفظ في المفضلة'}
+                          title={isSaved ? (isAr ? 'محفوظ في المفضلة' : 'Saved in favorites') : (isAr ? 'حفظ في المفضلة' : 'Save to favorites')}
                         >
                           <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-rose-500' : ''}`} />
                         </button>
@@ -374,9 +385,9 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
                         {prompt.promptText.length > 200 && (
                           <button
                             onClick={() => setExpandedPromptId(isExpanded ? null : prompt.id)}
-                            className="mt-2 text-[11px] font-sans font-bold text-amber-400 hover:text-amber-300 underline block"
+                            className="mt-2 text-[11px] font-sans font-bold text-amber-400 hover:text-amber-300 underline block cursor-pointer"
                           >
-                            {isExpanded ? 'عرض أقل' : 'عرض نص الأمر كاملاً...'}
+                            {isExpanded ? (isAr ? 'عرض أقل' : 'Show less') : (isAr ? 'عرض نص الأمر كاملاً...' : 'Show full prompt...')}
                           </button>
                         )}
                       </div>
@@ -384,7 +395,7 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
                       {/* Target Tools tags */}
                       <div className="flex items-center gap-1.5 flex-wrap mb-4">
                         <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
-                          متوافق مع:
+                          {isAr ? 'متوافق مع:' : 'Compatible with:'}
                         </span>
                         {prompt.targetTools.map((t) => (
                           <span
@@ -400,13 +411,15 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
                     {/* Card Bottom Actions */}
                     <div className="pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-2">
                       <div className="text-[11px] text-slate-400 font-medium">
-                        {prompt.copyCount ? `تم نسخه +${prompt.copyCount} مرة` : 'أمر معتمد ومجرب'}
+                        {prompt.copyCount 
+                          ? (isAr ? `تم نسخه +${prompt.copyCount} مرة` : `Copied +${prompt.copyCount} times`) 
+                          : (isAr ? 'أمر معتمد ومجرب' : 'Verified prompt')}
                       </div>
 
                       {/* Primary Copy Button */}
                       <button
                         onClick={() => handleCopy(prompt)}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs ${
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
                           isCopied
                             ? 'bg-emerald-600 text-white ring-2 ring-emerald-400'
                             : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white'
@@ -415,12 +428,12 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
                         {isCopied ? (
                           <>
                             <Check className="w-3.5 h-3.5" />
-                            <span>تم النسخ بنجاح!</span>
+                            <span>{isAr ? 'تم النسخ بنجاح!' : 'Copied!'}</span>
                           </>
                         ) : (
                           <>
                             <Copy className="w-3.5 h-3.5" />
-                            <span>نسخ الأمر</span>
+                            <span>{isAr ? 'نسخ الأمر' : 'Copy Prompt'}</span>
                           </>
                         )}
                       </button>
@@ -438,14 +451,20 @@ export const PromptsLibraryModal: React.FC<PromptsLibraryModalProps> = ({
         }`}>
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-500" />
-            <span>يتم تحديث وإضافة أوامر وبرومبتات جديدة أسبوعياً بمجتمع <strong>adawatai.online</strong></span>
+            <span>
+              {isAr ? (
+                <>يتم تحديث وإضافة أوامر وبرومبتات جديدة أسبوعياً بمجتمع <strong>adawatai.online</strong></>
+              ) : (
+                <>New prompts added weekly by the <strong>adawatai.online</strong> community</>
+              )}
+            </span>
           </div>
 
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-colors"
+            className="px-4 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-colors cursor-pointer"
           >
-            إغلاق
+            {isAr ? 'إغلاق' : 'Close'}
           </button>
         </div>
       </div>

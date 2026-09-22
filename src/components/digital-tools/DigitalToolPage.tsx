@@ -62,7 +62,10 @@ export const DigitalToolPage: React.FC<DigitalToolPageProps> = ({
   }, [title, description]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-8 animate-fadeIn">
+    <div 
+      dir={isAr ? 'rtl' : 'ltr'}
+      className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-8 animate-fadeIn"
+    >
       {/* Breadcrumbs */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
         <button

@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none" width="100%" height="100%">
+  <defs>
+    <linearGradient id="ai-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="50%" stop-color="#181336" />
+      <stop offset="100%" stop-color="#090d16" />
+    </linearGradient>
+    <linearGradient id="ai-purple-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="50%" stop-color="#7c3aed" />
+      <stop offset="100%" stop-color="#db2777" />
+    </linearGradient>
+    <linearGradient id="ai-canvas-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="ai-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#4f46e5" stop-opacity="0" />
+    </linearGradient>
+    <pattern id="ai-grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M 36 0 L 0 0 0 36" fill="none" stroke="#334155" stroke-width="1" stroke-opacity="0.25" />
+    </pattern>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="1200" height="630" fill="url(#ai-bg)" />
+  <rect width="1200" height="630" fill="url(#ai-grid)" />
+
+  <!-- Ambient Glow -->
+  <circle cx="600" cy="300" r="320" fill="url(#ai-glow)" />
+
+  <!-- Central Visual Workspace / Canvas Mockup -->
+  <g transform="translate(240, 95)">
+    <!-- Canvas Shell -->
+    <rect width="720" height="420" rx="20" fill="url(#ai-canvas-grad)" stroke="#4f46e5" stroke-width="1.5" stroke-opacity="0.8" />
+
+    <!-- Top Canvas Toolbar -->
+    <rect width="720" height="44" rx="20" fill="#0f172a" />
+    <rect y="24" width="720" height="20" fill="#0f172a" />
+    <line x1="0" y1="44" x2="720" y2="44" stroke="#334155" stroke-width="1" />
+    
+    <!-- Controls -->
+    <circle cx="24" cy="22" r="5" fill="#ef4444" />
+    <circle cx="42" cy="22" r="5" fill="#f59e0b" />
+    <circle cx="60" cy="22" r="5" fill="#10b981" />
+
+    <!-- Aspect Ratio / Tool Tabs -->
+    <g transform="translate(100, 11)">
+      <rect width="64" height="22" rx="6" fill="#1e1b4b" stroke="#6366f1" stroke-width="1" />
+      <text x="32" y="15" fill="#c7d2fe" font-family="monospace" font-size="10" font-weight="700" text-anchor="middle">16:9 HD</text>
+
+      <rect x="74" width="72" height="22" rx="6" fill="#1e293b" />
+      <text x="110" y="15" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10" font-weight="600" text-anchor="middle">v6.1 Neural</text>
+
+      <rect x="156" width="60" height="22" rx="6" fill="#1e293b" />
+      <text x="186" y="15" fill="#94a3b8" font-family="monospace" font-size="10" font-weight="600" text-anchor="middle">4K Upscale</text>
+    </g>
+
+    <!-- Right Side Status Badge -->
+    <g transform="translate(580, 11)">
+      <rect width="116" height="22" rx="11" fill="#064e3b" stroke="#10b981" stroke-width="1" />
+      <circle cx="16" cy="11" r="3.5" fill="#34d399" />
+      <text x="64" y="15" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="10" font-weight="700" text-anchor="middle">Diffusion Engine</text>
+    </g>
+
+    <!-- Canvas Inner Artwork Graphic (Geometric Minimalist Landscape Representation) -->
+    <g transform="translate(30, 64)">
+      <rect width="660" height="260" rx="14" fill="#0b0f19" stroke="#1e293b" stroke-width="1" />
+      
+      <!-- Abstract Sun & Horizon Rays -->
+      <circle cx="330" cy="130" r="54" fill="url(#ai-purple-grad)" />
+      
+      <!-- Mountain Layer 1 -->
+      <polygon points="120,260 250,140 380,260" fill="#1e1b4b" opacity="0.9" />
+      <!-- Mountain Layer 2 -->
+      <polygon points="280,260 410,110 540,260" fill="#312e81" opacity="0.8" />
+      <!-- Mountain Layer 3 -->
+      <polygon points="420,260 520,160 620,260" fill="#1e1b4b" opacity="0.9" />
+
+      <!-- Neural Wave Grid Wireframe (Bottom of Artwork) -->
+      <path d="M 0 230 Q 165 210 330 230 T 660 230 L 660 260 L 0 260 Z" fill="#0f172a" opacity="0.9" />
+      <path d="M 0 242 Q 165 225 330 242 T 660 242" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="4 4" fill="none" />
+      <path d="M 0 252 Q 165 238 330 252 T 660 252" stroke="#ec4899" stroke-width="1.5" fill="none" opacity="0.7" />
+
+      <!-- Viewfinder / Crop Marks -->
+      <path d="M 16 16 L 16 32 M 16 16 L 32 16" stroke="#94a3b8" stroke-width="2" />
+      <path d="M 644 16 L 644 32 M 644 16 L 628 16" stroke="#94a3b8" stroke-width="2" />
+      <path d="M 16 244 L 16 228 M 16 244 L 32 244" stroke="#94a3b8" stroke-width="2" />
+      <path d="M 644 244 L 644 228 M 644 244 L 628 244" stroke="#94a3b8" stroke-width="2" />
+    </g>
+
+    <!-- Bottom Prompt Input Bar Simulation -->
+    <g transform="translate(30, 342)">
+      <rect width="660" height="52" rx="14" fill="#0f172a" stroke="#6366f1" stroke-width="1.5" />
+      <!-- Prompt Icon -->
+      <circle cx="28" cy="26" r="12" fill="#1e1b4b" />
+      <path d="M22 26 L34 26 M28 20 L28 32" stroke="#818cf8" stroke-width="2" stroke-linecap="round" />
+      
+      <!-- Prompt Text Placeholder -->
+      <text x="52" y="31" fill="#e2e8f0" font-family="monospace" font-size="12" font-weight="600">
+        /imagine cinematic sunset, geometric mountains, volumetric lighting, 8k --v 6.1
+      </text>
+
+      <!-- Generate Button -->
+      <rect x="548" y="8" width="102" height="36" rx="10" fill="url(#ai-purple-grad)" />
+      <text x="599" y="30" fill="#ffffff" font-family="system-ui, sans-serif" font-size="12" font-weight="800" text-anchor="middle">Generate</text>
+    </g>
+  </g>
+
+  <!-- Left Floating Model Badges -->
+  <g transform="translate(80, 210)">
+    <!-- Midjourney Card -->
+    <rect width="130" height="54" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1" />
+    <circle cx="26" cy="27" r="14" fill="#1e293b" />
+    <text x="26" y="32" fill="#a855f7" font-family="system-ui, sans-serif" font-size="12" font-weight="900" text-anchor="middle">MJ</text>
+    <text x="50" y="24" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="12" font-weight="800">Midjourney</text>
+    <text x="50" y="39" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Cinematic 6.1</text>
+  </g>
+
+  <g transform="translate(80, 285)">
+    <!-- Flux AI Card -->
+    <rect width="130" height="54" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1" />
+    <circle cx="26" cy="27" r="14" fill="#1e293b" />
+    <text x="26" y="32" fill="#3b82f6" font-family="system-ui, sans-serif" font-size="12" font-weight="900" text-anchor="middle">FL</text>
+    <text x="50" y="24" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="12" font-weight="800">Flux.1</text>
+    <text x="50" y="39" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">High Precision</text>
+  </g>
+
+  <!-- Right Floating Capabilities Badges -->
+  <g transform="translate(990, 210)">
+    <rect width="130" height="54" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1" />
+    <circle cx="26" cy="27" r="14" fill="#1e293b" />
+    <text x="26" y="32" fill="#10b981" font-family="system-ui, sans-serif" font-size="12" font-weight="900" text-anchor="middle">IN</text>
+    <text x="50" y="24" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="12" font-weight="800">Inpainting</text>
+    <text x="50" y="39" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Brush Editing</text>
+  </g>
+
+  <g transform="translate(990, 285)">
+    <rect width="130" height="54" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1" />
+    <circle cx="26" cy="27" r="14" fill="#1e293b" />
+    <text x="26" y="32" fill="#ec4899" font-family="system-ui, sans-serif" font-size="12" font-weight="900" text-anchor="middle">4K</text>
+    <text x="50" y="24" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="12" font-weight="800">Upscaler</text>
+    <text x="50" y="39" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">WebP Ready</text>
+  </g>
+
+  <!-- Top Title Pill -->
+  <g transform="translate(600, 50)">
+    <rect x="-240" y="-18" width="480" height="36" rx="18" fill="#1e293b" stroke="#7c3aed" stroke-width="1.5" />
+    <text x="0" y="5" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle">
+      AI Image Generation, Neural Inpainting &amp; Super-Resolution Suite
+    </text>
+  </g>
+
+  <!-- Bottom Brand Footer -->
+  <g transform="translate(600, 570)">
+    <text x="0" y="0" fill="#64748b" font-family="monospace" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="1">
+      ADAWATAI.ONLINE • VISUAL AI INTELLIGENCE 2026
+    </text>
+  </g>
+</svg>

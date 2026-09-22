@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   BookOpen, Clock, Calendar, ChevronRight, ArrowLeft, ArrowRight, 
   Share2, Check, ExternalLink, Sparkles, HelpCircle, 
-  ChevronDown, Layers, Lightbulb, AlertCircle, Info, Wrench
+  ChevronDown, Layers, Lightbulb, AlertCircle, Info, Wrench,
+  Cpu, ArrowDown
 } from 'lucide-react';
 import { SupportedLanguage, TRANSLATIONS } from '../../lib/i18n';
 import { KnowledgeArticle } from '../../articles/types';
@@ -52,8 +53,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
   const categoryName = currentCategory
     ? lang === 'en'
       ? currentCategory.nameEn
-      : lang === 'fr'
-      ? currentCategory.nameFr
       : currentCategory.nameAr
     : article.category;
 
@@ -80,6 +79,12 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
     const ogDesc = document.querySelector('meta[property="og:description"]');
     if (ogDesc) ogDesc.setAttribute('content', loc.seoDescription || loc.description);
 
+    const ogImage = document.querySelector('meta[property="og:image"]');
+    const fullImageUrl = article.heroImage
+      ? `https://adawatai.online${article.heroImage.src}`
+      : 'https://adawatai.online/logo.svg';
+    if (ogImage) ogImage.setAttribute('content', fullImageUrl);
+
     // 4. Structured Data (Schema.org JSON-LD)
     const canonicalUrl = `https://adawatai.online/knowledge/${article.slug}`;
     const structuredData = {
@@ -96,7 +101,8 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
           },
           headline: loc.title,
           description: loc.seoDescription || loc.description,
-          inLanguage: lang === 'ar' ? 'ar' : lang === 'fr' ? 'fr' : 'en',
+          image: fullImageUrl,
+          inLanguage: lang === 'ar' ? 'ar' : 'en',
           mainEntityOfPage: canonicalUrl,
           datePublished: article.publishedAt,
           dateModified: article.updatedAt,
@@ -246,7 +252,11 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-200 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+    <div 
+      dir={isRtl ? 'rtl' : 'ltr'}
+      className={`min-h-screen transition-colors duration-200 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}
+      style={{ paddingBottom: 'calc(2.5rem + var(--sticky-ad-height, 0px))' }}
+    >
       {/* Breadcrumb Navigation */}
       <div className={`border-b ${isDarkMode ? 'border-slate-800 bg-slate-900/50' : 'border-slate-200 bg-white'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
@@ -276,9 +286,9 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
         </div>
       </div>
 
-      {/* Article Header */}
+      {/* Article Header: Breadcrumb -> H1 -> Metadata -> Hero Image -> Intro */}
       <header className={`border-b ${isDarkMode ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white'}`}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-5">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-6">
           {/* Metadata badges */}
           <div className="flex items-center gap-2.5 flex-wrap text-xs">
             <span className="px-3 py-1 rounded-lg font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
@@ -295,14 +305,9 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
           </div>
 
           {/* H1 SEO Title */}
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white leading-tight">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">
             {loc.title}
           </h1>
-
-          {/* Lead Intro Paragraph */}
-          <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
-            {loc.intro}
-          </p>
 
           {/* Author and Share actions */}
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between flex-wrap gap-4 text-xs">
@@ -332,11 +337,38 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
               </button>
             </div>
           </div>
+
+          {/* Hero / Featured Image in its primary natural spot */}
+          {article.heroImage && (
+            <figure className="my-6 sm:my-8 overflow-hidden rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 shadow-xs">
+              <div className="relative w-full aspect-[1200/630] max-h-[460px] flex items-center justify-center bg-slate-950/20 dark:bg-slate-950/50 overflow-hidden">
+                <img
+                  src={article.heroImage.src}
+                  alt={article.heroImage.alt}
+                  width={article.heroImage.width || 1200}
+                  height={article.heroImage.height || 630}
+                  className="w-full h-full object-cover rounded-t-2xl max-w-full"
+                  fetchPriority="high"
+                  decoding="async"
+                />
+              </div>
+              {article.heroImage.caption && (
+                <figcaption className="py-2.5 px-4 text-center text-xs sm:text-sm text-slate-600 dark:text-slate-400 bg-white/70 dark:bg-slate-900/90 border-t border-slate-200/70 dark:border-slate-800/70 font-medium leading-relaxed">
+                  {article.heroImage.caption}
+                </figcaption>
+              )}
+            </figure>
+          )}
+
+          {/* Lead Intro Paragraph */}
+          <p className="text-base sm:text-lg text-slate-700 dark:text-slate-300 leading-relaxed sm:leading-loose font-normal">
+            {loc.intro}
+          </p>
         </div>
       </header>
 
       {/* Main Content Layout */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-16 sm:pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Main Article Body (8 cols) */}
@@ -369,23 +401,88 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
             {/* Structured Sections */}
             {loc.sections.map((sec, idx) => {
               const originalSec = article.content.sections.find((s) => s.id === sec.id);
+              const placement = originalSec?.illustrationPlacement || 'after-paragraphs';
+              const hasIllustration = Boolean(originalSec?.illustration);
+              
+              const showIllustrationBetweenParagraphs = 
+                hasIllustration && 
+                placement === 'after-first-paragraph' && 
+                sec.paragraphs.length > 1;
+
+              const firstBatchParagraphs = showIllustrationBetweenParagraphs 
+                ? [sec.paragraphs[0]] 
+                : sec.paragraphs;
+              const secondBatchParagraphs = showIllustrationBetweenParagraphs 
+                ? sec.paragraphs.slice(1) 
+                : [];
+
               return (
                 <section key={sec.id} id={sec.id} className="scroll-mt-24 space-y-4">
-                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight leading-snug">
                     {sec.heading}
                   </h2>
 
                   {sec.subheading && (
-                    <h3 className="text-sm sm:text-base font-semibold text-indigo-600 dark:text-indigo-400">
+                    <h3 className="text-sm sm:text-base font-semibold text-indigo-600 dark:text-indigo-400 leading-normal">
                       {sec.subheading}
                     </h3>
                   )}
 
-                  {sec.paragraphs.map((para, pIdx) => (
-                    <p key={pIdx} className="text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed">
+                  {firstBatchParagraphs.map((para, pIdx) => (
+                    <p key={`p1-${pIdx}`} className="text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed sm:leading-loose">
                       {renderFormattedText(para)}
                     </p>
                   ))}
+
+                  {/* Section Illustration (if placed after first paragraph) */}
+                  {showIllustrationBetweenParagraphs && originalSec?.illustration && (
+                    <figure className="my-6 sm:my-8 overflow-hidden rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 shadow-xs">
+                      <div className="p-3 sm:p-5 flex items-center justify-center bg-slate-950/10 dark:bg-slate-950/40 rounded-t-2xl">
+                        <img
+                          src={originalSec.illustration.src}
+                          alt={originalSec.illustration.alt}
+                          width={originalSec.illustration.width || 960}
+                          height={originalSec.illustration.height || 420}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-auto object-contain rounded-xl max-h-[420px] max-w-full"
+                        />
+                      </div>
+                      {originalSec.illustration.caption && (
+                        <figcaption className="py-2.5 px-4 text-center text-xs sm:text-sm text-slate-600 dark:text-slate-400 bg-white/70 dark:bg-slate-900/90 border-t border-slate-200/70 dark:border-slate-800/70 font-medium leading-relaxed">
+                          {originalSec.illustration.caption}
+                        </figcaption>
+                      )}
+                    </figure>
+                  )}
+
+                  {secondBatchParagraphs.map((para, pIdx) => (
+                    <p key={`p2-${pIdx}`} className="text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed sm:leading-loose">
+                      {renderFormattedText(para)}
+                    </p>
+                  ))}
+
+                  {/* Section Illustration (if placed after all paragraphs) */}
+                  {!showIllustrationBetweenParagraphs && originalSec?.illustration && (
+                    <figure className="my-6 sm:my-8 overflow-hidden rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 shadow-xs">
+                      <div className="p-3 sm:p-5 flex items-center justify-center bg-slate-950/10 dark:bg-slate-950/40 rounded-t-2xl">
+                        <img
+                          src={originalSec.illustration.src}
+                          alt={originalSec.illustration.alt}
+                          width={originalSec.illustration.width || 960}
+                          height={originalSec.illustration.height || 420}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-auto object-contain rounded-xl max-h-[420px] max-w-full"
+                        />
+                      </div>
+                      {originalSec.illustration.caption && (
+                        <figcaption className="py-2.5 px-4 text-center text-xs sm:text-sm text-slate-600 dark:text-slate-400 bg-white/70 dark:bg-slate-900/90 border-t border-slate-200/70 dark:border-slate-800/70 font-medium leading-relaxed">
+                          {originalSec.illustration.caption}
+                        </figcaption>
+                      )}
+                    </figure>
+                  )}
 
                   {/* Bullet points */}
                   {sec.bulletPoints && sec.bulletPoints.length > 0 && (
@@ -548,6 +645,84 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                       </div>
                     );
                   })()}
+
+                  {/* Technical Illustration / Architecture Diagram */}
+                  {originalSec?.technicalIllustration && (
+                    <div className={`my-8 p-5 sm:p-6 rounded-2xl border ${
+                      isDarkMode 
+                        ? 'bg-slate-900/90 border-slate-800 shadow-lg shadow-black/20' 
+                        : 'bg-slate-50/80 border-slate-200/90 shadow-sm'
+                    }`}>
+                      <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-lg bg-indigo-600/10 dark:bg-indigo-400/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                            <Cpu className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                              {originalSec.technicalIllustration.title}
+                            </h4>
+                            {originalSec.technicalIllustration.description && (
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                {originalSec.technicalIllustration.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-[11px] font-mono px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shrink-0">
+                          {lang === 'ar' ? 'مخطط تقني تدفقي' : 'Technical Architecture'}
+                        </span>
+                      </div>
+
+                      {/* Diagram Flow Nodes */}
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 relative my-4">
+                        {originalSec.technicalIllustration.nodes.map((node, nIdx) => (
+                          <div key={nIdx} className="relative flex flex-col items-center">
+                            <div className={`w-full p-4 rounded-xl border text-center relative transition-all ${
+                              isDarkMode 
+                                ? 'bg-slate-950/80 border-slate-800 hover:border-indigo-500/50' 
+                                : 'bg-white border-slate-200 hover:border-indigo-300 shadow-xs'
+                            }`}>
+                              {node.badge && (
+                                <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 mb-2">
+                                  {node.badge}
+                                </span>
+                              )}
+                              <div className="w-7 h-7 mx-auto rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs mb-2">
+                                {node.step}
+                              </div>
+                              <h5 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white mb-1">
+                                {node.label}
+                              </h5>
+                              <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                {node.desc}
+                              </p>
+                            </div>
+
+                            {/* Arrow between nodes for md+ screens */}
+                            {nIdx < originalSec.technicalIllustration!.nodes.length - 1 && (
+                              <div className="hidden md:flex absolute -left-2.5 top-1/2 -translate-y-1/2 z-10 text-indigo-500">
+                                <ArrowIcon className="w-4 h-4" />
+                              </div>
+                            )}
+
+                            {/* Down arrow for mobile */}
+                            {nIdx < originalSec.technicalIllustration!.nodes.length - 1 && (
+                              <div className="md:hidden my-1 text-indigo-500">
+                                <ArrowDown className="w-4 h-4" />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {originalSec.technicalIllustration.caption && (
+                        <p className="text-center text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-4 pt-3 border-t border-slate-200/60 dark:border-slate-800/60 italic">
+                          {originalSec.technicalIllustration.caption}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </section>
               );
             })}
@@ -577,7 +752,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                     onClick={() => onNavigateTool(featuredTool.url)}
                     className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-indigo-600/30 hover:shadow-indigo-600/50 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0"
                   >
-                    <span>{lang === 'ar' ? 'استخدم الأداة الآن مجاناً' : lang === 'fr' ? 'Utiliser l\'outil gratuitement' : 'Try Free Tool Now'}</span>
+                    <span>{lang === 'ar' ? 'استخدم الأداة الآن مجاناً' : 'Try Free Tool Now'}</span>
                     <ArrowIcon className="w-4 h-4" />
                   </button>
                 </div>
@@ -588,7 +763,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
             {loc.conclusion && (
               <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">
-                  {lang === 'ar' ? 'خلاصة القول' : lang === 'fr' ? 'Conclusion' : 'Final Takeaway'}
+                  {lang === 'ar' ? 'خلاصة القول' : 'Final Takeaway'}
                 </h3>
                 <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                   {renderFormattedText(loc.conclusion)}
@@ -607,13 +782,11 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
               </div>
               <div className="space-y-2 max-w-xl mx-auto">
                 <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-                  {lang === 'ar' ? 'هل تبحث عن أداة محددة؟' : lang === 'fr' ? 'Vous cherchez un outil spécifique ?' : 'Looking for a specific tool?'}
+                  {lang === 'ar' ? 'هل تبحث عن أداة محددة؟' : 'Looking for a specific tool?'}
                 </h3>
                 <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                   {lang === 'ar' 
                     ? 'استخدم دليل أدوات الذكاء الاصطناعي في Adawatai لاكتشاف المزيد من الأدوات حسب احتياجك الدراسي والمهني.'
-                    : lang === 'fr'
-                    ? 'Utilisez l\'annuaire des outils IA sur Adawatai pour découvrir d\'autres solutions adaptées à vos besoins.'
                     : 'Explore the full AI tools directory on Adawatai to discover more tools customized for your study and work needs.'}
                 </p>
               </div>
@@ -622,7 +795,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                   onClick={onNavigateHome}
                   className="inline-flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md shadow-indigo-600/25 hover:shadow-indigo-600/40 transition-all cursor-pointer"
                 >
-                  <span>{lang === 'ar' ? 'اكتشف أدوات الذكاء الاصطناعي' : lang === 'fr' ? 'Découvrir les outils IA' : 'Explore AI Tools Directory'}</span>
+                  <span>{lang === 'ar' ? 'اكتشف أدوات الذكاء الاصطناعي' : 'Explore AI Tools Directory'}</span>
                   <ArrowIcon className="w-4 h-4" />
                 </button>
               </div>
@@ -634,7 +807,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                 <div className="flex items-center gap-2">
                   <HelpCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                    {lang === 'ar' ? 'الأسئلة الأكثر شيوعاً' : lang === 'fr' ? 'Foire aux questions (FAQ)' : 'Frequently Asked Questions (FAQ)'}
+                    {lang === 'ar' ? 'الأسئلة الأكثر شيوعاً' : 'Frequently Asked Questions (FAQ)'}
                   </h3>
                 </div>
 
@@ -673,7 +846,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                    <span>{lang === 'ar' ? 'الأدوات المقترحة في هذا الدليل' : lang === 'fr' ? 'Outils recommandés' : 'Recommended Tools Mentioned'}</span>
+                    <span>{lang === 'ar' ? 'الأدوات المقترحة في هذا الدليل' : 'Recommended Tools Mentioned'}</span>
                   </h3>
                 </div>
 
@@ -698,7 +871,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                         {tool.tagline}
                       </p>
                       <div className="mt-3 flex items-center justify-between text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
-                        <span>{lang === 'ar' ? 'فتح الأداة' : lang === 'fr' ? 'Ouvrir' : 'Open Tool'}</span>
+                        <span>{lang === 'ar' ? 'فتح الأداة' : 'Open Tool'}</span>
                         <ArrowIcon className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
@@ -736,7 +909,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                           </h4>
                         </div>
                         <div className="mt-3 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
-                          <span>{lang === 'ar' ? 'قراءة' : lang === 'fr' ? 'Lire' : 'Read'}</span>
+                          <span>{lang === 'ar' ? 'قراءة' : 'Read'}</span>
                           <ArrowIcon className="w-3 h-3" />
                         </div>
                       </div>
@@ -765,7 +938,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                     <button
                       key={item.id}
                       onClick={() => scrollToSection(item.id)}
-                      className="block w-full text-right text-xs text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:font-bold transition-all py-1 cursor-pointer"
+                      className={`block w-full text-xs text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:font-bold transition-all py-1 cursor-pointer ${lang === 'ar' ? 'text-right' : 'text-left'}`}
                     >
                       {item.title}
                     </button>
@@ -793,7 +966,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                   onClick={() => onNavigateTool(featuredTool.url)}
                   className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <span>{lang === 'ar' ? 'ابدأ الاستخدام الآن' : lang === 'fr' ? 'Essayer maintenant' : 'Start Using Now'}</span>
+                  <span>{lang === 'ar' ? 'ابدأ الاستخدام الآن' : 'Start Using Now'}</span>
                   <ArrowIcon className="w-3.5 h-3.5" />
                 </button>
               </div>

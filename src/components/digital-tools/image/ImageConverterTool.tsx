@@ -106,9 +106,9 @@ export const ImageConverterTool: React.FC<ImageConverterToolProps> = ({
               </label>
               <div className="grid grid-cols-3 gap-2.5">
                 {[
-                  { id: 'png', label: 'PNG (نقي غير مضغوط)' },
-                  { id: 'jpeg', label: 'JPG / JPEG (خفيف)' },
-                  { id: 'webp', label: 'WebP (سريع للويب)' }
+                  { id: 'png', label: isAr ? 'PNG (نقي غير مضغوط)' : 'PNG (Lossless)' },
+                  { id: 'jpeg', label: isAr ? 'JPG / JPEG (خفيف)' : 'JPG / JPEG (Compact)' },
+                  { id: 'webp', label: isAr ? 'WebP (سريع للويب)' : 'WebP (Fast Web)' }
                 ].map((item) => (
                   <button
                     key={item.id}

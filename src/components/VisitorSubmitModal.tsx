@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Category, CategoryId, PricingType, ToolSubmission } from '../types';
-import { X, Send, Sparkles, CheckCircle2, AlertCircle, HelpCircle } from 'lucide-react';
+import { Category, CategoryId, PricingType, SupportedLanguage } from '../types';
+import { X, Send, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 import { submitToolProposal } from '../lib/firebase';
 
 interface VisitorSubmitModalProps {
@@ -8,6 +8,7 @@ interface VisitorSubmitModalProps {
   onClose: () => void;
   categories: Category[];
   isDarkMode: boolean;
+  lang?: SupportedLanguage;
   onSuccessNotification?: (msg: string) => void;
 }
 
@@ -16,8 +17,11 @@ export const VisitorSubmitModal: React.FC<VisitorSubmitModalProps> = ({
   onClose,
   categories,
   isDarkMode,
+  lang = 'ar',
   onSuccessNotification
 }) => {
+  const isAr = lang === 'ar';
+
   const [formData, setFormData] = useState({
     nameAr: '',
     nameEn: '',
@@ -43,7 +47,7 @@ export const VisitorSubmitModal: React.FC<VisitorSubmitModalProps> = ({
     setErrorMsg('');
 
     if (!formData.nameAr.trim() || !formData.websiteUrl.trim()) {
-      setErrorMsg('يرجى كتابة اسم الأداة ورابط موقعها الرسمي.');
+      setErrorMsg(isAr ? 'يرجى كتابة اسم الأداة ورابط موقعها الرسمي.' : 'Please provide the tool name and official website URL.');
       return;
     }
 
@@ -52,24 +56,28 @@ export const VisitorSubmitModal: React.FC<VisitorSubmitModalProps> = ({
       await submitToolProposal({
         nameAr: formData.nameAr.trim(),
         nameEn: formData.nameEn.trim() || formData.nameAr.trim(),
-        taglineAr: formData.taglineAr.trim() || 'أداة ذكاء اصطناعي مفيدة',
+        taglineAr: formData.taglineAr.trim() || (isAr ? 'أداة ذكاء اصطناعي مفيدة' : 'Useful AI Tool'),
         descriptionAr: formData.descriptionAr.trim() || formData.taglineAr.trim(),
         category: formData.category,
         pricing: formData.pricing,
         websiteUrl: formData.websiteUrl.trim(),
-        submittedBy: formData.submittedBy.trim() || 'زائر مجهول',
+        submittedBy: formData.submittedBy.trim() || (isAr ? 'زائر مجهول' : 'Anonymous Visitor'),
         submitterEmail: formData.submitterEmail.trim() || '',
         notes: formData.notes.trim(),
         supportsArabic: formData.supportsArabic,
-        tags: ['مقترح_زائر', 'ذكاء_اصطناعي']
+        tags: [isAr ? 'مقترح_زائر' : 'visitor_submission', 'ai_tools']
       });
 
       setIsSubmittedSuccess(true);
       if (onSuccessNotification) {
-        onSuccessNotification('تم إرسال اقتراحك بنجاح! سيتم مراجعته واعتماده من قِبل إدارة الدليل.');
+        onSuccessNotification(
+          isAr
+            ? 'تم إرسال اقتراحك بنجاح! سيتم مراجعته واعتماده من قِبل إدارة الدليل.'
+            : 'Your proposal was submitted successfully! Our curators will review it shortly.'
+        );
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'تعذر إرسال الاقتراح، يرجى المحاولة مرة أخرى.');
+      setErrorMsg(err.message || (isAr ? 'تعذر إرسال الاقتراح، يرجى المحاولة مرة أخرى.' : 'Failed to submit proposal, please try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -82,7 +90,7 @@ export const VisitorSubmitModal: React.FC<VisitorSubmitModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs" dir="rtl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs" dir={isAr ? 'rtl' : 'ltr'}>
       <div className={`relative w-full max-w-lg rounded-3xl border ${
         isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
       } shadow-2xl overflow-hidden`}>
@@ -94,10 +102,10 @@ export const VisitorSubmitModal: React.FC<VisitorSubmitModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                اقترح أداة ذكاء اصطناعي جديدة
+                {isAr ? 'اقترح أداة ذكاء اصطناعي جديدة' : 'Suggest a New AI Tool'}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                شاركنا أدواتك المفضلة وسنقوم بمراجعتها ونشرها في الدليل
+                {isAr ? 'شاركنا أدواتك المفضلة وسنقوم بمراجعتها ونشرها في الدليل' : 'Submit your favorite tool to be reviewed and published in the directory'}
               </p>
             </div>
           </div>
@@ -105,6 +113,7 @@ export const VisitorSubmitModal: React.FC<VisitorSubmitModalProps> = ({
           <button
             onClick={handleResetAndClose}
             className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            aria-label={isAr ? 'إغلاق' : 'Close'}
           >
             <X className="w-5 h-5" />
           </button>
@@ -117,16 +126,18 @@ export const VisitorSubmitModal: React.FC<VisitorSubmitModalProps> = ({
               <CheckCircle2 className="w-9 h-9" />
             </div>
             <h4 className="text-lg font-bold text-slate-900 dark:text-white">
-              شكراً لمساهمتك القيمة! 🎉
+              {isAr ? 'شكراً لمساهمتك القيمة! 🎉' : 'Thank You for Contributing! 🎉'}
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed max-w-sm mx-auto">
-              تم إرسال اقتراح الأداة بنجاح إلى قاعدة البيانات. ستتم مراجعتها من قِبل المشرفين وقبولها لتظهر في الدليل الرئيسي لجميع المستخدمين.
+              {isAr
+                ? 'تم إرسال اقتراح الأداة بنجاح إلى قاعدة البيانات. ستتم مراجعتها من قِبل المشرفين وقبولها لتظهر في الدليل الرئيسي لجميع المستخدمين.'
+                : 'The proposal was saved successfully. Our team will verify and catalog it for public browsing.'}
             </p>
             <button
               onClick={handleResetAndClose}
               className="px-6 py-2.5 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-colors"
             >
-              تم، العودة للدليل
+              {isAr ? 'تم، العودة للدليل' : 'Done, Return to Directory'}
             </button>
           </div>
         ) : (
@@ -141,21 +152,21 @@ export const VisitorSubmitModal: React.FC<VisitorSubmitModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  اسم الأداة (عربي/إنجليزي) <span className="text-rose-500">*</span>
+                  {isAr ? 'اسم الأداة (عربي/إنجليزي)' : 'Tool Name'} <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.nameAr}
                   onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
-                  placeholder="مثال: ElevenLabs"
+                  placeholder={isAr ? 'مثال: ElevenLabs' : 'e.g. ElevenLabs'}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 outline-hidden"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  الاسم بالإنجليزي (إن وُجد)
+                  {isAr ? 'الاسم بالإنجليزي (إن وُجد)' : 'English Name (Optional)'}
                 </label>
                 <input
                   type="text"
@@ -170,7 +181,7 @@ export const VisitorSubmitModal: React.FC<VisitorSubmitModalProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                رابط الموقع الرسمي للأداة <span className="text-rose-500">*</span>
+                {isAr ? 'رابط الموقع الرسمي للأداة' : 'Official Website URL'} <span className="text-rose-500">*</span>
               </label>
               <input
                 type="url"
@@ -186,7 +197,7 @@ export const VisitorSubmitModal: React.FC<VisitorSubmitModalProps> = ({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  التصنيف الأنسب
+                  {isAr ? 'التصنيف الأنسب' : 'Category'}
                 </label>
                 <select
                   value={formData.category}
@@ -195,7 +206,7 @@ export const VisitorSubmitModal: React.FC<VisitorSubmitModalProps> = ({
                 >
                   {categories.filter((c) => c.id !== 'all').map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.nameAr}
+                      {isAr ? c.nameAr : (c.nameEn || c.nameAr)}
                     </option>
                   ))}
                 </select>
@@ -203,31 +214,31 @@ export const VisitorSubmitModal: React.FC<VisitorSubmitModalProps> = ({
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  نموذج التسعير التقريبي
+                  {isAr ? 'نموذج التسعير التقريبي' : 'Pricing Model'}
                 </label>
                 <select
                   value={formData.pricing}
                   onChange={(e) => setFormData({ ...formData, pricing: e.target.value as PricingType })}
                   className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 outline-hidden"
                 >
-                  <option value="freemium">فريميوم (تجربة مجانية + مدفوع)</option>
-                  <option value="free">مجاني بالكامل</option>
-                  <option value="paid">مدفوع فقط</option>
-                  <option value="free_trial">تجربة مجانية</option>
-                  <option value="open_source">مفتوح المصدر</option>
+                  <option value="freemium">{isAr ? 'فريميوم (تجربة مجانية + مدفوع)' : 'Freemium (Free tier + Paid)'}</option>
+                  <option value="free">{isAr ? 'مجاني بالكامل' : '100% Free'}</option>
+                  <option value="paid">{isAr ? 'مدفوع فقط' : 'Paid Only'}</option>
+                  <option value="free_trial">{isAr ? 'تجربة مجانية' : 'Free Trial'}</option>
+                  <option value="open_source">{isAr ? 'مفتوح المصدر' : 'Open Source'}</option>
                 </select>
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                نبذة عن الأداة وما تقدمه
+                {isAr ? 'نبذة عن الأداة وما تقدمه' : 'Short Description / Features'}
               </label>
               <textarea
                 rows={2}
                 value={formData.descriptionAr}
                 onChange={(e) => setFormData({ ...formData, descriptionAr: e.target.value })}
-                placeholder="مثال: أداة متخصصة في استنساخ وتوليد الأصوات الواقعية بالعربية والإنجليزية..."
+                placeholder={isAr ? 'مثال: أداة متخصصة في استنساخ وتوليد الأصوات الواقعية...' : 'e.g. AI-powered voice cloning and speech generation platform...'}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 outline-hidden resize-none"
               />
             </div>
@@ -235,20 +246,20 @@ export const VisitorSubmitModal: React.FC<VisitorSubmitModalProps> = ({
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                  اسمك (اختياري)
+                  {isAr ? 'اسمك (اختياري)' : 'Your Name (Optional)'}
                 </label>
                 <input
                   type="text"
                   value={formData.submittedBy}
                   onChange={(e) => setFormData({ ...formData, submittedBy: e.target.value })}
-                  placeholder="محمد أحمد"
+                  placeholder={isAr ? 'محمد أحمد' : 'Alex'}
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 outline-hidden"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                  بريدك الإلكتروني (اختياري للإشعار)
+                  {isAr ? 'بريدك الإلكتروني (اختياري للإشعار)' : 'Your Email (Optional)'}
                 </label>
                 <input
                   type="email"
@@ -267,7 +278,7 @@ export const VisitorSubmitModal: React.FC<VisitorSubmitModalProps> = ({
                 onClick={handleResetAndClose}
                 className="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition-colors"
               >
-                إلغاء
+                {isAr ? 'إلغاء' : 'Cancel'}
               </button>
               <button
                 type="submit"
@@ -275,7 +286,7 @@ export const VisitorSubmitModal: React.FC<VisitorSubmitModalProps> = ({
                 className="px-6 py-2.5 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1.5 transition-all shadow-md disabled:opacity-50"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>{isSubmitting ? 'جاري الإرسال...' : 'إرسال الاقتراح للمراجعة'}</span>
+                <span>{isSubmitting ? (isAr ? 'جاري الإرسال...' : 'Submitting...') : (isAr ? 'إرسال الاقتراح للمراجعة' : 'Submit Proposal')}</span>
               </button>
             </div>
           </form>

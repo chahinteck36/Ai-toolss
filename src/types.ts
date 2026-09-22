@@ -1,3 +1,5 @@
+export type { SupportedLanguage } from './lib/i18n';
+
 export type PricingType = 
   | 'free' // مجاني بالكامل
   | 'freemium' // مجاني جزئياً (Freemium)
@@ -35,7 +37,6 @@ export interface Category {
   id: CategoryId;
   nameAr: string;
   nameEn: string;
-  nameFr?: string;
   iconName: string;
   descriptionAr: string;
   descriptionEn?: string;
@@ -59,7 +60,6 @@ export interface DigitalTool {
   category: CategoryId;
   nameAr: string;
   nameEn: string;
-  nameFr?: string;
   taglineAr: string;
   taglineEn: string;
   descriptionAr: string;
@@ -85,7 +85,9 @@ export interface AiTool {
   nameAr: string;
   nameEn: string;
   taglineAr: string;
+  taglineEn?: string;
   descriptionAr: string;
+  descriptionEn?: string;
   category: CategoryId;
   pricing: PricingType;
   pricingAr: string;
@@ -99,9 +101,14 @@ export interface AiTool {
   isNew?: boolean;
   supportsArabic: boolean;
   platforms: string[];
+  platformsEn?: string[];
   pros: string[];
+  prosEn?: string[];
   cons: string[];
+  consEn?: string[];
   useCases: string[];
+  useCasesEn?: string[];
+  pricingDetailsEn?: string;
   addedDate: string;
   customAdded?: boolean;
   gradient?: string;

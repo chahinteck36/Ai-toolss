@@ -9,17 +9,15 @@ import {
   Globe, 
   Award, 
   CheckCircle2, 
-  Mail, 
-  ArrowLeft,
-  ExternalLink,
-  Bot,
-  Heart
+  Mail
 } from 'lucide-react';
+import { SupportedLanguage } from '../types';
 
 interface AboutUsModalProps {
   isOpen: boolean;
   onClose: () => void;
   isDarkMode: boolean;
+  lang?: SupportedLanguage;
   onOpenPrivacyPolicy?: () => void;
   onOpenContact?: () => void;
   onOpenSuggestTool?: () => void;
@@ -29,14 +27,17 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({
   isOpen,
   onClose,
   isDarkMode,
+  lang = 'ar',
   onOpenPrivacyPolicy,
   onOpenContact,
   onOpenSuggestTool
 }) => {
   if (!isOpen) return null;
 
+  const isAr = lang === 'ar';
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto" dir="rtl">
+    <div className="fixed inset-0 z-50 overflow-y-auto" dir={isAr ? 'rtl' : 'ltr'}>
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity" 
@@ -55,8 +56,8 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute left-4 top-4 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            aria-label="إغلاق"
+            className={`absolute ${isAr ? 'left-4' : 'right-4'} top-4 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors`}
+            aria-label={isAr ? 'إغلاق' : 'Close'}
           >
             <X className="w-5 h-5" />
           </button>
@@ -66,22 +67,24 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 shrink-0">
               <Sparkles className="w-8 h-8 animate-pulse" />
             </div>
-            <div className="text-center sm:text-right">
+            <div className={`text-center ${isAr ? 'sm:text-right' : 'sm:text-left'}`}>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 mb-2">
                 <Globe className="w-3.5 h-3.5" />
-                <span>المنصة الرسمية: adawatai.online</span>
+                <span>{isAr ? 'المنصة الرسمية: adawatai.online' : 'Official Portal: adawatai.online'}</span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                من نحن — أدواتي AI
+                {isAr ? 'من نحن — أدواتي AI' : 'About Us — Adawatai AI'}
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-                دليلك العربي الشامل والموثوق لاكتشاف وتوظيف أفضل تقنيات الذكاء الاصطناعي
+                {isAr 
+                  ? 'دليلك العربي الشامل والموثوق لاكتشاف وتوظيف أفضل تقنيات الذكاء الاصطناعي' 
+                  : 'Your comprehensive and trusted guide to discovering and deploying cutting-edge AI technologies'}
               </p>
             </div>
           </div>
 
           {/* Main Content Body */}
-          <div className="space-y-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-h-[65vh] overflow-y-auto pr-1 pl-2">
+          <div className={`space-y-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-h-[65vh] overflow-y-auto ${isAr ? 'pr-1 pl-2' : 'pl-1 pr-2'}`}>
             
             {/* Vision Section */}
             <div className={`p-4 sm:p-5 rounded-2xl border ${
@@ -89,10 +92,14 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({
             }`}>
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-2">
                 <Target className="w-5 h-5 text-indigo-500" />
-                <span>رؤيتنا ورسالتنا</span>
+                <span>{isAr ? 'رؤيتنا ورسالتنا' : 'Our Vision & Mission'}</span>
               </h3>
               <p className="text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                انطلق موقع <strong>أدواتي AI (adawatai.online)</strong> ليكون المرجع العربي الأول والموثوق لكل من يبحث عن أدوات الذكاء الاصطناعي التوليدي والعملي. نهدف إلى سد الفجوة المعرفية بين أحدث التطورات التقنية العالمية والمستخدم العربي، من خلال تقديم مراجعات دقيقة، تصنيفات ذكية، وتوضيح مدى دعم كل أداة للغة العربية والأسعار الحقيقية بكل شفافية.
+                {isAr ? (
+                  <>انطلق موقع <strong>أدواتي AI (adawatai.online)</strong> ليكون المرجع العربي الأول والموثوق لكل من يبحث عن أدوات الذكاء الاصطناعي التوليدي والعملي. نهدف إلى سد الفجوة المعرفية بين أحدث التطورات التقنية العالمية والمستخدم العربي، من خلال تقديم مراجعات دقيقة، تصنيفات ذكية، وتوضيح مدى دعم كل أداة للغة العربية والأسعار الحقيقية بكل شفافية.</>
+                ) : (
+                  <><strong>Adawatai AI (adawatai.online)</strong> was launched as a premier directory and knowledge reference for generative and practical AI tools. We bridge the gap between global technological breakthroughs and everyday users, providing unbiased reviews, smart classifications, Arabic support status, and transparent pricing structures.</>
+                )}
               </p>
             </div>
 
@@ -105,10 +112,12 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({
                   <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
-                  <span>المصداقية والحيادية</span>
+                  <span>{isAr ? 'المصداقية والحيادية' : 'Credibility & Objectivity'}</span>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  نختبر الأدوات عملياً ونوضح الإيجابيات والسلبيات الحقيقية دون أي تحيز تجاري مضلل.
+                  {isAr 
+                    ? 'نختبر الأدوات عملياً ونوضح الإيجابيات والسلبيات الحقيقية دون أي تحيز تجاري مضلل.' 
+                    : 'We hands-on benchmark every tool to deliver authentic pros and cons without sponsored bias.'}
                 </p>
               </div>
 
@@ -119,10 +128,12 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({
                   <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                     <Globe className="w-4 h-4" />
                   </div>
-                  <span>التركيز على المحتوى العربي</span>
+                  <span>{isAr ? 'التركيز على المحتوى العربي' : 'Arabic Readiness Focus'}</span>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  فلاتر متخصصة لفرز الأدوات التي تدعم اللغة العربية بكفاءة عالية في الكتابة والصوت والترجمة.
+                  {isAr 
+                    ? 'فلاتر متخصصة لفرز الأدوات التي تدعم اللغة العربية بكفاءة عالية في الكتابة والصوت والترجمة.' 
+                    : 'Dedicated filters identifying tools with superior native Arabic generation, audio, and translation.'}
                 </p>
               </div>
 
@@ -133,10 +144,12 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({
                   <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
                     <Zap className="w-4 h-4" />
                   </div>
-                  <span>محرك بحث ذكي وسريع</span>
+                  <span>{isAr ? 'محرك بحث ذكي وسريع' : 'Instant Fuzzy Search'}</span>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  بحث مرن ومتقدم يتسامح مع الأخطاء الإملائية ويقترح أفضل البدائل في ثوانٍ معدودة.
+                  {isAr 
+                    ? 'بحث مرن ومتقدم يتسامح مع الأخطاء الإملائية ويقترح أفضل البدائل في ثوانٍ معدودة.' 
+                    : 'Typo-tolerant, lightning-fast instant search matching workflows, keywords, and tasks.'}
                 </p>
               </div>
 
@@ -147,10 +160,12 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({
                   <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
                     <Users className="w-4 h-4" />
                   </div>
-                  <span>مشاركة مجتمعية مفتوحة</span>
+                  <span>{isAr ? 'مشاركة مجتمعية مفتوحة' : 'Community Driven'}</span>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  نفتح المجال لرواد الأعمال والمستخدمين لاقتراح أدوات جديدة والمساهمة في إثراء الدليل.
+                  {isAr 
+                    ? 'نفتح المجال لرواد الأعمال والمستخدمين لاقتراح أدوات جديدة والمساهمة في إثراء الدليل.' 
+                    : 'Welcoming founders and practitioners to propose novel AI solutions and enrich the index.'}
                 </p>
               </div>
             </div>
@@ -159,24 +174,24 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-3">
                 <Award className="w-4 h-4 text-indigo-500" />
-                <span>لمن تم تصميم هذا الدليل؟</span>
+                <span>{isAr ? 'لمن تم تصميم هذا الدليل؟' : 'Who is this directory for?'}</span>
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-800/60">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span><strong>صناع المحتوى والكتّاب:</strong> لتوليد الأفكار والمقالات والنصوص.</span>
+                  <span><strong>{isAr ? 'صناع المحتوى والكتّاب:' : 'Content Creators & Writers:'}</strong> {isAr ? 'لتوليد الأفكار والمقالات والنصوص.' : 'Ideation, copywriting, and editorial pipelines.'}</span>
                 </div>
                 <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-800/60">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span><strong>المصممون والفنانون:</strong> لابتكار الصور والفيديوهات والشعارات.</span>
+                  <span><strong>{isAr ? 'المصممون والفنانون:' : 'Designers & Artists:'}</strong> {isAr ? 'لابتكار الصور والفيديوهات والشعارات.' : 'Image synthesis, motion graphics, and branding.'}</span>
                 </div>
                 <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-800/60">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span><strong>المبرمجون والتقنيون:</strong> لتسريع كتابة الأكواد وتصحيحها.</span>
+                  <span><strong>{isAr ? 'المبرمجون والتقنيون:' : 'Developers & Engineers:'}</strong> {isAr ? 'لتسريع كتابة الأكواد وتصحيحها.' : 'Code assistance, refactoring, and test generation.'}</span>
                 </div>
                 <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-800/60">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span><strong>الطلاب والباحثون:</strong> لتلخيص الأبحاث وتحليل البيانات الأكاديمية.</span>
+                  <span><strong>{isAr ? 'الطلاب والباحثون:' : 'Students & Researchers:'}</strong> {isAr ? 'لتلخيص الأبحاث وتحليل البيانات الأكاديمية.' : 'Literature reviews, synthesis, and deep citations.'}</span>
                 </div>
               </div>
             </div>
@@ -186,7 +201,7 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({
               <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                 <Mail className="w-4 h-4 text-indigo-500" />
                 <span>
-                  للتواصل والاستفسارات:{' '}
+                  {isAr ? 'للتواصل والاستفسارات: ' : 'Contact & Inquiries: '}
                   {onOpenContact ? (
                     <button
                       onClick={() => {
@@ -195,7 +210,7 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({
                       }}
                       className="text-indigo-600 dark:text-indigo-400 hover:underline font-bold font-mono"
                     >
-                      contact@adawatai.online (إرسال مباشر)
+                      contact@adawatai.online ({isAr ? 'إرسال مباشر' : 'Direct'})
                     </button>
                   ) : (
                     <a
@@ -217,7 +232,7 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({
                     }}
                     className="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold"
                   >
-                    سياسة الخصوصية
+                    {isAr ? 'سياسة الخصوصية' : 'Privacy Policy'}
                   </button>
                 )}
                 {onOpenSuggestTool && (
@@ -228,7 +243,7 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({
                     }}
                     className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 font-semibold"
                   >
-                    اقترح أداة للدليل
+                    {isAr ? 'اقترح أداة للدليل' : 'Submit a Tool'}
                   </button>
                 )}
               </div>

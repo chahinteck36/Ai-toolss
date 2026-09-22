@@ -88,7 +88,7 @@ export const SEO: React.FC<SEOProps> = ({
     setMetaTag('property', 'og:type', type);
     setMetaTag('property', 'og:site_name', SITE_NAME);
     setMetaTag('property', 'og:image', image);
-    setMetaTag('property', 'og:locale', lang === 'ar' ? 'ar_AR' : lang === 'fr' ? 'fr_FR' : 'en_US');
+    setMetaTag('property', 'og:locale', lang === 'ar' ? 'ar_AR' : 'en_US');
 
     // 6. Update Twitter Card Meta Tags
     setMetaTag('name', 'twitter:card', 'summary_large_image');
@@ -97,7 +97,10 @@ export const SEO: React.FC<SEOProps> = ({
     setMetaTag('name', 'twitter:url', canonical);
     setMetaTag('name', 'twitter:image', image);
 
-    // 7. Update Multilingual Hreflang Tags (strictly for indexable pages)
+    // 7. Update Multilingual Hreflang Tags (strictly for indexable pages: ar, en, x-default)
+    // First, remove any existing French hreflang tags if lingering
+    document.querySelectorAll('link[rel="alternate"][hreflang="fr"]').forEach(el => el.remove());
+
     if (!robots.includes('noindex')) {
       const baseCleanUrl = canonical.split('?')[0];
       const queryParams = new URLSearchParams(canonical.includes('?') ? canonical.split('?')[1] : '');
@@ -116,7 +119,6 @@ export const SEO: React.FC<SEOProps> = ({
       const defaultPageUrl = buildHreflangUrl('ar');
       setLinkTag('alternate', defaultPageUrl, { hreflang: 'ar' });
       setLinkTag('alternate', buildHreflangUrl('en'), { hreflang: 'en' });
-      setLinkTag('alternate', buildHreflangUrl('fr'), { hreflang: 'fr' });
       // x-default must point to the primary locale version of this exact URL, not the site root
       setLinkTag('alternate', defaultPageUrl, { hreflang: 'x-default' });
     } else {

@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Lock, Mail, Eye, EyeOff, AlertCircle, CheckCircle2, ArrowRight, Clock } from 'lucide-react';
+import { Shield, Lock, Mail, Eye, EyeOff, AlertCircle, ArrowLeft, ArrowRight, Clock } from 'lucide-react';
 import { adminLogin, AdminAuthResponse } from '../lib/adminApi';
+import { SupportedLanguage } from '../types';
 
 interface AdminLoginViewProps {
   onLoginSuccess: (user: NonNullable<AdminAuthResponse['user']>) => void;
   onBackToHome: () => void;
   isDarkMode: boolean;
+  lang?: SupportedLanguage;
 }
 
 export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
   onLoginSuccess,
   onBackToHome,
-  isDarkMode
+  isDarkMode,
+  lang = 'ar'
 }) => {
+  const isAr = lang === 'ar';
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -42,7 +47,7 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
     if (lockoutTimer > 0) return;
 
     if (!email.trim() || !password) {
-      setErrorMessage('يرجى إدخال البريد الإلكتروني وكلمة المرور.');
+      setErrorMessage(isAr ? 'يرجى إدخال البريد الإلكتروني وكلمة المرور.' : 'Please enter email and password.');
       return;
     }
 
@@ -55,11 +60,11 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
     if (result.authenticated && result.user) {
       onLoginSuccess(result.user);
     } else {
-      setErrorMessage(result.error || 'فشل في تسجيل الدخول. يرجى التحقق من بيانات الاعتماد.');
+      setErrorMessage(result.error || (isAr ? 'فشل في تسجيل الدخول. يرجى التحقق من بيانات الاعتماد.' : 'Authentication failed. Please verify credentials.'));
       if (typeof result.remainingAttempts === 'number') {
         setRemainingAttempts(result.remainingAttempts);
       }
-      if (result.retryAfterSeconds && result.retryAfterSeconds > 0) {
+      if (result.retryAfterSeconds) {
         setLockoutTimer(result.retryAfterSeconds);
       }
     }
@@ -68,7 +73,7 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
   return (
     <div className={`min-h-screen flex flex-col justify-center items-center p-4 sm:p-6 transition-colors duration-200 ${
       isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
-    }`} dir="rtl">
+    }`} dir={isAr ? 'rtl' : 'ltr'}>
       
       {/* Background Ambience */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -91,11 +96,13 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
                 : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
-            <ArrowRight className="w-4 h-4 rotate-180" />
-            <span>العودة إلى الموقع الرئيسي</span>
+            {isAr ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
+            <span>{isAr ? 'العودة إلى الموقع الرئيسي' : 'Return to main site'}</span>
           </button>
 
-          <span className="text-[11px] font-mono text-slate-400">نظام الإدارة الآمن</span>
+          <span className="text-[11px] font-mono text-slate-400">
+            {isAr ? 'نظام الإدارة الآمن' : 'Secure Admin Portal'}
+          </span>
         </div>
 
         {/* Card Container */}
@@ -110,9 +117,11 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
             <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 mb-3">
               <Shield className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight">بوابة إدارة النظام</h1>
+            <h1 className="text-xl font-bold tracking-tight">
+              {isAr ? 'بوابة إدارة النظام' : 'System Admin Portal'}
+            </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              تسجيل الدخول الموثق للوصول إلى لوحة التحكم
+              {isAr ? 'تسجيل الدخول الموثق للوصول إلى لوحة التحكم' : 'Authenticated login to access management dashboard'}
             </p>
           </div>
 
@@ -125,7 +134,7 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
                 {lockoutTimer > 0 && (
                   <p className="mt-1 font-mono font-bold flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5" />
-                    <span>يمكنك إعادة المحاولة بعد: {lockoutTimer} ثانية</span>
+                    <span>{isAr ? `يمكنك إعادة المحاولة بعد: ${lockoutTimer} ثانية` : `Retry allowed in: ${lockoutTimer}s`}</span>
                   </p>
                 )}
               </div>
@@ -136,103 +145,80 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold mb-1.5 text-slate-700 dark:text-slate-300">
-                البريد الإلكتروني الإداري
+                {isAr ? 'البريد الإلكتروني الإداري' : 'Admin Email'}
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                <div className={`pointer-events-none absolute inset-y-0 ${isAr ? 'right-0 pr-3.5' : 'left-0 pl-3.5'} flex items-center text-slate-400`}>
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
                   type="email"
                   required
-                  autoFocus
-                  dir="ltr"
-                  disabled={isLoading || lockoutTimer > 0}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@example.com"
-                  className={`w-full pr-10 pl-3 py-2.5 text-sm rounded-xl border transition-all outline-none font-mono ${
-                    isDarkMode
-                      ? 'bg-slate-800/80 border-slate-700 text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20'
-                      : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20'
-                  } disabled:opacity-50`}
+                  placeholder="admin@adawatai.online"
+                  className={`w-full ${isAr ? 'pr-10 pl-3' : 'pl-10 pr-3'} py-2.5 text-xs rounded-xl border bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white font-mono`}
+                  dir="ltr"
                 />
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-semibold mb-1.5 text-slate-700 dark:text-slate-300">
-                كلمة المرور
+                {isAr ? 'كلمة المرور المشفرة' : 'Admin Password'}
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                <div className={`pointer-events-none absolute inset-y-0 ${isAr ? 'right-0 pr-3.5' : 'left-0 pl-3.5'} flex items-center text-slate-400`}>
                   <Lock className="w-4 h-4" />
                 </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
-                  dir="ltr"
-                  disabled={isLoading || lockoutTimer > 0}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className={`w-full pr-10 pl-10 py-2.5 text-sm rounded-xl border transition-all outline-none font-mono ${
-                    isDarkMode
-                      ? 'bg-slate-800/80 border-slate-700 text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20'
-                      : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20'
-                  } disabled:opacity-50`}
+                  className={`w-full ${isAr ? 'pr-10 pl-10' : 'pl-10 pr-10'} py-2.5 text-xs rounded-xl border bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white font-mono`}
+                  dir="ltr"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  className={`absolute inset-y-0 ${isAr ? 'left-0 pl-3' : 'right-0 pr-3'} flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200`}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            {remainingAttempts !== null && remainingAttempts > 0 && remainingAttempts < 5 && (
-              <p className="text-[11px] text-amber-500 font-medium">
-                تنبيه أمان: متبقي لديك {remainingAttempts} محاولات قبل حظر الدخول مؤقتاً.
+            {remainingAttempts !== null && remainingAttempts <= 3 && remainingAttempts > 0 && (
+              <p className="text-[11px] text-amber-500 font-semibold text-center">
+                {isAr 
+                  ? `تحذير: متبقي لديك ${remainingAttempts} محاولات قبل الإغلاق المؤقت.`
+                  : `Warning: ${remainingAttempts} attempts remaining before temporary lockout.`}
               </p>
             )}
 
             <button
               type="submit"
               disabled={isLoading || lockoutTimer > 0}
-              className="w-full mt-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-sm shadow-md shadow-indigo-600/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full mt-2 py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>جاري التحقق والمصادقة...</span>
+                  <span>{isAr ? 'جارِ التحقق الأمني...' : 'Authenticating...'}</span>
                 </>
-              ) : lockoutTimer > 0 ? (
-                <span>مغلق مؤقتاً ({lockoutTimer} ث)</span>
               ) : (
-                <>
-                  <Lock className="w-4 h-4" />
-                  <span>تسجيل الدخول الآمن</span>
-                </>
+                <span>{isAr ? 'تسجيل الدخول إلى النظام' : 'Sign in to Dashboard'}</span>
               )}
             </button>
           </form>
 
-          {/* Security Features Info */}
-          <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/80 text-[11px] text-slate-400 space-y-1.5">
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-              <span>مصادقة مشفرة من جهة الخادم (Server-Authoritative Session)</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-              <span>جلسات آمنة بملفات تعريف ارتباط محمية (HttpOnly & SameSite)</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-              <span>حماية مضاعفة من هجمات التخمين (Brute-force & CSRF Guard)</span>
-            </div>
+          {/* Footer note */}
+          <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/60 text-center">
+            <p className="text-[11px] text-slate-400">
+              {isAr ? 'محمي بواسطة بروتوكول المصادقة المشفر ومحدد المعدل (Rate Limiting)' : 'Secured with token auth, rate limiting, and session verification'}
+            </p>
           </div>
 
         </div>

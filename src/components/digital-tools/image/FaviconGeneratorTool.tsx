@@ -20,11 +20,11 @@ export const FaviconGeneratorTool: React.FC<FaviconGeneratorToolProps> = ({ lang
   const [copiedHtml, setCopiedHtml] = useState(false);
 
   const sizes = [
-    { size: 16, label: '16x16 (تبويب المتصفح الكلاسيكي)' },
-    { size: 32, label: '32x32 (أيقونة شريط المفضلة والمواقع)' },
-    { size: 48, label: '48x48 (مواقع سطح المكتب وويندوز)' },
-    { size: 180, label: '180x180 (أيقونة شاشة آبل Apple Touch)' },
-    { size: 512, label: '512x512 (أيقونة تطبيقات الويب PWA)' }
+    { size: 16, label: isAr ? '16x16 (تبويب المتصفح الكلاسيكي)' : '16x16 (Browser Tab)' },
+    { size: 32, label: isAr ? '32x32 (أيقونة شريط المفضلة والمواقع)' : '32x32 (Bookmarks & Bar)' },
+    { size: 48, label: isAr ? '48x48 (مواقع سطح المكتب وويندوز)' : '48x48 (Desktop & Windows)' },
+    { size: 180, label: isAr ? '180x180 (أيقونة شاشة آبل Apple Touch)' : '180x180 (Apple Touch Icon)' },
+    { size: 512, label: isAr ? '512x512 (أيقونة تطبيقات الويب PWA)' : '512x512 (PWA App Icon)' }
   ];
 
   const handleFileSelected = async (files: File[]) => {

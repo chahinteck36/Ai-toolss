@@ -15,10 +15,8 @@ export interface ArticleCategory {
   id: ArticleCategoryId;
   nameAr: string;
   nameEn: string;
-  nameFr: string;
   descriptionAr: string;
   descriptionEn: string;
-  descriptionFr: string;
   iconName: string;
 }
 
@@ -49,6 +47,14 @@ export interface ArticleToolItem {
   toolUrl: string;
 }
 
+export interface ArticleImage {
+  src: string;
+  alt: string;
+  caption?: string;
+  width?: number;
+  height?: number;
+}
+
 export interface ArticleSection {
   id: string;
   heading: string;
@@ -66,10 +72,24 @@ export interface ArticleSection {
     headers: string[];
     rows: string[][];
   };
+  illustration?: ArticleImage;
+  illustrationPlacement?: 'after-first-paragraph' | 'after-paragraphs';
   imagePlaceholder?: {
     alt: string;
     caption: string;
     svgIcon?: string;
+  };
+  technicalIllustration?: {
+    title: string;
+    description?: string;
+    nodes: {
+      step: number | string;
+      label: string;
+      desc: string;
+      iconName?: string;
+      badge?: string;
+    }[];
+    caption?: string;
   };
 }
 
@@ -104,4 +124,5 @@ export interface KnowledgeArticle {
   keywords: string[];
   isPublished: boolean;
   featured?: boolean;
+  heroImage?: ArticleImage;
 }

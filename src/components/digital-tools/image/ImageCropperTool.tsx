@@ -103,10 +103,10 @@ export const ImageCropperTool: React.FC<ImageCropperToolProps> = ({ lang, isDark
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               {[
-                { id: '1:1', label: '1:1 (مربع بروفايل)' },
-                { id: '16:9', label: '16:9 (يوتيوب وغلاف)' },
-                { id: '9:16', label: '9:16 (ستوري وريلز)' },
-                { id: '4:3', label: '4:3 (كلاسيكي)' }
+                { id: '1:1', label: isAr ? '1:1 (مربع بروفايل)' : '1:1 (Square Profile)' },
+                { id: '16:9', label: isAr ? '16:9 (يوتيوب وغلاف)' : '16:9 (Landscape / Cover)' },
+                { id: '9:16', label: isAr ? '9:16 (ستوري وريلز)' : '9:16 (Story / Reels)' },
+                { id: '4:3', label: isAr ? '4:3 (كلاسيكي)' : '4:3 (Standard)' }
               ].map((item) => (
                 <button
                   key={item.id}

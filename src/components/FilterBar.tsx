@@ -21,7 +21,8 @@ import {
   GraduationCap,
   LayoutGrid
 } from 'lucide-react';
-import { Category, CategoryId, FilterState } from '../types';
+import { Category, FilterState } from '../types';
+import { SupportedLanguage } from '../lib/i18n';
 
 interface FilterBarProps {
   categories: Category[];
@@ -34,6 +35,7 @@ interface FilterBarProps {
   onToggleViewMode: (mode: 'grid' | 'compact') => void;
   isDarkMode: boolean;
   categoryCounts: Record<string, number>;
+  lang?: SupportedLanguage;
 }
 
 // Icon mapping helper
@@ -55,22 +57,6 @@ const getCategoryIcon = (iconName: string) => {
   }
 };
 
-const PRICING_OPTIONS = [
-  { id: 'all', label: 'كافة خيارات الأسعار' },
-  { id: 'free', label: 'مجاني 100%' },
-  { id: 'freemium', label: 'مجاني جزئياً (Freemium)' },
-  { id: 'open_source', label: 'مفتوح المصدر (Open Source)' },
-  { id: 'free_trial', label: 'تجربة مجانية' },
-  { id: 'paid', label: 'مدفوع' },
-];
-
-const SORT_OPTIONS: { id: FilterState['sortBy']; label: string }[] = [
-  { id: 'rating', label: 'الأعلى تقييماً ⭐' },
-  { id: 'popular', label: 'الأكثر شهرة 🔥' },
-  { id: 'newest', label: 'المضافة حديثاً 🆕' },
-  { id: 'alphabetical', label: 'أبجدياً (أ - ي)' },
-];
-
 export const FilterBar: React.FC<FilterBarProps> = ({
   categories,
   filterState,
@@ -82,7 +68,26 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onToggleViewMode,
   isDarkMode,
   categoryCounts,
+  lang = 'ar',
 }) => {
+  const isAr = lang === 'ar';
+
+  const pricingOptions = [
+    { id: 'all', label: isAr ? 'كافة خيارات الأسعار' : 'All Pricing Models' },
+    { id: 'free', label: isAr ? 'مجاني 100%' : '100% Free' },
+    { id: 'freemium', label: isAr ? 'مجاني جزئياً (Freemium)' : 'Freemium' },
+    { id: 'open_source', label: isAr ? 'مفتوح المصدر (Open Source)' : 'Open Source' },
+    { id: 'free_trial', label: isAr ? 'تجربة مجانية' : 'Free Trial' },
+    { id: 'paid', label: isAr ? 'مدفوع' : 'Paid' },
+  ];
+
+  const sortOptions: { id: FilterState['sortBy']; label: string }[] = [
+    { id: 'rating', label: isAr ? 'الأعلى تقييماً ⭐' : 'Top Rated ⭐' },
+    { id: 'popular', label: isAr ? 'الأكثر شهرة 🔥' : 'Most Popular 🔥' },
+    { id: 'newest', label: isAr ? 'المضافة حديثاً 🆕' : 'Newly Added 🆕' },
+    { id: 'alphabetical', label: isAr ? 'أبجدياً (أ - ي)' : 'Alphabetical (A - Z)' },
+  ];
+
   const isFiltered = 
     filterState.searchQuery !== '' ||
     filterState.selectedCategory !== 'all' ||
@@ -91,7 +96,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     filterState.onlyArabicSupport;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" dir={isAr ? 'rtl' : 'ltr'}>
       {/* Category Pills Navigation (Horizontal scrollable) */}
       <div className="relative">
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none pt-1">
@@ -116,7 +121,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 }`}
               >
                 <IconComponent className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-indigo-600 dark:text-indigo-400'}`} />
-                <span>{cat.nameAr}</span>
+                <span>{isAr ? cat.nameAr : cat.nameEn}</span>
                 <span className={`inline-flex items-center justify-center px-1.5 py-0.5 text-[11px] font-bold rounded-full ${
                   isSelected
                     ? 'bg-indigo-800/60 text-white'
@@ -142,15 +147,15 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               id="filter-pricing-select"
               value={filterState.selectedPricing}
               onChange={(e) => onFilterChange({ selectedPricing: e.target.value })}
-              className="w-full appearance-none pr-7 sm:pr-8 pl-2.5 sm:pl-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl border border-slate-300/80 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              className={`w-full appearance-none ${isAr ? 'pr-7 sm:pr-8 pl-2.5 sm:pl-3' : 'pl-7 sm:pl-8 pr-2.5 sm:pr-3'} py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl border border-slate-300/80 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer`}
             >
-              {PRICING_OPTIONS.map((opt) => (
+              {pricingOptions.map((opt) => (
                 <option key={opt.id} value={opt.id}>
                   {opt.label}
                 </option>
               ))}
             </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 sm:pr-2.5 text-slate-500">
+            <div className={`pointer-events-none absolute inset-y-0 ${isAr ? 'right-0 pr-2 sm:pr-2.5' : 'left-0 pl-2 sm:pl-2.5'} flex items-center text-slate-500`}>
               <Filter className="w-3.5 h-3.5" />
             </div>
           </div>
@@ -166,7 +171,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             }`}
           >
             <Globe className={`w-3.5 h-3.5 ${filterState.onlyArabicSupport ? 'text-emerald-700' : 'text-slate-500'}`} />
-            <span>يدعم العربية</span>
+            <span>{isAr ? 'يدعم العربية' : 'Arabic Support'}</span>
             {filterState.onlyArabicSupport && <Check className="w-3 h-3 text-emerald-700" />}
           </button>
 
@@ -181,7 +186,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             }`}
           >
             <Heart className={`w-3.5 h-3.5 ${filterState.onlyFavorites ? 'fill-rose-600 text-rose-600' : 'text-slate-500'}`} />
-            <span>المفضلة</span>
+            <span>{isAr ? 'المفضلة' : 'Favorites'}</span>
             {filterState.onlyFavorites && <Check className="w-3 h-3 text-rose-600" />}
           </button>
 
@@ -191,10 +196,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               id="filter-reset-btn"
               onClick={onResetFilters}
               className="flex items-center gap-1 px-2 py-1.5 sm:py-2 text-xs text-rose-700 hover:text-rose-800 dark:text-rose-400 hover:underline font-bold"
-              title="إعادة ضبط كافة الفلاتر"
+              title={isAr ? 'إعادة ضبط كافة الفلاتر' : 'Reset all filters'}
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>إعادة ضبط</span>
+              <span>{isAr ? 'إعادة ضبط' : 'Reset'}</span>
             </button>
           )}
         </div>
@@ -203,7 +208,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         <div className="flex items-center justify-between md:justify-end gap-2 sm:gap-3 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
           {/* Result Count */}
           <div className="text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-slate-400">
-            <span>النتائج: </span>
+            <span>{isAr ? 'النتائج: ' : 'Results: '}</span>
             <strong className="text-indigo-700 dark:text-indigo-400 font-bold text-xs sm:text-sm">
               {totalFilteredCount}
             </strong>
@@ -216,15 +221,15 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 id="filter-sort-select"
                 value={filterState.sortBy}
                 onChange={(e) => onFilterChange({ sortBy: e.target.value as FilterState['sortBy'] })}
-                className="appearance-none pr-6 sm:pr-7 pl-2.5 sm:pl-3 py-1.5 text-[11px] sm:text-xs font-semibold rounded-xl border border-slate-300/80 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                className={`appearance-none ${isAr ? 'pr-6 sm:pr-7 pl-2.5 sm:pl-3' : 'pl-6 sm:pl-7 pr-2.5 sm:pr-3'} py-1.5 text-[11px] sm:text-xs font-semibold rounded-xl border border-slate-300/80 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer`}
               >
-                {SORT_OPTIONS.map((opt) => (
+                {sortOptions.map((opt) => (
                   <option key={opt.id} value={opt.id}>
                     {opt.label}
                   </option>
                 ))}
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-1.5 sm:pr-2 text-slate-500">
+              <div className={`pointer-events-none absolute inset-y-0 ${isAr ? 'right-0 pr-1.5 sm:pr-2' : 'left-0 pl-1.5 sm:pl-2'} flex items-center text-slate-500`}>
                 <ArrowUpDown className="w-3 h-3" />
               </div>
             </div>
@@ -239,7 +244,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                     ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-400 shadow-2xs font-bold'
                     : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
-                title="عرض شبكي للبطاقات"
+                title={isAr ? 'عرض شبكي للبطاقات' : 'Grid View'}
               >
                 <Grid className="w-3.5 h-3.5" />
               </button>
@@ -251,7 +256,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                     ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-400 shadow-2xs font-bold'
                     : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
-                title="عرض مدمج ومفصل"
+                title={isAr ? 'عرض مدمج ومفصل' : 'List View'}
               >
                 <List className="w-3.5 h-3.5" />
               </button>

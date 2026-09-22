@@ -34,8 +34,11 @@ import { Footer } from './components/Footer';
 import { NotFoundPage } from './components/NotFoundPage';
 import { KnowledgeHub } from './components/knowledge/KnowledgeHub';
 import { ArticleView } from './components/knowledge/ArticleView';
-import { getArticleBySlug } from './articles/articleData';
+import { getArticleBySlug, KNOWLEDGE_ARTICLES } from './articles/articleData';
 import { getLocalizedArticle } from './articles/articleTranslations';
+import { CategoriesSection } from './components/home/CategoriesSection';
+import { ValuePropositionSection } from './components/home/ValuePropositionSection';
+import { HomeKnowledgeSection } from './components/home/HomeKnowledgeSection';
 import { SEO } from './components/SEO';
 import { getHomeSEO, getCategorySEO } from './lib/seoHelpers';
 import { SupportedLanguage, TRANSLATIONS } from './lib/i18n';
@@ -60,7 +63,7 @@ import {
   DEFAULT_SETTINGS 
 } from './lib/firebase';
 import { ToolSearchEngine } from './lib/searchEngine';
-import { Sparkles, SearchX, RotateCcw, PlusCircle, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Sparkles, SearchX, RotateCcw, PlusCircle, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 
 const DIGITAL_AI_TOOLS: AiTool[] = DIGITAL_TOOLS.map(digitalToolToAiTool);
 const ALL_BUILTIN_TOOLS: AiTool[] = [...DIGITAL_AI_TOOLS, ...INITIAL_TOOLS];
@@ -173,6 +176,18 @@ export default function App() {
   });
 
   const [viewMode, setViewMode] = useState<'grid' | 'compact'>('grid');
+  const [showAllTools, setShowAllTools] = useState(false);
+  const [isMobileScreen, setIsMobileScreen] = useState(() => 
+    typeof window !== 'undefined' ? window.innerWidth < 640 : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileScreen(window.innerWidth < 640);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   // Modals & Navigation states
   const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
@@ -195,14 +210,14 @@ export default function App() {
   const [selectedKnowledgeArticleSlug, setSelectedKnowledgeArticleSlug] = useState<string | null>(null);
   const [globalNotification, setGlobalNotification] = useState<string | null>(null);
 
-  // Language state (ar / en / fr)
+  // Language state (ar / en)
   const [lang, setLang] = useState<SupportedLanguage>(() => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const l = urlParams.get('lang');
-      if (l === 'en' || l === 'fr' || l === 'ar') return l;
+      if (l === 'en' || l === 'ar') return l;
       const saved = localStorage.getItem('adawatai_lang');
-      if (saved === 'en' || saved === 'fr' || saved === 'ar') return saved;
+      if (saved === 'en' || saved === 'ar') return saved;
     } catch (e) {}
     return 'ar';
   });
@@ -231,6 +246,12 @@ export default function App() {
       localStorage.setItem('ai_directory_theme', 'light');
     }
   }, [isDarkMode]);
+
+  // Sync document language and text direction
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  }, [lang]);
 
   // Stable ref for tools to prevent re-attaching or triggering URL listeners on tool updates
   const toolsRef = useRef<AiTool[]>(tools);
@@ -430,7 +451,7 @@ export default function App() {
       const urlParams = new URLSearchParams(window.location.search);
       
       const langParam = urlParams.get('lang');
-      if (langParam === 'en' || langParam === 'fr' || langParam === 'ar') {
+      if (langParam === 'en' || langParam === 'ar') {
         setLang(langParam);
       }
 
@@ -1039,6 +1060,7 @@ export default function App() {
 
   // Handler: Partial filter update
   const handleFilterChange = useCallback((updates: Partial<FilterState>) => {
+    setShowAllTools(false);
     setFilterState((prev) => {
       const next = { ...prev, ...updates };
       if (updates.selectedCategory !== undefined) {
@@ -1061,6 +1083,7 @@ export default function App() {
 
   // Handler: Reset filters
   const handleResetFilters = useCallback(() => {
+    setShowAllTools(false);
     setFilterState({
       searchQuery: '',
       selectedCategory: 'all',
@@ -1150,6 +1173,15 @@ export default function App() {
     });
   }, [tools, searchResultData, filterState, favorites, userRatings]);
 
+  // Tools pagination limit for compact home experience (mobile: 6 max, desktop: 8 max)
+  const toolDisplayLimit = isMobileScreen ? 6 : 8;
+  const displayedTools = useMemo(() => {
+    if (showAllTools) return filteredTools;
+    return filteredTools.slice(0, toolDisplayLimit);
+  }, [filteredTools, showAllTools, toolDisplayLimit]);
+
+  const remainingToolsCount = filteredTools.length - displayedTools.length;
+
   // Calculate tool counts per category
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -1204,7 +1236,7 @@ export default function App() {
   if (isAdminDashboardOpen) {
     if (isCheckingAdminAuth) {
       return (
-        <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`} dir="rtl">
+        <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
             <span className="text-xs font-semibold text-slate-400">جاري التحقق من جلسة الإدارة الآمنة...</span>
@@ -1232,15 +1264,16 @@ export default function App() {
             }
           }}
           isDarkMode={isDarkMode}
+          lang={lang}
         />
       );
     }
 
     return (
-      <div className={`min-h-screen ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`} dir="rtl">
+      <div className={`min-h-screen ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
         {/* Global Notification Toast */}
         {globalNotification && (
-          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-slate-900 text-white border border-indigo-500 shadow-2xl flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-top duration-200" dir="rtl">
+          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-slate-900 text-white border border-indigo-500 shadow-2xl flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-top duration-200" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>{globalNotification}</span>
           </div>
@@ -1332,6 +1365,7 @@ export default function App() {
           onClose={() => setIsPromptsLibraryOpen(false)}
           initialSelectedTool={promptsLibraryToolFilter}
           isDarkMode={isDarkMode}
+          lang={lang}
         />
       </div>
     );
@@ -1360,7 +1394,7 @@ export default function App() {
       {/* Dynamic SEO for Knowledge Center Hub */}
       {isKnowledgeHubOpen && !selectedKnowledgeArticle && !is404 && (
         <SEO
-          title={lang === 'ar' ? 'مركز المعرفة والأدلة الرقمية الشاملة | أدواتي AI' : lang === 'fr' ? 'Centre de connaissances et guides pratiques | Adawatai AI' : 'Knowledge Center & Practical Tech Guides | Adawatai AI'}
+          title={lang === 'ar' ? 'مركز المعرفة والأدلة الرقمية الشاملة | أدواتي AI' : 'Knowledge Center & Practical Tech Guides | Adawatai AI'}
           description={t.knowledgeCenterDesc}
           canonical="https://adawatai.online/knowledge"
           robots="index, follow"
@@ -1459,7 +1493,7 @@ export default function App() {
 
       {/* Global Notification Toast */}
       {globalNotification && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-slate-900 text-white border border-indigo-500 shadow-2xl flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-top duration-200" dir="rtl">
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-slate-900 text-white border border-indigo-500 shadow-2xl flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-top duration-200" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{globalNotification}</span>
         </div>
@@ -1570,7 +1604,7 @@ export default function App() {
             searchQuery={filterState.searchQuery}
             onSearchChange={(q) => handleFilterChange({ searchQuery: q })}
             onSelectKeyword={(kw) => {
-              if (kw === 'دعم اللغة العربية') {
+              if (kw === 'دعم اللغة العربية' || kw === 'Arabic Support') {
                 handleFilterChange({ onlyArabicSupport: true, searchQuery: '' });
               } else {
                 handleFilterChange({ searchQuery: kw });
@@ -1585,70 +1619,128 @@ export default function App() {
             isDarkMode={isDarkMode}
             bestSuggestion={searchResultData.bestSuggestion}
             hasTypoCorrection={searchResultData.hasTypoCorrection}
+            lang={lang}
           />
 
       {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        
+      <main 
+        id="tools-catalog"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-6 sm:space-y-8"
+        style={{ paddingBottom: 'calc(2rem + var(--sticky-ad-height, 0px))' }}
+      >
+        {/* Categories Showcase Section */}
+        <CategoriesSection
+          categories={CATEGORIES}
+          selectedCategory={filterState.selectedCategory}
+          onSelectCategory={(catId) => handleFilterChange({ selectedCategory: catId, searchQuery: '' })}
+          categoryCounts={categoryCounts}
+          totalToolsCount={tools.length}
+          isDarkMode={isDarkMode}
+          lang={lang}
+        />
+
         {/* Top Sponsored Ad Banner (if enabled and active) */}
         {siteSettings.showSponsoredAds && topAd && (
           <SponsoredBanner
             ad={topAd}
             isDarkMode={isDarkMode}
+            lang={lang}
           />
         )}
 
-        {/* Filter Controls Bar */}
-        <FilterBar
-          categories={CATEGORIES}
-          filterState={filterState}
-          onFilterChange={handleFilterChange}
-          onResetFilters={handleResetFilters}
-          totalFilteredCount={filteredTools.length}
-          totalToolsCount={tools.length}
-          viewMode={viewMode}
-          onToggleViewMode={setViewMode}
-          isDarkMode={isDarkMode}
-          categoryCounts={categoryCounts}
-        />
+        {/* Filter Controls Bar with Anchor */}
+        <div id="tools-filter-anchor" className="space-y-4">
+          <FilterBar
+            categories={CATEGORIES}
+            filterState={filterState}
+            onFilterChange={handleFilterChange}
+            onResetFilters={handleResetFilters}
+            totalFilteredCount={filteredTools.length}
+            totalToolsCount={tools.length}
+            viewMode={viewMode}
+            onToggleViewMode={setViewMode}
+            isDarkMode={isDarkMode}
+            categoryCounts={categoryCounts}
+            lang={lang}
+          />
+        </div>
 
         {/* Tools Display Grid / List */}
         {filteredTools.length > 0 ? (
-          <div className={
-            viewMode === 'grid'
-              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5'
-              : 'space-y-3'
-          }>
-            {filteredTools.map((tool, index) => {
-              // Inject Sponsored Grid Card after 3rd item
-              const shouldShowGridAd = index === 2 && siteSettings.showSponsoredAds && gridAd;
+          <>
+            <div className={
+              viewMode === 'grid'
+                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5'
+                : 'space-y-3'
+            }>
+              {displayedTools.map((tool, index) => {
+                // Inject Sponsored Grid Card after 3rd item
+                const shouldShowGridAd = index === 2 && siteSettings.showSponsoredAds && gridAd;
 
-              return (
-                <React.Fragment key={tool.id}>
-                  <ToolCard
-                    tool={tool}
-                    isFavorite={!!favorites[tool.id]}
-                    userRating={userRatings[tool.id]}
-                    onToggleFavorite={handleToggleFavorite}
-                    onRateTool={handleRateTool}
-                    onOpenDetails={(t) => {
-                      handleOpenToolDetails(t);
-                    }}
-                    onTagClick={(tag) => handleFilterChange({ searchQuery: tag })}
-                    viewMode={viewMode}
-                    isDarkMode={isDarkMode}
-                  />
-
-                  {shouldShowGridAd && viewMode === 'grid' && (
-                    <SponsoredBanner
-                      ad={gridAd}
+                return (
+                  <React.Fragment key={tool.id}>
+                    <ToolCard
+                      tool={tool}
+                      isFavorite={!!favorites[tool.id]}
+                      userRating={userRatings[tool.id]}
+                      onToggleFavorite={handleToggleFavorite}
+                      onRateTool={handleRateTool}
+                      onOpenDetails={(t) => {
+                        handleOpenToolDetails(t);
+                      }}
+                      onTagClick={(tag) => handleFilterChange({ searchQuery: tag })}
+                      viewMode={viewMode}
                       isDarkMode={isDarkMode}
+                      lang={lang}
                     />
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
+
+                    {shouldShowGridAd && viewMode === 'grid' && (
+                      <SponsoredBanner
+                        ad={gridAd}
+                        isDarkMode={isDarkMode}
+                        lang={lang}
+                      />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+
+            {/* Explore All / Load More Button */}
+            {remainingToolsCount > 0 && (
+              <div className="flex flex-col items-center justify-center pt-2 pb-1">
+                <button
+                  id="explore-all-tools-btn"
+                  onClick={() => setShowAllTools(true)}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-xs hover:shadow-md cursor-pointer"
+                >
+                  <span>{lang === 'ar' ? `استكشاف جميع الأدوات (+${remainingToolsCount})` : `Explore all tools (+${remainingToolsCount})`}</span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 font-medium">
+                  {lang === 'ar' 
+                    ? `يتم عرض ${displayedTools.length} من أصل ${filteredTools.length} أداة`
+                    : `Showing ${displayedTools.length} of ${filteredTools.length} tools`}
+                </span>
+              </div>
+            )}
+
+            {showAllTools && filteredTools.length > toolDisplayLimit && (
+              <div className="flex justify-center pt-2 pb-1">
+                <button
+                  onClick={() => {
+                    setShowAllTools(false);
+                    const anchor = document.getElementById('tools-filter-anchor');
+                    if (anchor) anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all cursor-pointer"
+                >
+                  <span>{lang === 'ar' ? 'عرض عدد أقل من الأدوات' : 'Show fewer tools'}</span>
+                  <ChevronUp className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           /* Empty State */
           <div className={`p-12 text-center rounded-3xl border ${
@@ -1658,10 +1750,12 @@ export default function App() {
               <SearchX className="w-8 h-8" />
             </div>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-              لم يتم العثور على أدوات مطابقة
+              {lang === 'ar' ? 'لم يتم العثور على أدوات مطابقة' : 'No matching tools found'}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
-              جرّب تغيير كلمات البحث، أو إزالة بعض الفلاتر المفعلة، أو اقترح إضافة هذه الأداة إلى المنصة عبر لوحة المقترحات.
+              {lang === 'ar' 
+                ? 'جرّب تغيير كلمات البحث، أو إزالة بعض الفلاتر المفعلة، أو اقترح إضافة هذه الأداة إلى المنصة عبر لوحة المقترحات.'
+                : 'Try adjusting your search terms, clearing active filters, or suggest a new tool to our catalog.'}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
               <button
@@ -1669,18 +1763,30 @@ export default function App() {
                 className="w-full sm:w-auto px-4 py-2 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center gap-1.5 transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>إعادة ضبط الفلاتر</span>
+                <span>{t.clearFilters || (lang === 'ar' ? 'إعادة ضبط الفلاتر' : 'Reset filters')}</span>
               </button>
               <button
                 onClick={() => setIsVisitorSubmitOpen(true)}
                 className="w-full sm:w-auto px-4 py-2 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center gap-1.5 transition-colors shadow-xs"
               >
                 <PlusCircle className="w-3.5 h-3.5" />
-                <span>اقترح أداة جديدة</span>
+                <span>{t.suggestTool || (lang === 'ar' ? 'اقترح أداة جديدة' : 'Suggest a tool')}</span>
               </button>
             </div>
           </div>
         )}
+
+        {/* Knowledge Center Featured Articles Showcase */}
+        <HomeKnowledgeSection
+          articles={KNOWLEDGE_ARTICLES}
+          onOpenArticle={(article) => handleSelectKnowledgeArticle(article.slug)}
+          onOpenKnowledgeHub={handleOpenKnowledgeCenter}
+          isDarkMode={isDarkMode}
+          lang={lang}
+        />
+
+        {/* Platform Value Proposition & Standards */}
+        <ValuePropositionSection isDarkMode={isDarkMode} lang={lang} />
       </main>
       </>
       )}
@@ -1732,6 +1838,7 @@ export default function App() {
         }}
         initialSelectedTool={promptsLibraryToolFilter}
         isDarkMode={isDarkMode}
+        lang={lang}
       />
 
       {/* Admin Tool Create/Edit Modal */}
@@ -1765,6 +1872,7 @@ export default function App() {
         onClose={() => setIsVisitorSubmitOpen(false)}
         categories={CATEGORIES}
         isDarkMode={isDarkMode}
+        lang={lang}
         onSuccessNotification={showNotification}
       />
 
@@ -1778,6 +1886,7 @@ export default function App() {
           handleOpenToolDetails(tool);
         }}
         isDarkMode={isDarkMode}
+        lang={lang}
       />
 
       {/* About Us Modal (adawatai.online) */}
@@ -1790,6 +1899,7 @@ export default function App() {
           }
         }}
         isDarkMode={isDarkMode}
+        lang={lang}
         onOpenPrivacyPolicy={() => setIsPrivacyPolicyOpen(true)}
         onOpenContact={() => setIsContactModalOpen(true)}
         onOpenSuggestTool={() => setIsVisitorSubmitOpen(true)}
@@ -1805,6 +1915,7 @@ export default function App() {
           }
         }}
         isDarkMode={isDarkMode}
+        lang={lang}
         onOpenAboutUs={() => setIsAboutUsOpen(true)}
       />
 
@@ -1818,6 +1929,7 @@ export default function App() {
           }
         }}
         isDarkMode={isDarkMode}
+        lang={lang}
       />
 
       {/* Footer */}
@@ -1844,6 +1956,7 @@ export default function App() {
       <StickyBottomAd
         ads={advertisements}
         isDarkMode={isDarkMode}
+        lang={lang}
       />
     </div>
   );

@@ -63,6 +63,7 @@ interface AudienceItem {
   nameAr: string;
   nameEn: string;
   descriptionAr: string;
+  descriptionEn: string;
   icon: React.ComponentType<{ className?: string }>;
 }
 
@@ -72,6 +73,7 @@ const ALL_AUDIENCES: Record<string, AudienceItem> = {
     nameAr: 'الطلاب والباحثون',
     nameEn: 'Students & Researchers',
     descriptionAr: 'لإعداد الأبحاث الأكاديمية، تلخيص المراجع المعقدة، والتحصيل العلمي.',
+    descriptionEn: 'For preparing academic research, summarizing complex literature, and scientific studies.',
     icon: GraduationCap,
   },
   creators: {
@@ -79,6 +81,7 @@ const ALL_AUDIENCES: Record<string, AudienceItem> = {
     nameAr: 'صناع المحتوى والكتاب',
     nameEn: 'Content Creators & Writers',
     descriptionAr: 'لتوليد الأفكار، صياغة المقالات، وتطوير السيناريوهات والمحتوى الرقمي.',
+    descriptionEn: 'For brainstorming ideas, drafting articles, and developing scripts and digital media.',
     icon: PenTool,
   },
   designers: {
@@ -86,6 +89,7 @@ const ALL_AUDIENCES: Record<string, AudienceItem> = {
     nameAr: 'المصممون والمبدعون',
     nameEn: 'Designers & Visual Artists',
     descriptionAr: 'لإنشاء وتعديل الرسومات الفنية، واجهات الاستخدام، والمؤثرات البصرية.',
+    descriptionEn: 'For creating and refining visual artwork, user interfaces, and visual assets.',
     icon: Palette,
   },
   developers: {
@@ -93,6 +97,7 @@ const ALL_AUDIENCES: Record<string, AudienceItem> = {
     nameAr: 'المبرمجون والمطورون',
     nameEn: 'Developers & Engineers',
     descriptionAr: 'لكتابة الأكواد، فحص الأخطاء، وتسريع وتيرة بناء التطبيقات.',
+    descriptionEn: 'For writing clean code, debugging issues, and accelerating software engineering.',
     icon: Code2,
   },
   marketers: {
@@ -100,6 +105,7 @@ const ALL_AUDIENCES: Record<string, AudienceItem> = {
     nameAr: 'المسوقون ورواد الأعمال',
     nameEn: 'Marketers & Entrepreneurs',
     descriptionAr: 'لإطلاق الحملات الإعلانية، كتابة نصوص الإعلانات، وتحسين نتائج محركات البحث.',
+    descriptionEn: 'For launching ad campaigns, crafting marketing copy, and boosting SEO rankings.',
     icon: TrendingUp,
   },
   businesses: {
@@ -107,6 +113,7 @@ const ALL_AUDIENCES: Record<string, AudienceItem> = {
     nameAr: 'الشركات وفرق العمل',
     nameEn: 'Businesses & Teams',
     descriptionAr: 'لأتمتة المهام التشغيلية، تنظيم المشاريع، ورفع كفاءة الإنتاجية الإدارية.',
+    descriptionEn: 'For automating operations, organizing workflows, and maximizing team productivity.',
     icon: Briefcase,
   },
 };
@@ -130,6 +137,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
   isDarkMode,
   lang = 'ar' as SupportedLanguage
 }) => {
+  const isAr = lang === 'ar';
   const [noteText, setNoteText] = useState(userNote);
   const [copied, setCopied] = useState(false);
   const [noteSavedToast, setNoteSavedToast] = useState(false);
@@ -268,42 +276,48 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
           labelAr: 'مجاني بالكامل',
           labelEn: 'Free',
           badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800',
-          explanation: 'الأداة مجانية للاستخدام بشكل كامل دون الحاجة إلى اشتراك مالي أو بطاقة بنكية.'
+          explanation: 'الأداة مجانية للاستخدام بشكل كامل دون الحاجة إلى اشتراك مالي أو بطاقة بنكية.',
+          explanationEn: 'The tool is completely free to use without requiring any financial subscription or credit card.'
         };
       case 'freemium':
         return {
           labelAr: 'مجاني جزئياً',
           labelEn: 'Freemium',
           badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-950/70 dark:text-blue-300 border-blue-300 dark:border-blue-800',
-          explanation: 'توفر الأداة خطة مجانية دائمة مع ميزات قياسية، مع توفير خطط مدفوعة للحصول على ميزات متقدمة أو سعة استخدام أكبر.'
+          explanation: 'توفر الأداة خطة مجانية دائمة مع ميزات قياسية، مع توفير خطط مدفوعة للحصول على ميزات متقدمة أو سعة استخدام أكبر.',
+          explanationEn: 'Offers a perpetual free plan with standard features, alongside paid plans for advanced capabilities and higher limits.'
         };
       case 'paid':
         return {
           labelAr: 'مدفوع',
           labelEn: 'Paid',
           badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border-amber-300 dark:border-amber-800',
-          explanation: 'تتطلب الأداة اشتراكاً مدفوعاً للوصول إلى كامل إمكانياتها واستخدام خدماتها.'
+          explanation: 'تتطلب الأداة اشتراكاً مدفوعاً للوصول إلى كامل إمكانياتها واستخدام خدماتها.',
+          explanationEn: 'Requires a paid subscription to access full capabilities and leverage its services.'
         };
       case 'free_trial':
         return {
           labelAr: 'تجربة مجانية',
           labelEn: 'Free Trial',
           badgeColor: 'bg-teal-100 text-teal-800 dark:bg-teal-950/70 dark:text-teal-300 border-teal-300 dark:border-teal-800',
-          explanation: 'تتيح الأداة تجربة خدماتها مجاناً لفترة محددة أو بعدد نقاط تجريبية قبل الترقية إلى خطة مدفوعة.'
+          explanation: 'تتيح الأداة تجربة خدماتها مجاناً لفترة محددة أو بعدد نقاط تجريبية قبل الترقية إلى خطة مدفوعة.',
+          explanationEn: 'Provides free trial access for a limited time or credits before upgrading to a paid tier.'
         };
       case 'open_source':
         return {
           labelAr: 'مفتوح المصدر',
           labelEn: 'Open Source',
           badgeColor: 'bg-purple-100 text-purple-800 dark:bg-purple-950/70 dark:text-purple-300 border-purple-300 dark:border-purple-800',
-          explanation: 'الأداة مفتوحة المصدر بالكامل ومتاحة مجاناً للجميع للاستخدام، التعديل، أو الاستضافة الذاتية.'
+          explanation: 'الأداة مفتوحة المصدر بالكامل ومتاحة مجاناً للجميع للاستخدام، التعديل، أو الاستضافة الذاتية.',
+          explanationEn: 'Fully open-source and free for everyone to use, modify, or self-host.'
         };
       default:
         return {
           labelAr: tool.pricingAr || 'غير محدد',
           labelEn: 'Available',
           badgeColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border-slate-300 dark:border-slate-700',
-          explanation: 'يرجى مراجعة الموقع الرسمي للتحقق من تفاصيل الباقات المحدثة.'
+          explanation: 'يرجى مراجعة الموقع الرسمي للتحقق من تفاصيل الباقات المحدثة.',
+          explanationEn: 'Please refer to the official website to verify current plan details.'
         };
     }
   }, [tool]);
@@ -446,7 +460,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
             ? 'bg-slate-900 border-slate-800 text-slate-100' 
             : 'bg-white border-slate-200 text-slate-900'
         }`}
-        dir="rtl"
+        dir={lang === 'ar' ? 'rtl' : 'ltr'}
       >
         {/* 1. Tool Header (Breadcrumb + Title + Logo + Rating + Badges + Quick Actions) */}
         <header className={`relative p-5 sm:p-7 border-b ${
@@ -458,15 +472,15 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
           <button
             id="close-modal-btn"
             onClick={onClose}
-            className="absolute top-4 left-4 p-2 rounded-full bg-slate-200/60 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors z-20 cursor-pointer"
-            title="إغلاق النافذة (Esc)"
-            aria-label="إغلاق"
+            className={`absolute top-4 ${lang === 'ar' ? 'left-4' : 'right-4'} p-2 rounded-full bg-slate-200/60 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors z-20 cursor-pointer`}
+            title={lang === 'ar' ? 'إغلاق النافذة (Esc)' : 'Close window (Esc)'}
+            aria-label={lang === 'ar' ? 'إغلاق' : 'Close'}
           >
             <X className="w-5 h-5" />
           </button>
 
           {/* Breadcrumbs Navigation */}
-          <nav aria-label="مسار التصفح" className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-4 flex-wrap">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-4 flex-wrap">
             <a 
               href="/"
               onClick={(e) => {
@@ -475,7 +489,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
               }}
               className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
             >
-              الرئيسية
+              {lang === 'ar' ? 'الرئيسية' : 'Home'}
             </a>
             <span className="text-slate-400">/</span>
             <a 
@@ -489,11 +503,11 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
               }}
               className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium cursor-pointer"
             >
-              {categoryObj?.nameAr || 'دليل الأدوات'}
+              {lang === 'en' ? (categoryObj?.nameEn || 'Directory') : (categoryObj?.nameAr || 'دليل الأدوات')}
             </a>
             <span className="text-slate-400">/</span>
             <span className="text-slate-900 dark:text-white font-semibold truncate max-w-[240px]">
-              {tool.nameAr}
+              {lang === 'en' ? tool.nameEn : tool.nameAr}
             </span>
           </nav>
 
@@ -506,7 +520,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                 {!logoImgError && faviconUrl ? (
                   <img
                     src={faviconUrl}
-                    alt={`شعار ${tool.nameAr}`}
+                    alt={`${tool.nameEn} logo`}
                     onError={() => setLogoImgError(true)}
                     className="w-full h-full object-contain"
                     loading="eager"
@@ -522,21 +536,23 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
               <div className="min-w-0 space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h1 id="tool-title-h1" className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-                    {tool.nameAr}
-                    <span className="mr-2 text-base sm:text-lg font-semibold text-slate-500 dark:text-slate-400">
-                      ({tool.nameEn})
-                    </span>
+                    {lang === 'en' ? tool.nameEn : tool.nameAr}
+                    {lang === 'ar' && (
+                      <span className="mr-2 text-base sm:text-lg font-semibold text-slate-500 dark:text-slate-400">
+                        ({tool.nameEn})
+                      </span>
+                    )}
                   </h1>
 
                   {tool.isFeatured && (
                     <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-                      أداة رائدة
+                      {lang === 'ar' ? 'أداة رائدة' : 'Featured'}
                     </span>
                   )}
                 </div>
 
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
-                  {tool.taglineAr}
+                  {lang === 'en' ? (tool.taglineEn || tool.descriptionEn || tool.taglineAr) : tool.taglineAr}
                 </p>
 
                 {/* Badges Row: Category, Rating, Pricing Model */}
@@ -550,10 +566,10 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                       }
                     }}
                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 transition-colors cursor-pointer"
-                    title={`استعراض أدوات تصنيف ${categoryObj?.nameAr}`}
+                    title={isAr ? `استعراض أدوات تصنيف ${categoryObj?.nameAr}` : `Browse ${categoryObj?.nameEn || 'category'} tools`}
                   >
                     <Layers className="w-3.5 h-3.5 text-indigo-500" />
-                    <span>{categoryObj?.nameAr || 'القسم'}</span>
+                    <span>{isAr ? (categoryObj?.nameAr || 'القسم') : (categoryObj?.nameEn || 'Category')}</span>
                   </button>
 
                   {/* Rating Badge */}
@@ -561,7 +577,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                     <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                     <span>{displayRating.toFixed(1)} / 5</span>
                     <span className="text-[11px] font-normal text-slate-400 mr-0.5">
-                      ({tool.reviewsCount || 100} تقييم)
+                      ({tool.reviewsCount || 100} {isAr ? 'تقييم' : 'reviews'})
                     </span>
                   </div>
 
@@ -569,8 +585,10 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                   {pricingInfo && (
                     <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold border text-xs ${pricingInfo.badgeColor}`}>
                       <CreditCard className="w-3.5 h-3.5 opacity-75" />
-                      <span>{pricingInfo.labelAr}</span>
-                      <span className="text-[10px] font-normal opacity-75">({pricingInfo.labelEn})</span>
+                      <span>{isAr ? pricingInfo.labelAr : pricingInfo.labelEn}</span>
+                      {isAr && (
+                        <span className="text-[10px] font-normal opacity-75">({pricingInfo.labelEn})</span>
+                      )}
                     </span>
                   )}
                 </div>
@@ -588,8 +606,8 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                     ? 'bg-rose-500 text-white border-rose-400 shadow-sm' 
                     : 'bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
                 }`}
-                title={isFavorite ? 'إزالة من المفضلة' : 'حفظ في المفضلة'}
-                aria-label={isFavorite ? 'إزالة من المفضلة' : 'حفظ في المفضلة'}
+                title={isFavorite ? (isAr ? 'إزالة من المفضلة' : 'Remove from favorites') : (isAr ? 'حفظ في المفضلة' : 'Add to favorites')}
+                aria-label={isFavorite ? (isAr ? 'إزالة من المفضلة' : 'Remove from favorites') : (isAr ? 'حفظ في المفضلة' : 'Add to favorites')}
               >
                 <Heart className={`w-4 h-4 ${isFavorite ? 'fill-white' : ''}`} />
               </button>
@@ -599,8 +617,8 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                 id="modal-copy-btn"
                 onClick={handleCopyLink}
                 className="p-2.5 rounded-xl border bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
-                title="نسخ رابط صفحة الأداة"
-                aria-label="مشاركة الأداة"
+                title={isAr ? 'نسخ رابط صفحة الأداة' : 'Copy page link'}
+                aria-label={isAr ? 'مشاركة الأداة' : 'Share tool'}
               >
                 {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4" />}
               </button>
@@ -621,7 +639,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-indigo-600/20 transition-all hover:scale-[1.02] cursor-pointer"
               >
-                <span>{tool.isDigitalTool ? 'استخدام الأداة مجاناً الآن' : 'زيارة الموقع الرسمي'}</span>
+                <span>{tool.isDigitalTool ? (isAr ? 'استخدام الأداة مجاناً الآن' : 'Launch Free Tool Now') : (isAr ? 'زيارة الموقع الرسمي' : 'Visit Official Website')}</span>
                 {tool.isDigitalTool ? <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300" /> : <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
               </a>
             </div>
@@ -639,17 +657,25 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
           <section aria-labelledby="section-about-title">
             <h2 id="section-about-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-2.5 flex items-center gap-2">
               <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              <span>ما هي أداة {tool.nameAr} ({tool.nameEn}) وما المشكلة التي تحلها؟</span>
+              <span>
+                {isAr 
+                  ? `ما هي أداة ${tool.nameAr} (${tool.nameEn}) وما المشكلة التي تحلها؟` 
+                  : `What is ${tool.nameEn} and what problem does it solve?`}
+              </span>
             </h2>
             <div className={`p-4 sm:p-5 rounded-2xl border leading-relaxed text-sm ${
               isDarkMode ? 'bg-slate-800/40 border-slate-800 text-slate-300' : 'bg-slate-50/80 border-slate-200/90 text-slate-700'
             }`}>
               <p className="mb-2.5 font-normal">
-                {tool.descriptionAr}
+                {!isAr && tool.descriptionEn ? tool.descriptionEn : tool.descriptionAr}
               </p>
               <div className="flex items-center gap-2 pt-2 border-t border-slate-200/60 dark:border-slate-700/60 text-xs text-slate-500 dark:text-slate-400">
                 <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>حل ذكي متكامل مصمم لاختصار الوقت والجهد ورفع دقة المخرجات بجودة احترافية.</span>
+                <span>
+                  {isAr 
+                    ? 'حل ذكي متكامل مصمم لاختصار الوقت والجهد ورفع دقة المخرجات بجودة احترافية.'
+                    : 'An integrated intelligent solution engineered to save time, streamline workflows, and deliver professional results.'}
+                </span>
               </div>
             </div>
           </section>
@@ -658,7 +684,11 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
           <section aria-labelledby="section-features-title">
             <h2 id="section-features-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-              <span>أبرز مميزات وخصائص {tool.nameAr} (Key Features)</span>
+              <span>
+                {isAr 
+                  ? `أبرز مميزات وخصائص ${tool.nameAr} (Key Features)` 
+                  : `Key Features & Capabilities of ${tool.nameEn}`}
+              </span>
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {tool.pros && tool.pros.length > 0 ? (
@@ -676,7 +706,9 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                   </div>
                 ))
               ) : (
-                <div className="text-xs text-slate-500 p-3">تتميز الأداة بدقة عالية وسرعة استجابة فائقة.</div>
+                <div className="text-xs text-slate-500 p-3">
+                  {isAr ? 'تتميز الأداة بدقة عالية وسرعة استجابة فائقة.' : 'Features high precision and rapid responsiveness.'}
+                </div>
               )}
             </div>
           </section>
@@ -686,10 +718,10 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
             <div className="flex items-center justify-between mb-3">
               <h2 id="section-audience-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                <span>لمن هذه الأداة؟ (الجمهور والفئات المستفيدة)</span>
+                <span>{isAr ? 'لمن هذه الأداة؟ (الجمهور والفئات المستفيدة)' : 'Who is this tool for? (Target Audience)'}</span>
               </h2>
               <span className="text-xs text-slate-400 hidden sm:inline">
-                الفئات الأكثر استفادة من وظائف الأداة
+                {isAr ? 'الفئات الأكثر استفادة من وظائف الأداة' : 'Key users and teams who benefit most'}
               </span>
             </div>
 
@@ -710,10 +742,10 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                     </div>
                     <div>
                       <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mb-0.5">
-                        {aud.nameAr}
+                        {isAr ? aud.nameAr : aud.nameEn}
                       </h3>
                       <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                        {aud.descriptionAr}
+                        {isAr ? aud.descriptionAr : aud.descriptionEn}
                       </p>
                     </div>
                   </div>
@@ -723,14 +755,14 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
           </section>
 
           {/* 5. Main Use Cases (أبرز حالات الاستخدام والتطبيقات العملية) */}
-          {tool.useCases && tool.useCases.length > 0 && (
+          {((!isAr && tool.useCasesEn && tool.useCasesEn.length > 0) || (tool.useCases && tool.useCases.length > 0)) && (
             <section aria-labelledby="section-usecases-title">
               <h2 id="section-usecases-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                <span>أبرز حالات الاستخدام والتطبيقات العملية (Main Use Cases)</span>
+                <span>{isAr ? 'أبرز حالات الاستخدام والتطبيقات العملية (Main Use Cases)' : 'Main Use Cases & Practical Applications'}</span>
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {tool.useCases.map((uc, idx) => (
+                {((!isAr && tool.useCasesEn && tool.useCasesEn.length > 0) ? tool.useCasesEn : tool.useCases).map((uc, idx) => (
                   <div 
                     key={idx}
                     className={`p-3.5 rounded-2xl border flex items-start gap-3 ${
@@ -755,7 +787,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
           <section aria-labelledby="section-proscons-title">
             <h2 id="section-proscons-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
               <Repeat className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              <span>المميزات والسلبيات (Pros & Cons)</span>
+              <span>{isAr ? 'المميزات والسلبيات (Pros & Cons)' : 'Pros & Cons'}</span>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Pros */}
@@ -764,10 +796,10 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
               }`}>
                 <h3 className="text-xs sm:text-sm font-bold text-emerald-800 dark:text-emerald-300 mb-3 flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>أبرز المميزات ونقاط القوة (Pros)</span>
+                  <span>{isAr ? 'أبرز المميزات ونقاط القوة (Pros)' : 'Key Advantages & Strengths (Pros)'}</span>
                 </h3>
                 <ul className="space-y-2.5">
-                  {tool.pros.map((pro, idx) => (
+                  {((!isAr && tool.prosEn && tool.prosEn.length > 0) ? tool.prosEn : tool.pros).map((pro, idx) => (
                     <li key={idx} className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 flex items-start gap-2 leading-relaxed">
                       <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0 mt-0.5">✓</span>
                       <span>{pro}</span>
@@ -782,11 +814,11 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
               }`}>
                 <h3 className="text-xs sm:text-sm font-bold text-rose-800 dark:text-rose-300 mb-3 flex items-center gap-2">
                   <XCircle className="w-4 h-4 text-rose-600" />
-                  <span>المحددات والملاحظات (Cons)</span>
+                  <span>{isAr ? 'المحددات والملاحظات (Cons)' : 'Limitations & Considerations (Cons)'}</span>
                 </h3>
-                {tool.cons && tool.cons.length > 0 ? (
+                {((!isAr && tool.consEn && tool.consEn.length > 0) ? tool.consEn : tool.cons) && ((!isAr && tool.consEn && tool.consEn.length > 0) ? tool.consEn : tool.cons).length > 0 ? (
                   <ul className="space-y-2.5">
-                    {tool.cons.map((con, idx) => (
+                    {((!isAr && tool.consEn && tool.consEn.length > 0) ? tool.consEn : tool.cons).map((con, idx) => (
                       <li key={idx} className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 flex items-start gap-2 leading-relaxed">
                         <span className="text-rose-600 dark:text-rose-400 font-bold shrink-0 mt-0.5">✗</span>
                         <span>{con}</span>
@@ -795,7 +827,9 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                   </ul>
                 ) : (
                   <p className="text-xs text-slate-500 dark:text-slate-400 italic">
-                    لم تسجل أي سلبيات أو قيود جوهرية في بنية الاستخدام المعتادة للأداة.
+                    {isAr 
+                      ? 'لم تسجل أي سلبيات أو قيود جوهرية في بنية الاستخدام المعتادة للأداة.' 
+                      : 'No major limitations or architectural drawbacks recorded under standard usage.'}
                   </p>
                 )}
               </div>
@@ -806,7 +840,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
           <section aria-labelledby="section-pricing-title">
             <h2 id="section-pricing-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              <span>تفاصيل الأسعار ونموذج الاشتراك (Pricing Model)</span>
+              <span>{isAr ? 'تفاصيل الأسعار ونموذج الاشتراك (Pricing Model)' : 'Pricing Details & Subscription Model'}</span>
             </h2>
 
             <div className={`p-4 sm:p-5 rounded-2xl border space-y-4 ${
@@ -815,36 +849,46 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <span className={`px-3 py-1 rounded-xl text-xs font-bold border ${pricingInfo?.badgeColor}`}>
-                    {pricingInfo?.labelAr} ({pricingInfo?.labelEn})
+                    {isAr ? `${pricingInfo?.labelAr} (${pricingInfo?.labelEn})` : pricingInfo?.labelEn}
                   </span>
                   <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-                    {tool.supportsArabic ? '✓ تدعم اللغة العربية بطلاقة' : '— واجهة إنجليزية'}
+                    {tool.supportsArabic 
+                      ? (isAr ? '✓ تدعم اللغة العربية بطلاقة' : '✓ Fluent Arabic Support') 
+                      : (isAr ? '— واجهة إنجليزية' : '— English Interface')}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
                   <Laptop className="w-3.5 h-3.5" />
-                  <span>المنصات: {tool.platforms?.join('، ') || 'المتصفح (Web)'}</span>
+                  <span>
+                    {isAr 
+                      ? `المنصات: ${tool.platforms?.join('، ') || 'المتصفح (Web)'}` 
+                      : `Platforms: ${(tool.platformsEn || tool.platforms)?.join(', ') || 'Web Browser'}`}
+                  </span>
                 </div>
               </div>
 
               {/* Verified Pricing Breakdown from Database */}
-              {tool.pricingDetailsAr ? (
+              {(!isAr && tool.pricingDetailsEn) || (isAr && tool.pricingDetailsAr) || tool.pricingDetailsAr ? (
                 <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                   <span className="font-bold text-indigo-600 dark:text-indigo-400 block mb-1">
-                    تفاصيل الخطة الموثقة:
+                    {isAr ? 'تفاصيل الخطة الموثقة:' : 'Verified Plan Details:'}
                   </span>
-                  <p>{tool.pricingDetailsAr}</p>
+                  <p>{!isAr && tool.pricingDetailsEn ? tool.pricingDetailsEn : tool.pricingDetailsAr}</p>
                 </div>
               ) : (
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  {pricingInfo?.explanation}
+                  {isAr ? pricingInfo?.explanation : pricingInfo?.explanationEn}
                 </p>
               )}
 
               <p className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
                 <Info className="w-3.5 h-3.5 shrink-0" />
-                <span>ملاحظة: تخضع خطط وباقات الأسعار للتحديث الدوري المستمر من قبل الموقع الرسمي للأداة.</span>
+                <span>
+                  {isAr 
+                    ? 'ملاحظة: تخضع خطط وباقات الأسعار للتحديث الدوري المستمر من قبل الموقع الرسمي للأداة.'
+                    : 'Note: Pricing tiers and plans are subject to periodic updates by the official provider.'}
+                </span>
               </p>
             </div>
           </section>
@@ -854,7 +898,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
             <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200">
               <div className="flex items-center gap-2 mb-1.5 font-bold text-xs sm:text-sm">
                 <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>حقيبة البحث العلمي والطلبة والأساتذة:</span>
+                <span>{isAr ? 'حقيبة البحث العلمي والطلبة والأساتذة:' : 'Academic, Student & Researcher Toolkit:'}</span>
               </div>
               {tool.academicFocus && (
                 <p className="text-xs text-emerald-800 dark:text-emerald-300 mb-2 leading-relaxed">
@@ -886,10 +930,14 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                 </div>
                 <div>
                   <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
-                    أوامر وبرومبتات احترافية لـ {tool.nameAr} ({tool.nameEn})
+                    {isAr 
+                      ? `أوامر وبرومبتات احترافية لـ ${tool.nameAr} (${tool.nameEn})` 
+                      : `Curated Prompts & Formulas for ${tool.nameEn}`}
                   </h3>
                   <p className="text-[11px] text-slate-600 dark:text-slate-400">
-                    احصل على أفضل صياغات الأوامر باللغة العربية لتحقيق أقصى فاعلية واستجابة من الأداة.
+                    {isAr 
+                      ? 'احصل على أفضل صياغات الأوامر باللغة العربية لتحقيق أقصى فاعلية واستجابة من الأداة.'
+                      : 'Access optimized prompt formulas engineered for maximum precision and results.'}
                   </p>
                 </div>
               </div>
@@ -902,7 +950,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                 className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white shadow-xs transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>تصفح الأوامر المخصصة</span>
+                <span>{isAr ? 'تصفح الأوامر المخصصة' : 'Browse Custom Prompts'}</span>
               </button>
             </div>
           )}
@@ -918,10 +966,14 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
               <div className="flex items-center justify-between mb-3">
                 <h2 id="section-alternatives-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Repeat className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                  <span>أفضل بدائل {tool.nameAr} على منصة أدواتي (AI Alternatives)</span>
+                  <span>
+                    {isAr 
+                      ? `أفضل بدائل ${tool.nameAr} على منصة أدواتي (AI Alternatives)` 
+                      : `Top Alternatives to ${tool.nameEn} on Adawatai`}
+                  </span>
                 </h2>
                 <span className="text-xs text-slate-400 hidden sm:inline">
-                  أدوات مشابهة تقدم وظائف منافسة
+                  {isAr ? 'أدوات مشابهة تقدم وظائف منافسة' : 'Similar tools with comparable features'}
                 </span>
               </div>
 
@@ -934,7 +986,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                       e.preventDefault();
                       onSelectTool(altTool);
                     }}
-                    className={`p-3.5 rounded-2xl border text-right transition-all hover:border-indigo-400 hover:shadow-md flex flex-col justify-between gap-3 group cursor-pointer ${
+                    className={`p-3.5 rounded-2xl border ${isAr ? 'text-right' : 'text-left'} transition-all hover:border-indigo-400 hover:shadow-md flex flex-col justify-between gap-3 group cursor-pointer ${
                       isDarkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-white border-slate-200'
                     }`}
                   >
@@ -945,7 +997,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-1">
                           <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                            {altTool.nameAr}
+                            {isAr ? altTool.nameAr : altTool.nameEn}
                           </span>
                           <span className="text-[10px] font-bold text-amber-500 flex items-center gap-0.5 shrink-0">
                             <Star className="w-3 h-3 fill-amber-400" />
@@ -953,22 +1005,22 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                           </span>
                         </div>
                         <span className="text-[11px] text-slate-400 block truncate">
-                          {altTool.nameEn}
+                          {isAr ? altTool.nameEn : altTool.nameAr}
                         </span>
                       </div>
                     </div>
 
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed text-right">
-                      {altTool.taglineAr}
+                    <p className={`text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed ${isAr ? 'text-right' : 'text-left'}`}>
+                      {isAr ? altTool.taglineAr : (altTool.taglineEn || altTool.descriptionEn || altTool.taglineAr)}
                     </p>
 
                     <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px]">
                       <span className="font-semibold text-indigo-600 dark:text-indigo-400 truncate max-w-[120px]">
-                        {altTool.pricingAr}
+                        {isAr ? altTool.pricingAr : altTool.pricing}
                       </span>
                       <span className="text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 flex items-center gap-1 font-medium transition-colors">
-                        <span>عرض التفاصيل</span>
-                        <ChevronLeft className="w-3.5 h-3.5" />
+                        <span>{isAr ? 'عرض التفاصيل' : 'View Details'}</span>
+                        <ChevronLeft className={`w-3.5 h-3.5 ${!isAr ? 'rotate-180' : ''}`} />
                       </span>
                     </div>
                   </a>
@@ -983,7 +1035,11 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
               <div className="flex items-center justify-between mb-3">
                 <h2 id="section-related-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Compass className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                  <span>أدوات ذات صلة في تصنيف {categoryObj?.nameAr || 'القسم'}</span>
+                  <span>
+                    {isAr 
+                      ? `أدوات ذات صلة في تصنيف ${categoryObj?.nameAr || 'القسم'}` 
+                      : `Related Tools in ${categoryObj?.nameEn || 'Category'}`}
+                  </span>
                 </h2>
                 <a
                   href={`/category/${tool.category}`}
@@ -996,8 +1052,8 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                   }}
                   className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
                 >
-                  <span>استعراض كل القسم</span>
-                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span>{isAr ? 'استعراض كل القسم' : 'Browse All in Category'}</span>
+                  <ChevronLeft className={`w-3.5 h-3.5 ${!isAr ? 'rotate-180' : ''}`} />
                 </a>
               </div>
 
@@ -1010,7 +1066,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                       e.preventDefault();
                       onSelectTool(relTool);
                     }}
-                    className={`p-3 rounded-xl border text-right transition-all hover:border-indigo-400 hover:shadow-sm flex flex-col justify-between gap-2 group cursor-pointer ${
+                    className={`p-3 rounded-xl border ${isAr ? 'text-right' : 'text-left'} transition-all hover:border-indigo-400 hover:shadow-sm flex flex-col justify-between gap-2 group cursor-pointer ${
                       isDarkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-white border-slate-200'
                     }`}
                   >
@@ -1020,10 +1076,10 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                       </div>
                       <div className="min-w-0 flex-1">
                         <span className="text-xs font-bold text-slate-900 dark:text-white block truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                          {relTool.nameAr}
+                          {isAr ? relTool.nameAr : relTool.nameEn}
                         </span>
                         <span className="text-[10px] text-slate-400 block truncate">
-                          {relTool.pricingAr}
+                          {isAr ? relTool.pricingAr : relTool.pricing}
                         </span>
                       </div>
                     </div>
@@ -1040,12 +1096,18 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <h3 id="section-notes-title" className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
-                <span>تقييمك الشخصي وملاحظاتك الخاصة حول {tool.nameAr}</span>
+                <span>
+                  {isAr 
+                    ? `تقييمك الشخصي وملاحظاتك الخاصة حول ${tool.nameAr}` 
+                    : `Your Private Rating & Notes for ${tool.nameEn}`}
+                </span>
               </h3>
               
               {/* Star Picker */}
               <div className="flex items-center gap-1">
-                <span className="text-xs text-slate-500 ml-1">قيم تجربتك:</span>
+                <span className="text-xs text-slate-500 ml-1">
+                  {isAr ? 'قيم تجربتك:' : 'Rate your experience:'}
+                </span>
                 {[1, 2, 3, 4, 5].map((star) => {
                   const isActive = hoverRating !== null ? hoverRating >= star : (userRating || 0) >= star;
                   return (
@@ -1056,8 +1118,8 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                       onMouseLeave={() => setHoverRating(null)}
                       onClick={() => onRateTool(tool.id, star)}
                       className="p-1 hover:scale-125 transition-transform cursor-pointer"
-                      title={`تقييم ${star} نجوم`}
-                      aria-label={`تقييم ${star} نجوم`}
+                      title={isAr ? `تقييم ${star} نجوم` : `Rate ${star} stars`}
+                      aria-label={isAr ? `تقييم ${star} نجوم` : `Rate ${star} stars`}
                     >
                       <Star className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? 'fill-amber-400 text-amber-400' : 'text-slate-300 dark:text-slate-600'}`} />
                     </button>
@@ -1071,7 +1133,9 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
               <textarea
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
-                placeholder="اكتب ملاحظاتك الشخصية حول تجربتك لهذه الأداة (تُحفظ تلقائياً في ذاكرة متصفحك)..."
+                placeholder={isAr 
+                  ? 'اكتب ملاحظاتك الشخصية حول تجربتك لهذه الأداة (تُحفظ تلقائياً في ذاكرة متصفحك)...' 
+                  : 'Write your private personal notes and workflow observations (saved locally in your browser)...'}
                 rows={2}
                 className="w-full p-3 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
@@ -1079,17 +1143,17 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                 <span className="text-[11px] text-slate-400">
                   {noteSavedToast ? (
                     <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5" /> تم حفظ الملاحظة بنجاح
+                      <Check className="w-3.5 h-3.5" /> {isAr ? 'تم حفظ الملاحظة بنجاح' : 'Note saved successfully'}
                     </span>
                   ) : (
-                    'ملاحظاتك وتقييمك سرية وخاصة بك ومخزنة محلياً في جهازك'
+                    isAr ? 'ملاحظاتك وتقييمك سرية وخاصة بك ومخزنة محلياً في جهازك' : 'Your notes and ratings are private and stored locally on your device'
                   )}
                 </span>
                 <button
                   type="submit"
                   className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-2xs cursor-pointer"
                 >
-                  حفظ الملاحظة
+                  {isAr ? 'حفظ الملاحظة' : 'Save Note'}
                 </button>
               </div>
             </form>
@@ -1099,7 +1163,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
           {tool.tags && tool.tags.length > 0 && (
             <div className="pt-1 flex items-center gap-1.5 flex-wrap">
               <span className="text-xs text-slate-400 flex items-center gap-1 ml-1">
-                <Tag className="w-3 h-3" /> الكلمات المفتاحية:
+                <Tag className="w-3 h-3" /> {isAr ? 'الكلمات المفتاحية:' : 'Keywords:'}
               </span>
               {tool.tags.map((tag) => (
                 <button
@@ -1128,7 +1192,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
               onClick={onClose}
               className="px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
             >
-              إغلاق النافذة
+              {isAr ? 'إغلاق النافذة' : 'Close Window'}
             </button>
 
             <button
@@ -1136,7 +1200,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
               className="px-3 py-2 text-xs font-medium rounded-xl text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1.5 cursor-pointer"
             >
               <Share2 className="w-3.5 h-3.5" />
-              <span>{copied ? 'تم نسخ الرابط' : 'مشاركة الأداة'}</span>
+              <span>{copied ? (isAr ? 'تم نسخ الرابط' : 'Link Copied!') : (isAr ? 'مشاركة الأداة' : 'Share Tool')}</span>
             </button>
           </div>
 
@@ -1156,7 +1220,11 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
             rel="noopener noreferrer"
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-600/25 transition-all hover:scale-[1.02] cursor-pointer"
           >
-            <span>{tool.isDigitalTool ? 'استخدام الأداة مجاناً الآن' : 'زيارة الموقع الرسمي'}</span>
+            <span>
+              {tool.isDigitalTool 
+                ? (isAr ? 'استخدام الأداة مجاناً الآن' : 'Launch Free Tool Now') 
+                : (isAr ? 'زيارة الموقع الرسمي' : 'Visit Official Website')}
+            </span>
             {tool.isDigitalTool ? <Sparkles className="w-4 h-4 text-amber-300" /> : <ExternalLink className="w-4 h-4" />}
           </a>
         </footer>

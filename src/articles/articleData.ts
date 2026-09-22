@@ -1,101 +1,87 @@
 import { ArticleCategory, KnowledgeArticle } from './types';
 import { SupportedLanguage } from '../lib/i18n';
 import { STUDENT_CLUSTER_ARTICLES } from './cluster';
+import { fileConversionArticle } from './fileConversionArticle';
+import { aiImageToolsArticle } from './aiImageToolsArticle';
 
 export const ARTICLE_CATEGORIES: ArticleCategory[] = [
   {
     id: 'ai-tools',
     nameAr: 'أدوات الذكاء الاصطناعي',
     nameEn: 'AI Tools',
-    nameFr: 'Outils d\'IA',
     descriptionAr: 'أحدث نماذج الذكاء الاصطناعي التوليدي، وتطبيقات المحادثة، والتطوير الذكي.',
     descriptionEn: 'Latest generative AI models, chat assistants, and smart development tools.',
-    descriptionFr: 'Derniers modèles d\'IA générative, assistants de discussion et outils intelligents.',
     iconName: 'Sparkles'
   },
   {
     id: 'pdf-tools',
     nameAr: 'أدوات PDF',
     nameEn: 'PDF Tools',
-    nameFr: 'Outils PDF',
     descriptionAr: 'شروحات وحلول إدارة مستندات PDF: الدمج، والتقسيم، والضغط، والتحويل بأمان.',
     descriptionEn: 'Guides and solutions for PDF management: merge, split, compress, and convert securely.',
-    descriptionFr: 'Guides pour la gestion des PDF : fusionner, diviser, compresser et convertir.',
     iconName: 'FileText'
   },
   {
     id: 'file-conversion',
     nameAr: 'تحويل الملفات',
     nameEn: 'File Conversion',
-    nameFr: 'Conversion de fichiers',
     descriptionAr: 'طرق تحويل الصيغ بين المستندات، والصور، والصوتيات بجودة عالية وسرعة فائقة.',
     descriptionEn: 'Fast and high-quality format conversion between documents, images, and audio.',
-    descriptionFr: 'Conversion de formats rapide et de haute qualité entre documents et images.',
     iconName: 'Repeat'
   },
   {
     id: 'image-tools',
     nameAr: 'أدوات الصور',
     nameEn: 'Image Tools',
-    nameFr: 'Outils d\'image',
     descriptionAr: 'ضغط وتحجيم وتحويل الصور وتوليد الرسوم بالذكاء الاصطناعي بدون فقدان الجودة.',
     descriptionEn: 'Compress, resize, convert images and generate artwork using AI without quality loss.',
-    descriptionFr: 'Compression, redimensionnement et génération d\'images par IA.',
     iconName: 'Palette'
   },
   {
     id: 'productivity',
     nameAr: 'الإنتاجية والعمل',
     nameEn: 'Productivity',
-    nameFr: 'Productivité',
     descriptionAr: 'استراتيجيات وأدوات لأتمتة المهام اليومية وإعداد العروض وإدارة الوقت بذكاء.',
     descriptionEn: 'Strategies and tools to automate daily tasks, presentations, and smart workflows.',
-    descriptionFr: 'Outils pour automatiser les tâches quotidiennes et les présentations.',
     iconName: 'TrendingUp'
   },
   {
     id: 'students',
     nameAr: 'الطلاب والتعليم',
     nameEn: 'Students & Education',
-    nameFr: 'Étudiants',
     descriptionAr: 'أدوات ذكية للبحث الأكاديمي، وتلخيص المقالات، والتحضير للامتحانات ومذكرات التخرج.',
     descriptionEn: 'Smart tools for academic research, paper summarization, exam preparation, and study.',
-    descriptionFr: 'Outils intelligents pour la recherche académique et les études.',
     iconName: 'GraduationCap'
   },
   {
     id: 'business',
     nameAr: 'الأعمال والشركات',
     nameEn: 'Business',
-    nameFr: 'Entreprise',
     descriptionAr: 'أدوات رقمية مساعدة لرواد الأعمال، وفرق العمل لزيادة الكفاءة وتقليص التكاليف.',
     descriptionEn: 'Digital tools for entrepreneurs and business teams to boost efficiency.',
-    descriptionFr: 'Outils numériques pour les entreprises et entrepreneurs.',
     iconName: 'Briefcase'
   },
   {
     id: 'tutorials',
     nameAr: 'شروحات وأدلة',
     nameEn: 'Tutorials',
-    nameFr: 'Tutoriels',
     descriptionAr: 'أدلة خطوة بخطوة لاستخدام الأدوات الرقمية وحل المشكلات التقنية الشائعة.',
     descriptionEn: 'Step-by-step guides to master digital tools and solve common technical problems.',
-    descriptionFr: 'Guides pas à pas pour maîtriser les outils numériques.',
     iconName: 'BookOpen'
   },
   {
     id: 'comparisons',
     nameAr: 'مقارنات وبدائل',
     nameEn: 'Comparisons',
-    nameFr: 'Comparatifs',
     descriptionAr: 'مقارنات تفصيلية وموضوعية بين أشهر الأدوات لاختيار الأنسب لاحتياجاتك وميزانيتك.',
     descriptionEn: 'In-depth, objective comparisons between popular tools to find your perfect fit.',
-    descriptionFr: 'Comparaisons objectives entre outils populaires pour choisir le meilleur.',
     iconName: 'Layers'
   }
 ];
 
 export const KNOWLEDGE_ARTICLES: KnowledgeArticle[] = [
+  fileConversionArticle,
+  aiImageToolsArticle,
   ...STUDENT_CLUSTER_ARTICLES,
   // =========================================================================
   // ARTICLE 1: أفضل أدوات الذكاء الاصطناعي للطلاب في 2026
@@ -548,7 +534,7 @@ export const KNOWLEDGE_ARTICLES: KnowledgeArticle[] = [
     isPublished: true,
     featuredToolId: 'pdf-to-word',
     relatedTools: ['pdf-to-word', 'word-to-pdf', 'pdf-text-extractor', 'merge-pdf', 'compress-pdf'],
-    relatedArticles: ['how-to-compress-pdf-reduce-file-size', 'best-ai-tools-for-students-2026'],
+    relatedArticles: ['file-conversion-tools', 'how-to-compress-pdf-reduce-file-size', 'best-ai-tools-for-students-2026'],
     seoTitle: 'كيف تحول PDF إلى Word بسهولة وبدون برامج | دليل خطوة بخطوة 2026',
     seoDescription: 'تعلم كيف تحول أي ملف PDF إلى Word قابل للتعديل مجاناً وبسرعة عبر المتصفح. معالجة محلية آمنة 100% تحافظ على تنسيق اللغة العربية والخصوصية.',
     keywords: ['تحويل pdf الى word', 'تحويل ملفات بي دي اف لوورد', 'pdf to word مجانا', 'تعديل pdf', 'تحويل pdf الى docx بالعربي'],
@@ -885,7 +871,7 @@ export const KNOWLEDGE_ARTICLES: KnowledgeArticle[] = [
     isPublished: true,
     featuredToolId: 'compress-pdf',
     relatedTools: ['compress-pdf', 'pdf-to-word', 'merge-pdf', 'split-pdf', 'compress-image'],
-    relatedArticles: ['how-to-convert-pdf-to-word-easily', 'best-ai-tools-for-students-2026'],
+    relatedArticles: ['file-conversion-tools', 'how-to-convert-pdf-to-word-easily', 'best-ai-tools-for-students-2026'],
     seoTitle: 'كيف تضغط ملف PDF وتصغر حجمه مجاناً وبأعلى جودة | دليل 2026',
     seoDescription: 'تعلم كيف تقلل حجم ملف PDF وتضغطه بنقرة واحدة عبر المتصفح مجاناً. حل مشكلة حجم الملف الكبير لإرساله عبر البريد أو بوابات التوظيف بأمان تام.',
     keywords: ['ضغط ملف pdf', 'تصغير حجم pdf', 'تقليل حجم ملف pdf', 'compress pdf مجانا', 'ضغط بي دي اف اونلاين'],

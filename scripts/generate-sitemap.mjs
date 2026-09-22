@@ -68,24 +68,36 @@ function extractDigitalTools() {
 }
 
 function extractKnowledgeArticles() {
-  const articlesPath = path.join(rootDir, 'src', 'articles', 'articleData.ts');
-  if (!fs.existsSync(articlesPath)) return [];
-  const content = fs.readFileSync(articlesPath, 'utf8');
+  const articlesDir = path.join(rootDir, 'src', 'articles');
+  if (!fs.existsSync(articlesDir)) return [];
 
   const articles = [];
-  const slugMatches = content.matchAll(/slug:\s*['"]([a-z0-9_-]+)['"]/g);
-  for (const m of slugMatches) {
-    const slug = m[1];
-    if (!articles.some(a => a.slug === slug)) {
-      // Find date near slug
-      const idx = content.indexOf(m[0]);
-      const chunk = content.slice(idx, idx + 600);
-      const updatedMatch = chunk.match(/updatedAt:\s*['"]([^'"]+)['"]/);
-      const publishedMatch = chunk.match(/publishedAt:\s*['"]([^'"]+)['"]/);
-      const date = updatedMatch ? updatedMatch[1] : (publishedMatch ? publishedMatch[1] : new Date().toISOString().split('T')[0]);
-      articles.push({ slug, date });
+
+  function scanDirectory(dir) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        scanDirectory(fullPath);
+      } else if (entry.isFile() && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
+        const content = fs.readFileSync(fullPath, 'utf8');
+        const slugMatches = content.matchAll(/slug:\s*['"]([a-z0-9_-]+)['"]/g);
+        for (const m of slugMatches) {
+          const slug = m[1];
+          if (!articles.some(a => a.slug === slug)) {
+            const idx = content.indexOf(m[0]);
+            const chunk = content.slice(idx, idx + 600);
+            const updatedMatch = chunk.match(/updatedAt:\s*['"]([^'"]+)['"]/);
+            const publishedMatch = chunk.match(/publishedAt:\s*['"]([^'"]+)['"]/);
+            const date = updatedMatch ? updatedMatch[1] : (publishedMatch ? publishedMatch[1] : new Date().toISOString().split('T')[0]);
+            articles.push({ slug, date });
+          }
+        }
+      }
     }
   }
+
+  scanDirectory(articlesDir);
   return articles;
 }
 

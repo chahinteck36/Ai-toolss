@@ -35,18 +35,13 @@ const CATEGORY_SCHEMA_MAP: Record<string, string> = {
  */
 export function getHomeSEO(lang: SupportedLanguage = 'ar', totalToolsCount: number = 50): GeneratedSEOData {
   const isAr = lang === 'ar';
-  const isFr = lang === 'fr';
 
   const title = isAr
     ? 'أدواتي AI | دليل أدوات الذكاء الاصطناعي الشامل - adawatai.online'
-    : isFr
-    ? 'Adawatai AI | Répertoire Complet d\'Outils d\'Intelligence Artificielle'
     : 'Adawatai AI | Comprehensive AI Tools Discovery Directory';
 
   const description = isAr
     ? `المرجع العربي الشامل لاكتشاف وتصنيف ومراجعة أكثر من ${totalToolsCount} أداة وتطبيق ذكاء اصطناعي رائد في الكتابة، التصميم، البرمجة، والإنتاجية بدقة وتحديث مستمر.`
-    : isFr
-    ? `Découvrez et comparez plus de ${totalToolsCount} outils d'intelligence artificielle de pointe pour la rédaction, le graphisme, le code et la productivité.`
     : `Discover, compare and explore over ${totalToolsCount} leading artificial intelligence tools for writing, image creation, coding, and workflow productivity.`;
 
   const canonical = lang === 'ar' ? `${BASE_URL}/` : `${BASE_URL}/?lang=${lang}`;
@@ -110,13 +105,10 @@ export function getHomeSEO(lang: SupportedLanguage = 'ar', totalToolsCount: numb
  */
 export function getCategorySEO(category: Category, lang: SupportedLanguage = 'ar'): GeneratedSEOData {
   const isAr = lang === 'ar';
-  const isFr = lang === 'fr';
 
   const categoryName = isAr ? category.nameAr : category.nameEn;
   const title = isAr
     ? `أفضل أدوات ${category.nameAr} | دليل أدواتي AI - adawatai.online`
-    : isFr
-    ? `Meilleurs Outils d'IA : ${category.nameEn} | Adawatai AI`
     : `Best ${category.nameEn} AI Tools | Adawatai AI Directory`;
 
   const description = isAr
@@ -175,15 +167,12 @@ export function getCategorySEO(category: Category, lang: SupportedLanguage = 'ar
  */
 export function getToolSEO(tool: AiTool, category?: Category, lang: SupportedLanguage = 'ar'): GeneratedSEOData {
   const isAr = lang === 'ar';
-  const isFr = lang === 'fr';
 
   const toolDisplayName = isAr ? `${tool.nameAr} (${tool.nameEn})` : tool.nameEn;
   const categoryName = category ? (isAr ? category.nameAr : category.nameEn) : tool.category;
 
   const title = isAr
     ? `${tool.nameAr} - مراجعة، مميزات، أسعار وبدائل الأداة | أدواتي AI`
-    : isFr
-    ? `${tool.nameEn} - Avis, Fonctionnalités, Tarifs et Alternatives | Adawatai AI`
     : `${tool.nameEn} - AI Review, Features, Pricing & Top Alternatives | Adawatai AI`;
 
   const baseDesc = tool.taglineAr || tool.descriptionAr.slice(0, 160);
@@ -266,12 +255,9 @@ export function getToolSEO(tool: AiTool, category?: Category, lang: SupportedLan
  */
 export function get404SEO(lang: SupportedLanguage = 'ar'): GeneratedSEOData {
   const isAr = lang === 'ar';
-  const isFr = lang === 'fr';
 
   const title = isAr
     ? '404 - الصفحة غير موجودة | أدواتي AI'
-    : isFr
-    ? '404 - Page Non Trouvée | Adawatai AI'
     : '404 - Page Not Found | Adawatai AI';
 
   const description = isAr

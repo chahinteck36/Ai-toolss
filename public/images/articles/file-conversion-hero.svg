@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none" width="100%" height="100%">
+  <defs>
+    <linearGradient id="fc-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="50%" stop-color="#1e1b4b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="fc-card-pdf" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#b91c1c" stop-opacity="0.05" />
+    </linearGradient>
+    <linearGradient id="fc-card-word" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0.05" />
+    </linearGradient>
+    <linearGradient id="fc-card-img" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#047857" stop-opacity="0.05" />
+    </linearGradient>
+    <linearGradient id="fc-violet-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="50%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#ec4899" />
+    </linearGradient>
+    <linearGradient id="fc-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0" />
+    </linearGradient>
+    <pattern id="fc-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#334155" stroke-width="1" stroke-opacity="0.3" />
+    </pattern>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="1200" height="630" fill="url(#fc-bg)" />
+  <rect width="1200" height="630" fill="url(#fc-grid)" />
+
+  <!-- Ambient Glow -->
+  <circle cx="600" cy="315" r="280" fill="url(#fc-glow)" />
+
+  <!-- Central Processing Hub Circle -->
+  <g transform="translate(600, 315)">
+    <!-- Outer Orbit Ring -->
+    <circle r="220" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="8 8" stroke-opacity="0.6" />
+    <circle r="140" fill="#1e1b4b" stroke="#6366f1" stroke-width="2" stroke-opacity="0.8" />
+    
+    <!-- Pulse Core -->
+    <circle r="60" fill="url(#fc-violet-grad)" opacity="0.9" />
+    
+    <!-- Central Shield / Convert Icon -->
+    <path d="M-18 -8 L0 -24 L18 -8 V12 C18 24 0 34 0 34 C0 34 -18 24 -18 12 Z" fill="#ffffff" />
+    <path d="M-4 6 L-1 9 L8 -2" stroke="#4f46e5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+    <!-- Technical Orbital Nodes -->
+    <circle cx="0" cy="-220" r="8" fill="#6366f1" />
+    <circle cx="220" cy="0" r="8" fill="#10b981" />
+    <circle cx="0" cy="220" r="8" fill="#3b82f6" />
+    <circle cx="-220" cy="0" r="8" fill="#ef4444" />
+  </g>
+
+  <!-- Left Card: PDF Document -->
+  <g transform="translate(180, 200)">
+    <rect width="220" height="230" rx="20" fill="#0f172a" stroke="#ef4444" stroke-width="2" stroke-opacity="0.6" />
+    <rect x="2" y="2" width="216" height="226" rx="18" fill="url(#fc-card-pdf)" />
+    
+    <!-- PDF Tag -->
+    <rect x="24" y="24" width="56" height="28" rx="8" fill="#ef4444" />
+    <text x="52" y="43" fill="#ffffff" font-family="system-ui, sans-serif" font-weight="900" font-size="13" text-anchor="middle">PDF</text>
+    
+    <!-- Document Lines Mockup -->
+    <rect x="24" y="74" width="140" height="10" rx="5" fill="#475569" />
+    <rect x="24" y="96" width="170" height="8" rx="4" fill="#334155" />
+    <rect x="24" y="114" width="150" height="8" rx="4" fill="#334155" />
+    <rect x="24" y="132" width="120" height="8" rx="4" fill="#334155" />
+
+    <!-- Vector Badge -->
+    <rect x="24" y="170" width="100" height="24" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1" />
+    <text x="74" y="186" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">Vector Fixed</text>
+  </g>
+
+  <!-- Flow Vector from PDF to Center -->
+  <path d="M 400 315 L 460 315" stroke="#6366f1" stroke-width="3" stroke-dasharray="6 6" />
+  <polygon points="465,315 455,309 455,321" fill="#6366f1" />
+
+  <!-- Right Top Card: Word DOCX -->
+  <g transform="translate(800, 110)">
+    <rect width="220" height="190" rx="20" fill="#0f172a" stroke="#3b82f6" stroke-width="2" stroke-opacity="0.6" />
+    <rect x="2" y="2" width="216" height="186" rx="18" fill="url(#fc-card-word)" />
+    
+    <!-- DOCX Tag -->
+    <rect x="24" y="24" width="68" height="28" rx="8" fill="#3b82f6" />
+    <text x="58" y="43" fill="#ffffff" font-family="system-ui, sans-serif" font-weight="900" font-size="13" text-anchor="middle">DOCX</text>
+    
+    <!-- Edit Lines Mockup -->
+    <rect x="24" y="72" width="150" height="10" rx="5" fill="#475569" />
+    <rect x="24" y="92" width="170" height="8" rx="4" fill="#334155" />
+    <rect x="24" y="108" width="110" height="8" rx="4" fill="#334155" />
+
+    <rect x="24" y="140" width="110" height="24" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1" />
+    <text x="79" y="156" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">Editable Flow</text>
+  </g>
+
+  <!-- Flow Vector from Center to Word -->
+  <path d="M 740 250 L 800 220" stroke="#3b82f6" stroke-width="3" stroke-dasharray="6 6" />
+  <polygon points="805,217 793,217 799,228" fill="#3b82f6" />
+
+  <!-- Right Bottom Card: WebP / Image -->
+  <g transform="translate(800, 340)">
+    <rect width="220" height="190" rx="20" fill="#0f172a" stroke="#10b981" stroke-width="2" stroke-opacity="0.6" />
+    <rect x="2" y="2" width="216" height="186" rx="18" fill="url(#fc-card-img)" />
+    
+    <!-- WebP Tag -->
+    <rect x="24" y="24" width="68" height="28" rx="8" fill="#10b981" />
+    <text x="58" y="43" fill="#ffffff" font-family="system-ui, sans-serif" font-weight="900" font-size="13" text-anchor="middle">WebP</text>
+    
+    <!-- Image Icon Graphic -->
+    <rect x="24" y="68" width="172" height="60" rx="10" fill="#1e293b" />
+    <circle cx="54" cy="88" r="10" fill="#10b981" opacity="0.8" />
+    <path d="M34 118 L70 94 L110 118" stroke="#10b981" stroke-width="2" fill="none" />
+    <path d="M90 118 L124 98 L160 118" stroke="#34d399" stroke-width="2" fill="none" />
+
+    <rect x="24" y="142" width="130" height="24" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1" />
+    <text x="89" y="158" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">Optimized Web -70%</text>
+  </g>
+
+  <!-- Flow Vector from Center to Image -->
+  <path d="M 740 380 L 800 410" stroke="#10b981" stroke-width="3" stroke-dasharray="6 6" />
+  <polygon points="805,413 798,402 793,413" fill="#10b981" />
+
+  <!-- Top Title Banner Pill -->
+  <g transform="translate(600, 70)">
+    <rect x="-240" y="-22" width="480" height="44" rx="22" fill="#1e293b" stroke="#4f46e5" stroke-width="1.5" />
+    <text x="0" y="6" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">
+      Client-Side Secure Document Conversion Architecture
+    </text>
+  </g>
+
+  <!-- Bottom Privacy Trust Badge -->
+  <g transform="translate(600, 565)">
+    <rect x="-200" y="-18" width="400" height="36" rx="18" fill="#0f172a" stroke="#334155" stroke-width="1" />
+    <circle cx="-165" cy="0" r="6" fill="#10b981" />
+    <text x="10" y="5" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">
+      100% In-Browser Execution • Zero Server Uploads
+    </text>
+  </g>
+</svg>

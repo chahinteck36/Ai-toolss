@@ -1,4 +1,5 @@
 import { AiTool, Category } from '../types';
+import { TOOL_TRANSLATIONS } from './toolTranslations';
 
 export const CATEGORIES: Category[] = [
   {
@@ -139,7 +140,7 @@ export const CATEGORIES: Category[] = [
   }
 ];
 
-export const INITIAL_TOOLS: AiTool[] = [
+const RAW_INITIAL_TOOLS: AiTool[] = [
   {
     id: 'chatgpt',
     nameAr: 'شات جي بي تي (ChatGPT)',
@@ -1886,3 +1887,19 @@ export const INITIAL_TOOLS: AiTool[] = [
     iconBg: 'bg-sky-50 text-sky-700'
   }
 ];
+
+export const INITIAL_TOOLS: AiTool[] = RAW_INITIAL_TOOLS.map((tool) => {
+  const trans = TOOL_TRANSLATIONS[tool.id];
+  if (!trans) return tool;
+  return {
+    ...tool,
+    taglineEn: tool.taglineEn || trans.taglineEn,
+    descriptionEn: tool.descriptionEn || trans.descriptionEn,
+    pricingDetailsEn: tool.pricingDetailsEn || trans.pricingDetailsEn,
+    prosEn: tool.prosEn || trans.prosEn,
+    consEn: tool.consEn || trans.consEn,
+    useCasesEn: tool.useCasesEn || trans.useCasesEn,
+    platformsEn: tool.platformsEn || trans.platformsEn,
+  };
+});
+

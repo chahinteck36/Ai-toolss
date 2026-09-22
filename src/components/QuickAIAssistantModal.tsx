@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
+import { AiTool, SupportedLanguage } from '../types';
 import { 
   X, 
   Sparkles, 
-  Compass, 
-  ArrowRight, 
+  ArrowLeft, 
+  ArrowRight,
   ExternalLink, 
-  Star, 
+  FileText, 
+  Image as ImageIcon, 
+  Code2, 
+  Headphones, 
+  Video, 
+  Presentation, 
+  Search, 
+  Languages,
   CheckCircle,
-  FileText,
-  Image as ImageIcon,
-  Code2,
-  Headphones,
-  Video,
-  Presentation,
-  BookOpen,
-  Languages
+  Compass
 } from 'lucide-react';
-import { AiTool } from '../types';
 
 interface QuickAIAssistantModalProps {
   isOpen: boolean;
@@ -24,12 +24,15 @@ interface QuickAIAssistantModalProps {
   allTools: AiTool[];
   onSelectTool: (tool: AiTool) => void;
   isDarkMode: boolean;
+  lang?: SupportedLanguage;
 }
 
 interface TaskOption {
   id: string;
   titleAr: string;
+  titleEn: string;
   descAr: string;
+  descEn: string;
   icon: any;
   categoryMatch: string;
   recommendedIds: string[];
@@ -40,7 +43,9 @@ const TASKS: TaskOption[] = [
   {
     id: 'content_writing',
     titleAr: 'كتابة المقالات وصياغة المحتوى',
+    titleEn: 'Article Writing & Content Creation',
     descAr: 'تأليف مقالات متوافقة مع SEO، صياغة إيميلات، وإعادة الصياغة',
+    descEn: 'SEO articles, email copywriting, and content rewriting',
     icon: FileText,
     categoryMatch: 'text_writing',
     recommendedIds: ['chatgpt', 'claude', 'jasper-ai', 'quillbot'],
@@ -49,7 +54,9 @@ const TASKS: TaskOption[] = [
   {
     id: 'image_art',
     titleAr: 'توليد الصور الفنية والواقعية',
+    titleEn: 'Realistic & Artistic Image Generation',
     descAr: 'رسم صور سينمائية، خلفيات، وتعديل الصور بدقة عالية',
+    descEn: 'Photorealistic imagery, creative concept art, and photo editing',
     icon: ImageIcon,
     categoryMatch: 'image_generation',
     recommendedIds: ['midjourney', 'leonardo-ai', 'krea-ai', 'canva-magic-studio'],
@@ -58,7 +65,9 @@ const TASKS: TaskOption[] = [
   {
     id: 'coding',
     titleAr: 'كتابة وفحص الأكواد البرمجية',
+    titleEn: 'Coding & Debugging Assistant',
     descAr: 'بناء التطبيقات، تصحيح الأخطاء، وإكمال الكود التلقائي',
+    descEn: 'Full-stack development, bug fixing, and AI autocomplete',
     icon: Code2,
     categoryMatch: 'coding_dev',
     recommendedIds: ['cursor-ide', 'deepseek', 'github-copilot', 'phind-ai', 'v0-dev'],
@@ -67,7 +76,9 @@ const TASKS: TaskOption[] = [
   {
     id: 'audio_voice',
     titleAr: 'التعليق الصوتي والموسيقى',
+    titleEn: 'Voiceover & AI Music Generation',
     descAr: 'تحويل النص لصوت عربي واقعي، استنساخ الصوت، وتأليف الموسيقى',
+    descEn: 'Natural voice cloning, text-to-speech, and original soundtracks',
     icon: Headphones,
     categoryMatch: 'audio_music',
     recommendedIds: ['elevenlabs', 'suno-ai'],
@@ -76,7 +87,9 @@ const TASKS: TaskOption[] = [
   {
     id: 'video_creation',
     titleAr: 'صناعة ومونتاج الفيديو',
+    titleEn: 'Video Generation & AI Editing',
     descAr: 'توليد مقاطع سينمائية، شخصيات ناطقة، ومونتاج عبر النص',
+    descEn: 'Cinematic clips, talking digital avatars, and transcript-based editing',
     icon: Video,
     categoryMatch: 'video_generation',
     recommendedIds: ['runway-gen3', 'heygen', 'descript'],
@@ -85,25 +98,31 @@ const TASKS: TaskOption[] = [
   {
     id: 'presentations',
     titleAr: 'العروض التقديمية والإنتاجية',
+    titleEn: 'Presentations & Workplace Productivity',
     descAr: 'إنشاء شرائح PowerPoint بصرية، ومسودات العمل في ثوانٍ',
+    descEn: 'Instant slide decks, summaries, and executive productivity docs',
     icon: Presentation,
     categoryMatch: 'productivity',
-    recommendedIds: ['gamma-app', 'notion-ai', 'canva-magic-studio'],
-    color: 'from-violet-500 to-purple-700'
+    recommendedIds: ['gamma-app', 'notion-ai'],
+    color: 'from-violet-500 to-fuchsia-600'
   },
   {
-    id: 'research',
-    titleAr: 'البحث الموثق وتلخيص الكتب والأوراق',
-    descAr: 'إجابات موثقة بالمصادر والروابط، وتلخيص المستندات الضخمة',
-    icon: BookOpen,
-    categoryMatch: 'search_research',
+    id: 'research_search',
+    titleAr: 'البحث الموثق وتلخيص المصادر',
+    titleEn: 'Cited Research & Deep Search',
+    descAr: 'إجابات مباشرة مع مراجع موثقة، والبحث اللحظي في الإنترنت',
+    descEn: 'Grounded web discovery, academic research, and cited summaries',
+    icon: Search,
+    categoryMatch: 'research',
     recommendedIds: ['perplexity-ai', 'claude', 'gemini'],
     color: 'from-teal-500 to-emerald-700'
   },
   {
     id: 'translation_arabic',
     titleAr: 'الترجمة الاحترافية ودعم العربية',
+    titleEn: 'Contextual Translation & Arabic Support',
     descAr: 'ترجمة السياق بدقة، وترجمة مستندات PDF مع الحفاظ على التنسيق',
+    descEn: 'Nuanced multilingual translation and preserved document formatting',
     icon: Languages,
     categoryMatch: 'translation',
     recommendedIds: ['deepl-translate', 'chatgpt'],
@@ -116,11 +135,14 @@ export const QuickAIAssistantModal: React.FC<QuickAIAssistantModalProps> = ({
   onClose,
   allTools,
   onSelectTool,
-  isDarkMode
+  isDarkMode,
+  lang = 'ar'
 }) => {
   const [selectedTask, setSelectedTask] = useState<TaskOption | null>(null);
 
   if (!isOpen) return null;
+
+  const isAr = lang === 'ar';
 
   const matchedTools = selectedTask
     ? allTools.filter((t) => selectedTask.recommendedIds.includes(t.id))
@@ -137,7 +159,7 @@ export const QuickAIAssistantModal: React.FC<QuickAIAssistantModalProps> = ({
             ? 'bg-slate-900 border-slate-800 text-slate-100' 
             : 'bg-white border-slate-200 text-slate-900'
         }`}
-        dir="rtl"
+        dir={isAr ? 'rtl' : 'ltr'}
       >
         {/* Header */}
         <div className="p-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-between">
@@ -147,16 +169,17 @@ export const QuickAIAssistantModal: React.FC<QuickAIAssistantModalProps> = ({
             </div>
             <div>
               <h3 className="text-lg sm:text-xl font-bold">
-                المستكشف الذكي لاختيار الأداة المثالية
+                {isAr ? 'المستكشف الذكي لاختيار الأداة المثالية' : 'Smart AI Tool Matcher'}
               </h3>
               <p className="text-xs text-white/80">
-                حدد المهمة التي ترغب في إنجازها لنرشح لك أفضل الأدوات المناسبة
+                {isAr ? 'حدد المهمة التي ترغب في إنجازها لنرشح لك أفضل الأدوات المناسبة' : 'Select your goal and we will recommend the top-tier AI tools for the job'}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-2 rounded-full bg-black/20 hover:bg-black/40 text-white transition-colors"
+            aria-label={isAr ? 'إغلاق' : 'Close'}
           >
             <X className="w-5 h-5" />
           </button>
@@ -168,7 +191,7 @@ export const QuickAIAssistantModal: React.FC<QuickAIAssistantModalProps> = ({
             <div>
               <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-indigo-500" />
-                <span>ما هو الهدف أو المهمة التي ترغب في إنجازها؟</span>
+                <span>{isAr ? 'ما هو الهدف أو المهمة التي ترغب في إنجازها؟' : 'What is the objective or task you want to accomplish?'}</span>
               </h4>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -179,7 +202,7 @@ export const QuickAIAssistantModal: React.FC<QuickAIAssistantModalProps> = ({
                       key={task.id}
                       id={`assistant-task-${task.id}`}
                       onClick={() => setSelectedTask(task)}
-                      className={`p-4 rounded-2xl border text-right transition-all hover:border-indigo-400 hover:shadow-md flex items-start gap-3 group ${
+                      className={`p-4 rounded-2xl border ${isAr ? 'text-right' : 'text-left'} transition-all hover:border-indigo-400 hover:shadow-md flex items-start gap-3 group ${
                         isDarkMode 
                           ? 'bg-slate-800/50 border-slate-700 hover:bg-slate-800' 
                           : 'bg-slate-50 border-slate-200 hover:bg-white'
@@ -190,10 +213,10 @@ export const QuickAIAssistantModal: React.FC<QuickAIAssistantModalProps> = ({
                       </div>
                       <div className="min-w-0 flex-1">
                         <span className="text-sm font-bold text-slate-900 dark:text-white block group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                          {task.titleAr}
+                          {isAr ? task.titleAr : task.titleEn}
                         </span>
                         <span className="text-xs text-slate-500 dark:text-slate-400 block line-clamp-2 mt-0.5">
-                          {task.descAr}
+                          {isAr ? task.descAr : task.descEn}
                         </span>
                       </div>
                     </button>
@@ -206,22 +229,32 @@ export const QuickAIAssistantModal: React.FC<QuickAIAssistantModalProps> = ({
               {/* Back to selection */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-400">المهمة المختارة:</span>
+                  <span className="text-xs text-slate-400">{isAr ? 'المهمة المختارة:' : 'Selected Task:'}</span>
                   <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                    {selectedTask.titleAr}
+                    {isAr ? selectedTask.titleAr : selectedTask.titleEn}
                   </span>
                 </div>
                 <button
                   onClick={() => setSelectedTask(null)}
-                  className="text-xs text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold hover:underline"
+                  className="text-xs text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold hover:underline inline-flex items-center gap-1"
                 >
-                  ← تغيير المهمة
+                  {isAr ? (
+                    <>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                      <span>تغيير المهمة</span>
+                    </>
+                  ) : (
+                    <>
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      <span>Change task</span>
+                    </>
+                  )}
                 </button>
               </div>
 
               <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-emerald-500" />
-                <span>أفضل الأدوات المقترحة لمهمتك:</span>
+                <span>{isAr ? 'أفضل الأدوات المقترحة لمهمتك:' : 'Top AI Tools Recommended for Your Task:'}</span>
               </h4>
 
               {/* Matched Tool Cards */}
@@ -242,59 +275,51 @@ export const QuickAIAssistantModal: React.FC<QuickAIAssistantModalProps> = ({
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <h5 className="text-sm font-bold text-slate-900 dark:text-white">
-                            {tool.nameAr}
+                            {isAr ? tool.nameAr : tool.nameEn}
                           </h5>
-                          <span className="text-xs text-slate-400">({tool.nameEn})</span>
+                          {isAr && <span className="text-xs text-slate-400">({tool.nameEn})</span>}
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                            {tool.pricingAr}
+                            {isAr ? tool.pricingAr : (tool.pricing || tool.pricingAr)}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
-                          {tool.taglineAr}
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-md mt-0.5">
+                          {isAr ? tool.taglineAr : (tool.taglineEn || tool.taglineAr)}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                      <a
-                        href={`/tools/${encodeURIComponent(tool.id)}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          onClose();
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => {
                           onSelectTool(tool);
+                          onClose();
                         }}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors"
                       >
-                        عرض التفاصيل
-                      </a>
+                        {isAr ? 'عرض التفاصيل' : 'View Details'}
+                      </button>
 
                       <a
                         href={tool.websiteUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-2xs"
+                        className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                        title={isAr ? 'الموقع الرسمي' : 'Official Website'}
                       >
-                        <span>زيارة الأداة</span>
-                        <ExternalLink className="w-3 h-3" />
+                        <ExternalLink className="w-4 h-4" />
                       </a>
                     </div>
                   </div>
                 ))}
+
+                {matchedTools.length === 0 && (
+                  <p className="text-xs text-slate-500 py-4 text-center">
+                    {isAr ? 'لم يتم العثور على أدوات محددة لهذه المهمة حالياً.' : 'No specific tools found for this category at the moment.'}
+                  </p>
+                )}
               </div>
             </div>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className={`p-4 border-t flex justify-end ${
-          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'
-        }`}>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors"
-          >
-            إغلاق
-          </button>
         </div>
       </div>
     </div>

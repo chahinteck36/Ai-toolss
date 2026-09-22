@@ -6,25 +6,24 @@ import {
   Check, 
   Copy, 
   ExternalLink, 
-  Sparkles, 
-  MessageSquare, 
   Globe, 
-  User, 
-  HelpCircle,
   Clock,
   ShieldCheck
 } from 'lucide-react';
+import { SupportedLanguage } from '../types';
 
 interface ContactModalProps {
   isOpen: boolean;
   onClose: () => void;
   isDarkMode: boolean;
+  lang?: SupportedLanguage;
 }
 
 export const ContactModal: React.FC<ContactModalProps> = ({
   isOpen,
   onClose,
   isDarkMode,
+  lang = 'ar'
 }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -35,6 +34,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
 
   if (!isOpen) return null;
 
+  const isAr = lang === 'ar';
   const targetEmail = 'gmouhamed36@gmail.com';
   const domainEmail = 'contact@adawatai.online';
 
@@ -46,27 +46,34 @@ export const ContactModal: React.FC<ContactModalProps> = ({
 
   const handleSendViaMailto = (e: React.FormEvent) => {
     e.preventDefault();
-    const mailSubject = encodeURIComponent(subject.trim() || `رسالة من زائر عبر دليل أدواتي AI - ${name || 'زائر'}`);
+    const fallbackSub = isAr 
+      ? `رسالة من زائر عبر دليل أدواتي AI - ${name || 'زائر'}`
+      : `Inquiry from Adawatai AI visitor - ${name || 'Visitor'}`;
+    const mailSubject = encodeURIComponent(subject.trim() || fallbackSub);
     const mailBody = encodeURIComponent(
-      `الاسم: ${name || 'غير محدد'}\nالبريد الإلكتروني للرد: ${email || 'غير محدد'}\nالموقع: adawatai.online\n\nنص الرسالة:\n${message}\n\n--- أرسلت عبر نموذج الاتصال المباشر`
+      isAr 
+        ? `الاسم: ${name || 'زائر الموقع'}\nالبريد الإلكتروني: ${email || ''}\n\nالرسالة:\n${message || ''}`
+        : `Name: ${name || 'Visitor'}\nEmail: ${email || ''}\n\nMessage:\n${message || ''}`
     );
-
     const mailtoUrl = `mailto:${targetEmail}?cc=${domainEmail}&subject=${mailSubject}&body=${mailBody}`;
     window.open(mailtoUrl, '_blank');
     setSubmitted(true);
   };
 
   const openInGmailWeb = () => {
-    const mailSubject = encodeURIComponent(subject.trim() || `استفسار عبر دليل أدواتي AI - adawatai.online`);
+    const fallbackSub = isAr ? 'استفسار عبر دليل أدواتي AI - adawatai.online' : 'Inquiry via Adawatai AI - adawatai.online';
+    const mailSubject = encodeURIComponent(subject.trim() || fallbackSub);
     const mailBody = encodeURIComponent(
-      `الاسم: ${name || 'زائر الموقع'}\nالبريد الإلكتروني: ${email || ''}\n\nالرسالة:\n${message || ''}`
+      isAr
+        ? `الاسم: ${name || 'زائر الموقع'}\nالبريد الإلكتروني: ${email || ''}\n\nالرسالة:\n${message || ''}`
+        : `Name: ${name || 'Visitor'}\nEmail: ${email || ''}\n\nMessage:\n${message || ''}`
     );
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${targetEmail}&cc=${domainEmail}&su=${mailSubject}&body=${mailBody}`;
     window.open(gmailUrl, '_blank');
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto" dir="rtl">
+    <div className="fixed inset-0 z-50 overflow-y-auto" dir={isAr ? 'rtl' : 'ltr'}>
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity" 
@@ -85,8 +92,8 @@ export const ContactModal: React.FC<ContactModalProps> = ({
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute left-4 top-4 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            aria-label="إغلاق"
+            className={`absolute ${isAr ? 'left-4' : 'right-4'} top-4 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors`}
+            aria-label={isAr ? 'إغلاق' : 'Close'}
           >
             <X className="w-5 h-5" />
           </button>
@@ -99,13 +106,15 @@ export const ContactModal: React.FC<ContactModalProps> = ({
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 mb-1">
                 <Globe className="w-3 h-3" />
-                <span>دعم مباشر: adawatai.online</span>
+                <span>{isAr ? 'دعم مباشر: adawatai.online' : 'Direct Support: adawatai.online'}</span>
               </div>
               <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight">
-                تواصل مع إدارة الموقع
+                {isAr ? 'تواصل مع إدارة الموقع' : 'Contact Site Administration'}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                تسعدنا استفساراتكم واقتراحاتكم للشراكات وتطوير الدليل
+                {isAr 
+                  ? 'تسعدنا استفساراتكم واقتراحاتكم للشراكات وتطوير الدليل' 
+                  : 'We welcome inquiries, feedback, partnerships, and suggestions'}
               </p>
             </div>
           </div>
@@ -117,7 +126,9 @@ export const ContactModal: React.FC<ContactModalProps> = ({
               isDarkMode ? 'bg-slate-800/60 border-slate-700' : 'bg-slate-50 border-slate-200'
             }`}>
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">البريد الرسمي للموقع</span>
+                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                  {isAr ? 'البريد الرسمي للموقع' : 'Official Portal Mail'}
+                </span>
                 <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-300 font-mono">Domain</span>
               </div>
               <div className="flex items-center justify-between gap-2">
@@ -128,7 +139,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                   type="button"
                   onClick={() => handleCopyEmail(domainEmail)}
                   className="p-1.5 rounded-lg bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 transition-colors shrink-0"
-                  title="نسخ الإيميل"
+                  title={isAr ? 'نسخ الإيميل' : 'Copy Email'}
                 >
                   {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
@@ -142,7 +153,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3" />
-                  <span>بريد الاستقبال المباشر (Gmail)</span>
+                  <span>{isAr ? 'بريد الاستقبال المباشر (Gmail)' : 'Direct Delivery (Gmail)'}</span>
                 </span>
                 <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-mono">Connected</span>
               </div>
@@ -154,7 +165,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                   type="button"
                   onClick={() => handleCopyEmail(targetEmail)}
                   className="p-1.5 rounded-lg bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-600 dark:text-emerald-400 transition-colors shrink-0"
-                  title="نسخ الإيميل"
+                  title={isAr ? 'نسخ الإيميل' : 'Copy Email'}
                 >
                   {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
@@ -170,15 +181,15 @@ export const ContactModal: React.FC<ContactModalProps> = ({
               className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl bg-red-600 hover:bg-red-700 text-white shadow-sm shadow-red-500/20 transition-all"
             >
               <ExternalLink className="w-3.5 h-3.5" />
-              <span>إرسال مباشرة عبر تطبيق Gmail</span>
+              <span>{isAr ? 'إرسال مباشرة عبر تطبيق Gmail' : 'Compose in Gmail'}</span>
             </button>
 
             <a
-              href={`mailto:${targetEmail}?cc=${domainEmail}&subject=استفسار من موقع أدواتي AI`}
+              href={`mailto:${targetEmail}?cc=${domainEmail}&subject=${isAr ? 'استفسار من موقع أدواتي AI' : 'Inquiry from Adawatai AI'}`}
               className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm shadow-indigo-500/20 transition-all"
             >
               <Mail className="w-3.5 h-3.5" />
-              <span>فتح تطبيق البريد الافتراضي</span>
+              <span>{isAr ? 'فتح تطبيق البريد الافتراضي' : 'Open Default Mail App'}</span>
             </a>
           </div>
 
@@ -187,20 +198,20 @@ export const ContactModal: React.FC<ContactModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  اسمك الكريم
+                  {isAr ? 'اسمك الكريم' : 'Your Name'}
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="محمد أحمد"
+                  placeholder={isAr ? 'محمد أحمد' : 'Alex Johnson'}
                   className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  بريدك الإلكتروني للرد
+                  {isAr ? 'بريدك الإلكتروني للرد' : 'Your Email Address'}
                 </label>
                 <input
                   type="email"
@@ -214,27 +225,27 @@ export const ContactModal: React.FC<ContactModalProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                موضوع الرسالة
+                {isAr ? 'موضوع الرسالة' : 'Subject'}
               </label>
               <input
                 type="text"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                placeholder="اقتراح أداة جديدة / استفسار / إعلان ورعاية..."
+                placeholder={isAr ? 'اقتراح أداة جديدة / استفسار / إعلان ورعاية...' : 'Tool suggestion / Partnership inquiry / Feedback...'}
                 className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                نص الرسالة أو الاستفسار *
+                {isAr ? 'نص الرسالة أو الاستفسار *' : 'Message Body *'}
               </label>
               <textarea
                 required
                 rows={4}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="اكتب رسالتك أو استفسارك هنا بكل وضوح..."
+                placeholder={isAr ? 'اكتب رسالتك أو استفسارك هنا بكل ووضوح...' : 'Write your detailed message or question here...'}
                 className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none"
               />
             </div>
@@ -242,14 +253,18 @@ export const ContactModal: React.FC<ContactModalProps> = ({
             {submitted && (
               <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>تم تجهيز وإرسال رسالتك مباشرة إلى بريد الإدارة (gmouhamed36@gmail.com). سيتم الرد عليك في أقرب وقت.</span>
+                <span>
+                  {isAr 
+                    ? 'تم تجهيز وإرسال رسالتك مباشرة إلى بريد الإدارة (gmouhamed36@gmail.com). سيتم الرد عليك في أقرب وقت.'
+                    : 'Your message has been addressed directly to administration (gmouhamed36@gmail.com). We will get back to you shortly.'}
+                </span>
               </div>
             )}
 
             <div className="pt-2 flex items-center justify-between gap-3">
               <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
                 <Clock className="w-3.5 h-3.5" />
-                <span>الرد عادة خلال 24 ساعة</span>
+                <span>{isAr ? 'الرد عادة خلال 24 ساعة' : 'Typically replies within 24 hours'}</span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -258,14 +273,14 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                   onClick={onClose}
                   className="px-4 py-2 text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
-                  إلغاء
+                  {isAr ? 'إلغاء' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
                   className="flex items-center gap-2 px-5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md shadow-indigo-500/25 transition-all"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>إرسال الرسالة للإدارة</span>
+                  <span>{isAr ? 'إرسال الرسالة للإدارة' : 'Send Message'}</span>
                 </button>
               </div>
             </div>

@@ -33,7 +33,7 @@ export const ImageDpiCalculatorTool: React.FC<ImageDpiCalculatorToolProps> = ({ 
 
   return (
     <div className={`p-6 sm:p-8 rounded-3xl border ${isDarkMode ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200'} shadow-sm space-y-6`}>
-      <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-2">
           <Calculator className="w-5 h-5 text-indigo-500" />
           <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
@@ -41,13 +41,30 @@ export const ImageDpiCalculatorTool: React.FC<ImageDpiCalculatorToolProps> = ({ 
           </h3>
         </div>
 
-        <button
-          onClick={() => setCalcMode(calcMode === 'pixelsToPrint' ? 'printToPixels' : 'pixelsToPrint')}
-          className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1.5 hover:underline"
-        >
-          <ArrowRightLeft className="w-3.5 h-3.5" />
-          <span>{isAr ? 'تبديل وضع الحساب' : 'Switch Mode'}</span>
-        </button>
+        <div className="flex p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+          <button
+            type="button"
+            onClick={() => setCalcMode('pixelsToPrint')}
+            className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all ${
+              calcMode === 'pixelsToPrint'
+                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            {isAr ? 'البكسل ➔ مقاس الطباعة' : 'Pixels ➔ Print Size'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setCalcMode('printToPixels')}
+            className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all ${
+              calcMode === 'printToPixels'
+                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            {isAr ? 'مقاس الورقة ➔ البكسل المطلوب' : 'Print Size ➔ Pixels'}
+          </button>
+        </div>
       </div>
 
       {calcMode === 'pixelsToPrint' ? (
@@ -104,10 +121,10 @@ export const ImageDpiCalculatorTool: React.FC<ImageDpiCalculatorToolProps> = ({ 
               <Printer className="w-8 h-8 text-indigo-600 dark:text-indigo-400 shrink-0" />
               <div>
                 <span className="text-xs text-slate-500 block">
-                  {isAr ? 'أقصى مقاس طباعة بالسنتيمتر (cm)' : 'Maximum Print Size in cm'}
+                  {isAr ? 'أقصى مقاس طباعة بالسنتيمتر' : 'Maximum Print Size in cm'}
                 </span>
                 <span className="text-xl font-extrabold text-slate-900 dark:text-white">
-                  {widthCm} × {heightCm} cm
+                  {widthCm} × {heightCm} {isAr ? 'سم' : 'cm'}
                 </span>
               </div>
             </div>
@@ -116,10 +133,10 @@ export const ImageDpiCalculatorTool: React.FC<ImageDpiCalculatorToolProps> = ({ 
               <ImageIcon className="w-8 h-8 text-indigo-600 dark:text-indigo-400 shrink-0" />
               <div>
                 <span className="text-xs text-slate-500 block">
-                  {isAr ? 'أقصى مقاس بالبوصة (Inches)' : 'Maximum Print Size in Inches'}
+                  {isAr ? 'أقصى مقاس بالبوصة' : 'Maximum Print Size in Inches'}
                 </span>
                 <span className="text-xl font-extrabold text-slate-900 dark:text-white">
-                  {widthInches.toFixed(1)}″ × {heightInches.toFixed(1)}″
+                  {widthInches.toFixed(1)}″ × {heightInches.toFixed(1)}″ {isAr ? 'بوصة' : 'Inches'}
                 </span>
               </div>
             </div>
@@ -130,7 +147,7 @@ export const ImageDpiCalculatorTool: React.FC<ImageDpiCalculatorToolProps> = ({ 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                {isAr ? 'عرض الورقة أو اللوحة (cm):' : 'Print Width (cm):'}
+                {isAr ? 'عرض الورقة أو اللوحة (سم):' : 'Print Width (cm):'}
               </label>
               <input
                 type="number"
@@ -144,7 +161,7 @@ export const ImageDpiCalculatorTool: React.FC<ImageDpiCalculatorToolProps> = ({ 
 
             <div>
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                {isAr ? 'ارتفاع الورقة أو اللوحة (cm):' : 'Print Height (cm):'}
+                {isAr ? 'ارتفاع الورقة أو اللوحة (سم):' : 'Print Height (cm):'}
               </label>
               <input
                 type="number"
@@ -179,7 +196,7 @@ export const ImageDpiCalculatorTool: React.FC<ImageDpiCalculatorToolProps> = ({ 
                 {isAr ? 'أبعاد التصميم المطلوبة بالبكسل للطباعة النظيفة:' : 'Required Resolution (px):'}
               </span>
               <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
-                {reqPixelsWidth} × {reqPixelsHeight} px
+                {reqPixelsWidth} × {reqPixelsHeight} {isAr ? 'بكسل' : 'px'}
               </span>
             </div>
 

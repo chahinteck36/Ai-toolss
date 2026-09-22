@@ -1,6 +1,7 @@
 import { SupportedLanguage } from '../lib/i18n';
 import { KnowledgeArticle } from './types';
 import { CLUSTER_ARTICLE_TRANSLATIONS } from './cluster/translations';
+import { NEW_ARTICLE_TRANSLATIONS } from './newArticleTranslations';
 
 export interface LocalizedArticleContent {
   title: string;
@@ -14,6 +15,7 @@ export interface LocalizedArticleContent {
     subheading?: string;
     paragraphs: string[];
     bulletPoints?: string[];
+    steps?: { step: number; title: string; desc: string }[];
     comparisonTable?: {
       headers: string[];
       rows: string[][];
@@ -27,6 +29,7 @@ export interface LocalizedArticleContent {
 
 export const ARTICLE_TRANSLATIONS: Record<string, Partial<Record<SupportedLanguage, LocalizedArticleContent>>> = {
   ...CLUSTER_ARTICLE_TRANSLATIONS,
+  ...NEW_ARTICLE_TRANSLATIONS,
   'best-ai-tools-for-students-2026': {
     en: {
       title: 'Best AI Tools for Students in 2026',
@@ -45,95 +48,87 @@ export const ARTICLE_TRANSLATIONS: Record<string, Partial<Record<SupportedLangua
           ],
           bulletPoints: [
             'Use the Feynman Technique: Ask the AI to explain advanced concepts in simple terms, then try explaining them back to verify your grasp.',
-            'Generate custom practice exams: Provide your lecture transcripts and request 10 multiple-choice questions with answer rationales.',
-            'Multimodal diagram analysis: Upload photos of hand-drawn circuits, equations, or biological diagrams for step-by-step breakdowns.'
+            'Upload past exam papers and ask the AI to generate similar practice questions along with step-by-step solutions.',
+            'Connect Google NotebookLM to your course readings to ground all answers in approved sources with page citations.'
           ]
         },
         {
           id: 'writing-summarization',
-          heading: '2. Best AI Tools for Writing and Summarization',
-          subheading: 'Drafting outlines, synthesizing research, and polishing academic prose',
+          heading: '2. Best AI Tools for Writing & Summarization',
+          subheading: 'Structuring arguments, proofreading, and synthesizing academic papers',
           paragraphs: [
-            'Academic writing requires structured logic, coherent paragraph flow, and adherence to scholarly standards. AI writing companions should never replace your voice; rather, they serve as editorial coaches that help organize outlines, refine sentence variety, and detect inconsistencies.',
-            'When dealing with lengthy 50-page articles, specialized summarizers quickly distill core hypotheses, methodologies, and findings without losing crucial nuance.'
+            'Academic writing requires clarity, concise argumentation, and rigorous citation. Rather than having an AI write assignments for you—which risks plagiarism and hallucinations—smart students use tools to overcome blank page paralysis and refine draft structure.',
+            'Claude 3.7 and ChatGPT Canvas excel at outlining research papers, restructuring disjointed paragraphs, and checking stylistic tone.'
           ],
           bulletPoints: [
-            'Outlining & Brainstorming: Use AI to structure comprehensive thesis proposals and research papers.',
-            'Style & Tone Polishing: Rephrase awkward passages into lucid, objective academic prose.',
-            'Grammar & Proofreading: Catch subtle syntax errors, punctuation slips, and inconsistent terminology.'
+            'Brainstorm multi-level outlines by specifying your paper thesis and key supporting evidence.',
+            'Use AI to generate counterarguments to strengthen your literature review and thesis defense.',
+            'Always verify facts and statistics independently using academic engines like Perplexity or Consensus.'
           ]
         },
         {
-          id: 'translation-languages',
-          heading: '3. Best AI Tools for Translation and Language Learning',
-          subheading: 'Contextual, high-precision translation of scholarly papers and technical terms',
+          id: 'language-translation',
+          heading: '3. Best AI Tools for Languages & Translation',
+          subheading: 'Contextual translation, grammar mastery, and academic phrasing',
           paragraphs: [
-            'Most cutting-edge academic literature is published in English or French. Traditional translation tools often fail when translating specialized jargon into Arabic, producing clumsy or misleading literal translations.',
-            'Modern neural translation tools like DeepL Translator and ChatGPT understand domain-specific nuances across medicine, law, engineering, and the humanities, preserving the exact layout of translated PDF and Word files.'
+            'Literal word-for-word translation frequently fails in academic contexts where idiomatic expressions and technical terminology dominate. Modern AI models understand cultural nuance, terminology registers, and sentence cadence.',
+            'DeepL and specialized LLM prompts provide fluent translations between English, Arabic, and French while preserving original formatting.'
           ]
         },
         {
-          id: 'presentation-creation',
-          heading: '4. Best AI Tools for Presentation Creation',
-          subheading: 'Transforming outlines into stunning visual slide decks in seconds',
+          id: 'presentations-visuals',
+          heading: '4. Best AI Tools for Presentations & Visuals',
+          subheading: 'Auto-generating slide decks, infographics, and data visualizations',
           paragraphs: [
-            'Students often spend countless hours formatting slide shapes, font pairings, and alignments instead of rehearsing their presentation. Modern AI presentation apps like Gamma App turn notes into engaging visual narratives with full Arabic RTL support and instant PowerPoint export.'
+            'Preparing slide decks used to consume hours of tweaking layouts, font sizes, and color palettes. In 2026, presentation generators create complete slide sequences from a single markdown outline or document.',
+            'Gamma App enables students to produce interactive, polished presentation decks in under five minutes with export to PowerPoint and PDF.'
           ]
         },
         {
-          id: 'coding-development',
-          heading: '5. Best AI Tools for Coding and Tech Projects',
-          subheading: 'Intelligent pair programming, debugging, and algorithm analysis',
+          id: 'coding-math',
+          heading: '5. Best AI Tools for Coding & STEM',
+          subheading: 'Debugging code, understanding math equations, and data analysis',
           paragraphs: [
-            'For computer science and engineering students, AI agents have revolutionized software development. Intelligent IDEs like Cursor and GitHub Copilot understand entire codebases, assist with multithreaded debugging, and explain algorithmic time complexities.'
+            'Computer science and engineering coursework requires understanding algorithms and diagnosing cryptic compiler errors. Specialized reasoning models explain code step-by-step.',
+            'DeepSeek R1 and Claude 3.7 provide outstanding technical reasoning for algorithms, Python data analysis, and mathematical proofs.'
           ]
         },
         {
-          id: 'research-organization',
-          heading: '6. Best AI Tools for Research & Citation Discovery',
-          subheading: 'Verified literature reviews with direct DOI links and consensus metrics',
+          id: 'comparison-matrix',
+          heading: 'Comparison Matrix: Which AI Tool Fits Your Need?',
+          subheading: 'Quick reference for selecting the optimal tool based on academic task',
           paragraphs: [
-            'Unlike general chatbots that may fabricate fake citations, dedicated academic search engines like Perplexity AI and Consensus query vetted databases (PubMed, Semantic Scholar), providing direct DOI links and consensus indicators.'
-          ]
+            'Use this breakdown to decide which tool to open based on your immediate task:'
+          ],
+          comparisonTable: {
+            headers: ['Tool', 'Best Used For', 'Free Tier', 'Key Strength'],
+            rows: [
+              ['Google NotebookLM', 'Studying from course notes & PDFs', '100% Free', 'Zero hallucination; grounded in your notes with page citations'],
+              ['Claude 3.7 Sonnet', 'Academic writing, logic & coding', 'Free limited tier', 'Deep nuanced prose, rigorous reasoning, and interactive Artifacts'],
+              ['Google Gemini 2.0', 'Multimodal search & long documents', 'Generous free tier', 'Massive context window and live integration with Google Docs/Drive'],
+              ['Gamma App', 'Presentations & seminar slides', 'Free starter credits', 'Converts outlines into professional slide decks in under 60 seconds'],
+              ['DeepSeek R1', 'Math problems, algorithms & code', '100% Free open-source', 'Step-by-step chain of thought reasoning comparable to top models'],
+              ['Perplexity AI', 'Academic research with live citations', 'Free tier available', 'Real-time web search with clickable sources and DOI links']
+            ]
+          }
         },
         {
-          id: 'free-student-tools',
-          heading: '7. Top 100% Free AI Tools for Students',
-          subheading: 'Maximizing academic productivity on a zero-dollar budget',
+          id: 'academic-integrity',
+          heading: 'Academic Integrity & Ethical AI Rules',
+          subheading: 'How to use AI safely without violating university honor codes',
           paragraphs: [
-            'Students do not need expensive subscriptions to succeed. High-tier models like DeepSeek-R1 and V3 are available completely free, GitHub Copilot is free through the GitHub Student Developer Pack, Google NotebookLM is 100% free, and Hugging Face offers thousands of open-source models.'
-          ]
-        },
-        {
-          id: 'how-to-choose-tool',
-          heading: '8. How to Choose the Right AI Tool for Your Task',
-          subheading: 'Decision matrix: pick the right tool based on your specific academic workflow',
-          paragraphs: [
-            'Success comes from matching each task to the ideal specialized tool rather than relying on one general chatbot for everything.'
+            'Universities increasingly employ sophisticated detection heuristics and oral defense protocols. Maintain academic integrity with these core principles:',
+            '1. Treat AI as a personal tutor, not a ghostwriter. Ask it to explain, quiz, and critique, but write all final submissions in your own authentic voice.',
+            '2. Always check primary sources. AI models can invent persuasive but non-existent journal citations (hallucinations). Verify every reference on Google Scholar, PubMed, or Consensus.',
+            '3. Check your faculty guidelines. Many universities require an explicit AI disclosure statement detailing how AI tools were utilized during research.'
           ]
         }
       ],
-      conclusion: 'Artificial intelligence in 2026 is an incredible multiplier for academic growth when used thoughtfully. Match each tool to your specific task, verify citations, and uphold academic integrity. Explore the full AI directory on Adawatai to elevate your academic journey.',
+      conclusion: 'Artificial intelligence is an extraordinary equalizer for students worldwide in 2026. By choosing the right tool for each specific academic task, you can accelerate your learning curve and achieve academic excellence while maintaining ethical integrity.',
       faq: [
         {
-          question: 'What is the best AI tool for students in 2026?',
-          answer: 'There is no single best tool: for studying and note review, NotebookLM and Google Gemini excel; for verified academic research, Perplexity AI is king; for writing and drafting, Claude and ChatGPT lead; and for presentations, Gamma App is the top choice.'
-        },
-        {
-          question: 'Are there free AI tools for students?',
-          answer: 'Yes! NotebookLM is 100% free, DeepSeek provides cutting-edge reasoning at zero cost, Hugging Face hosts open-source tools, and GitHub Copilot is free for students via the GitHub Student Developer Pack.'
-        },
-        {
-          question: 'What is the best AI tool for translating academic papers?',
-          answer: 'DeepL Translator is widely regarded as the most accurate tool for academic translation, preserving file formatting and technical terminology.'
-        },
-        {
-          question: 'What is the best AI tool for presentations?',
-          answer: 'Gamma App is the premier AI presentation tool for students, turning text notes into beautiful slides with full Arabic RTL support and PowerPoint export.'
-        },
-        {
-          question: 'What are the best AI tools for coding?',
-          answer: 'Cursor IDE is the most advanced agentic code editor, alongside GitHub Copilot (free for students) and DeepSeek-R1 for algorithmic logic.'
+          question: 'Are free AI tools sufficient for college students?',
+          answer: 'Yes! Free tiers of Google NotebookLM, DeepSeek R1, Google Gemini, and Claude offer sufficient reasoning power and context capacity for over 90% of undergraduate and graduate coursework.'
         },
         {
           question: 'How can I avoid academic plagiarism when using AI tools?',
@@ -142,117 +137,38 @@ export const ARTICLE_TRANSLATIONS: Record<string, Partial<Record<SupportedLangua
       ],
       readingTimeText: '12 min read',
       needToolPrompt: 'Need the tool right now?'
-    },
-    fr: {
-      title: 'Meilleurs outils d\'IA pour étudiants en 2026',
-      description: 'Découvrez les meilleurs outils d\'intelligence artificielle pour étudiants en 2026 pour étudier, rédiger, traduire, créer des présentations et programmer.',
-      seoTitle: 'Meilleurs outils d\'IA pour étudiants en 2026 | Adawatai',
-      seoDescription: 'Découvrez les meilleurs outils d\'intelligence artificielle pour étudiants en 2026 pour étudier, rédiger, traduire et programmer.',
-      intro: 'En 2026, l\'intelligence artificielle est devenue un assistant d\'étude incontournable pour chaque étudiant. Ce guide complet présente les meilleurs outils adaptés à chaque besoin académique.',
-      sections: [
-        {
-          id: 'study-comprehension',
-          heading: '1. Meilleurs outils d\'IA pour étudier et comprendre les cours',
-          paragraphs: [
-            'L\'apprentissage actif consiste à comprendre les principes fondamentaux. Des outils comme Google Gemini, Claude et NotebookLM transforment vos notes de cours en séances d\'étude interactives et génèrent des quiz personnalisés.'
-          ]
-        },
-        {
-          id: 'writing-summarization',
-          heading: '2. Meilleurs outils d\'IA pour la rédaction et la synthèse',
-          paragraphs: [
-            'La rédaction académique exige rigueur et clarté. Utilisez l\'IA pour structurer vos plans et affiner vos arguments avec ChatGPT et Claude.'
-          ]
-        },
-        {
-          id: 'translation-languages',
-          heading: '3. Meilleurs outils d\'IA pour la traduction et les langues',
-          paragraphs: [
-            'DeepL Translator offre la traduction neuronale la plus précise pour les articles scientifiques, en préservant la mise en page des fichiers PDF et Word.'
-          ]
-        },
-        {
-          id: 'presentation-creation',
-          heading: '4. Meilleurs outils d\'IA pour créer des présentations',
-          paragraphs: [
-            'Gamma App transforme vos notes et idées en présentations visuelles percutantes avec support complet de la langue arabe et export PowerPoint.'
-          ]
-        },
-        {
-          id: 'coding-development',
-          heading: '5. Meilleurs outils d\'IA pour la programmation',
-          paragraphs: [
-            'Cursor IDE et GitHub Copilot (gratuit pour les étudiants) accompagnent les étudiants en informatique dans le développement et le débogage de leurs projets.'
-          ]
-        },
-        {
-          id: 'research-organization',
-          heading: '6. Meilleurs outils d\'IA pour la recherche académique vérifiée',
-          paragraphs: [
-            'Perplexity AI et Consensus interrogent directement les bases de données d\'articles évalués par les pairs avec liens DOI vérifiés.'
-          ]
-        },
-        {
-          id: 'free-student-tools',
-          heading: '7. Meilleurs outils d\'IA 100% gratuits pour étudiants',
-          paragraphs: [
-            'Profitez des modèles DeepSeek-R1 gratuits, du GitHub Student Developer Pack et de Google NotebookLM sans frais.'
-          ]
-        },
-        {
-          id: 'how-to-choose-tool',
-          heading: '8. Comment choisir l\'outil d\'IA adapté à vos besoins ?',
-          paragraphs: [
-            'Choisissez chaque outil en fonction de votre tâche : recherche avec Perplexity, synthèse avec NotebookLM, et diapositives avec Gamma.'
-          ]
-        }
-      ],
-      conclusion: 'L\'IA en 2026 offre un levier exceptionnel pour réussir vos études en combinant rigueur académique et outils adaptés.',
-      faq: [
-        {
-          question: 'Quel est le meilleur outil d\'IA pour les étudiants en 2026 ?',
-          answer: 'Il n\'y a pas un seul outil universel : NotebookLM pour les cours, Perplexity pour la recherche vérifiée, Claude pour la rédaction, et Gamma pour les présentations.'
-        },
-        {
-          question: 'Existe-t-il des outils d\'IA gratuits pour les étudiants ?',
-          answer: 'Oui, notamment NotebookLM, DeepSeek, Hugging Face, et GitHub Copilot gratuit avec une adresse email universitaire.'
-        }
-      ],
-      readingTimeText: '12 min de lecture',
-      needToolPrompt: 'Besoin de cet outil maintenant ?'
     }
   },
 
-  'how-to-convert-pdf-to-word-easily': {
+  'how-to-convert-pdf-to-word': {
     en: {
-      title: 'How to Convert PDF to Word Easily Without Paid Software (2026 Practical Guide)',
-      description: 'Step-by-step practical guide to converting PDF files into editable Word documents online for free with maximum layout accuracy, font preservation, and 100% privacy.',
-      seoTitle: 'How to Convert PDF to Word Easily Online | Free Step-by-Step Guide 2026',
-      seoDescription: 'Learn how to convert any PDF to an editable Word document for free in your browser. Fast, secure client-side conversion preserving formatting.',
-      intro: 'PDF is the gold standard for sharing finalized documents. But when you need to fix a typo, update a resume, or edit a contract, direct editing is challenging. Fortunately, modern browser technology allows you to convert PDFs into editable DOCX files in seconds, completely free and securely.',
+      title: 'How to Convert PDF to Word Easily Without Paid Software (2026 Guide)',
+      description: 'Step-by-step tutorial on converting PDF documents to editable Microsoft Word (.docx) files online for free, preserving Arabic and multilingual formatting with maximum privacy.',
+      seoTitle: 'How to Convert PDF to Word Online for Free | 2026 Guide',
+      seoDescription: 'Learn how to easily convert PDF to editable Word documents online for free. Clean layout preservation and 100% secure in-browser processing.',
+      intro: 'Converting PDF documents into editable Word (.docx) format without losing fonts, table structures, or paragraph alignment is a daily necessity for students and professionals. This practical guide demonstrates how to convert PDF files online for free with 100% privacy and zero file uploads.',
       sections: [
         {
-          id: 'common-problems',
-          heading: 'Common Issues in PDF to Word Conversions',
+          id: 'why-convert',
+          heading: 'Why Convert PDF to Word?',
           paragraphs: [
-            'Many online tools distort fonts, break tables, or compromise user privacy by uploading sensitive files to unknown cloud servers.',
-            'Adawatai eliminates these risks by processing files 100% locally inside your browser (Client-Side).'
+            'While PDF is ideal for sharing and printing, editing text, updating resumes, or reusing academic quotes requires an editable document format like Microsoft Word (.docx).'
           ]
         },
         {
           id: 'step-by-step',
-          heading: 'How to Convert PDF to Word on Adawatai',
+          heading: 'Step-by-Step Conversion on Adawatai',
           paragraphs: [
-            'Follow three quick steps to convert your document without registration or software installation:'
+            'Using Adawatai\'s client-side conversion tools, your files are processed directly inside your browser without uploading to any external servers.'
           ],
           bulletPoints: [
-            'Step 1: Open the PDF to Word converter on Adawatai and drop your file into the upload zone.',
-            'Step 2: The browser engine instantly parses text, tables, and formatting.',
-            'Step 3: Click Download to save your fully editable Word document.'
+            'Step 1: Open the PDF to Word Converter on Adawatai.',
+            'Step 2: Drag and drop your PDF file or click to select from your device.',
+            'Step 3: Click Convert and download your editable .docx file instantly.'
           ]
         }
       ],
-      conclusion: 'Converting PDF to Word is fast, private, and effortless with Adawatai\'s client-side converter.',
+      conclusion: 'With modern browser technologies, you no longer need expensive desktop software to convert your documents securely.',
       faq: [
         {
           question: 'Is this converter completely free?',
@@ -265,31 +181,6 @@ export const ARTICLE_TRANSLATIONS: Record<string, Partial<Record<SupportedLangua
       ],
       readingTimeText: '5 min read',
       needToolPrompt: 'Need the PDF to Word tool right now?'
-    },
-    fr: {
-      title: 'Comment convertir un PDF en Word facilement sans logiciel payant (Guide 2026)',
-      description: 'Guide pratique pour convertir gratuitement vos fichiers PDF en documents Word éditables avec une fidélité de mise en page maximale et une confidentialité absolue.',
-      seoTitle: 'Comment convertir un PDF en Word facilement | Guide gratuit 2026',
-      seoDescription: 'Apprenez à convertir gratuitement un PDF en document Word modifiable directement dans votre navigateur. Traitement local et sécurisé.',
-      intro: 'Le format PDF est idéal pour partager des documents fixes, mais le modifier nécessite souvent des logiciels coûteux. Découvrez comment transformer vos PDF en Word modifiables en quelques secondes.',
-      sections: [
-        {
-          id: 'step-by-step',
-          heading: 'Étapes pour convertir un PDF en Word sur Adawatai',
-          paragraphs: [
-            'Glissez votre fichier dans la zone de dépôt de notre outil gratuit et téléchargez instantanément votre document Word.'
-          ]
-        }
-      ],
-      conclusion: 'La conversion s\'effectue localement dans votre navigateur pour une confidentialité totale.',
-      faq: [
-        {
-          question: 'Cet outil est-il gratuit ?',
-          answer: 'Oui, entièrement gratuit et sans aucune limite d\'utilisation.'
-        }
-      ],
-      readingTimeText: '5 min de lecture',
-      needToolPrompt: 'Besoin de convertir un PDF maintenant ?'
     }
   },
 
@@ -319,60 +210,34 @@ export const ARTICLE_TRANSLATIONS: Record<string, Partial<Record<SupportedLangua
       ],
       readingTimeText: '6 min read',
       needToolPrompt: 'Need the presentation tool right now?'
-    },
-    fr: {
-      title: 'Meilleurs outils d\'IA pour créer des présentations en quelques secondes (2026)',
-      description: 'Découvrez les meilleurs outils d\'IA pour générer automatiquement des présentations PowerPoint professionnelles et des diapositives percutantes.',
-      seoTitle: 'Meilleurs outils d\'IA pour présentations 2026 | PowerPoint par IA',
-      seoDescription: 'Créez des présentations professionnelles en quelques secondes grâce à l\'IA générative. Exportez en PowerPoint et PDF facilement.',
-      intro: 'Concevoir une présentation professionnelle ne prend plus des heures. Découvrez les outils d\'IA les plus performants pour concevoir vos diapositives automatiquement.',
-      sections: [
-        {
-          id: 'top-ai-presentation-tools',
-          heading: 'Les meilleurs générateurs de diapositives par IA',
-          paragraphs: [
-            'Gamma App se distingue par sa flexibilité et son design moderne adapté à tous les écrans.'
-          ]
-        }
-      ],
-      conclusion: 'Gagnez un temps précieux grâce aux générateurs de présentations par intelligence artificielle.',
-      faq: [
-        {
-          question: 'Est-il possible d\'exporter en format PowerPoint ?',
-          answer: 'Oui, la plupart des outils modernes permettent l\'exportation directe vers PPTX et PDF.'
-        }
-      ],
-      readingTimeText: '6 min de lecture',
-      needToolPrompt: 'Besoin d\'un outil de présentation maintenant ?'
     }
   },
 
-  'best-chatgpt-alternatives-2026': {
+  'chatgpt-alternatives-2026': {
     en: {
-      title: 'Best ChatGPT Alternatives in 2026 (Free, Powerful & Accurate LLMs Compared)',
-      description: 'In-depth comparison of top ChatGPT alternatives in 2026: Claude 3.7 Sonnet, Google Gemini 2.0, DeepSeek R1, and Perplexity with pros, cons, and recommendations.',
-      seoTitle: 'Best ChatGPT Alternatives in 2026 | Top Free AI Chatbots Compared',
-      seoDescription: 'Looking for ChatGPT alternatives? Discover Claude 3.7, Gemini 2.0, DeepSeek R1, and Perplexity for coding, deep reasoning, and live research.',
-      intro: 'While ChatGPT sparked the generative AI revolution, the tech landscape in 2026 offers extraordinary alternatives. From hybrid reasoning and million-token context windows to open-source models, specialized options excel across coding, analysis, and research.',
+      title: 'Best ChatGPT Alternatives in 2026 (In-Depth Comparison of Top AI Models)',
+      description: 'Comprehensive review of the top ChatGPT alternatives in 2026: Claude 3.7 Sonnet, Google Gemini 2.0, DeepSeek R1, and Perplexity for coding, writing, and research.',
+      seoTitle: 'Best ChatGPT Alternatives in 2026 | Full Model Comparison',
+      seoDescription: 'Looking for the best ChatGPT alternative in 2026? Compare Claude 3.7, Google Gemini 2.0, DeepSeek R1, and Perplexity for coding, reasoning, and research.',
+      intro: 'While ChatGPT remains the most recognized brand in conversational AI, 2026 has witnessed unprecedented competition. Competing models now surpass ChatGPT in nuanced writing, mathematics, coding, and real-time research.',
       sections: [
         {
           id: 'claude-review',
-          heading: '1. Claude 3.7 Sonnet: The Coding and Reasoning Powerhouse',
+          heading: '1. Claude 3.7 Sonnet: The Coding and Writing Champion',
           paragraphs: [
-            'Anthropic\'s Claude 3.7 Sonnet introduces hybrid reasoning, allowing users to switch seamlessly between instant replies and extended deliberate thinking.',
-            'Its interactive Artifacts workspace lets you run React apps, games, and documents directly in your browser.'
+            'Anthropic\'s Claude 3.7 Sonnet combines lightning-fast intuitive responses with extended chain-of-thought reasoning, accompanied by an interactive Artifacts canvas.'
           ]
         },
         {
           id: 'gemini-review',
-          heading: '2. Google Gemini 2.0: Massive Context & Workspace Integration',
+          heading: '2. Google Gemini 2.0: Multimodal Context Powerhouse',
           paragraphs: [
-            'Gemini features up to a 2-million-token context window capable of ingesting whole codebases, hours of video, or entire textbooks, integrated with Google Docs and Drive.'
+            'With a 1M+ token context window and native integration with Google Workspace, Gemini 2.0 easily digests full-length books and video files.'
           ]
         },
         {
           id: 'deepseek-review',
-          heading: '3. DeepSeek R1: The Open-Weight Reasoning Revolution',
+          heading: '3. DeepSeek R1: Open-Weight Mathematical Reasoning',
           paragraphs: [
             'DeepSeek R1 provides top-tier mathematical and algorithmic reasoning completely free and open-source.'
           ]
@@ -387,31 +252,6 @@ export const ARTICLE_TRANSLATIONS: Record<string, Partial<Record<SupportedLangua
       ],
       readingTimeText: '8 min read',
       needToolPrompt: 'Looking for the best AI assistant right now?'
-    },
-    fr: {
-      title: 'Meilleures alternatives à ChatGPT en 2026 (Comparatif des modèles les plus puissants)',
-      description: 'Comparatif complet des meilleures alternatives à ChatGPT en 2026 : Claude 3.7, Gemini 2.0, DeepSeek R1 et Perplexity.',
-      seoTitle: 'Meilleures alternatives à ChatGPT en 2026 | Comparatif complet',
-      seoDescription: 'Vous cherchez une alternative à ChatGPT ? Découvrez Claude 3.7, Gemini 2.0, DeepSeek R1 et Perplexity pour coder, rédiger et rechercher avec précision.',
-      intro: 'En 2026, ChatGPT n\'est plus la seule référence. Des modèles plus performants en programmation, en raisonnement et en recherche documentaire sont désormais disponibles.',
-      sections: [
-        {
-          id: 'claude-review',
-          heading: '1. Claude 3.7 Sonnet : Le champion du code et de la réflexion',
-          paragraphs: [
-            'Claude 3.7 Sonnet d\'Anthropic offre un raisonnement hybride de premier ordre et un espace Artifacts interactif.'
-          ]
-        }
-      ],
-      conclusion: 'Chaque modèle possède des atouts distincts selon vos besoins professionnels ou académiques.',
-      faq: [
-        {
-          question: 'Quel est le meilleur modèle pour le développement et le code ?',
-          answer: 'Claude 3.7 Sonnet est généralement considéré comme le plus rigoureux et précis pour la programmation.'
-        }
-      ],
-      readingTimeText: '8 min de lecture',
-      needToolPrompt: 'Envie de tester ces modèles dès maintenant ?'
     }
   },
 
@@ -452,31 +292,6 @@ export const ARTICLE_TRANSLATIONS: Record<string, Partial<Record<SupportedLangua
       ],
       readingTimeText: '5 min read',
       needToolPrompt: 'Need to compress a PDF right now?'
-    },
-    fr: {
-      title: 'Comment compresser un PDF et réduire sa taille sans perte de qualité (Guide 2026)',
-      description: 'Méthodes gratuites et rapides pour réduire le poids de vos fichiers PDF jusqu\'à 80% tout en conservant la netteté des textes et des images.',
-      seoTitle: 'Comment compresser un PDF gratuitement en ligne | Guide 2026',
-      seoDescription: 'Réduisez la taille de vos fichiers PDF en quelques secondes directement dans votre navigateur. Compression locale, rapide et confidentielle.',
-      intro: 'Découvrez comment réduire le poids de vos fichiers PDF pour les envoyer facilement par email ou les soumettre sur des formulaires administratifs sans perte de lisibilité.',
-      sections: [
-        {
-          id: 'step-by-step',
-          heading: 'Comment compresser un PDF sur Adawatai',
-          paragraphs: [
-            'Sélectionnez votre fichier, appliquez la compression et téléchargez instantanément votre document allégé.'
-          ]
-        }
-      ],
-      conclusion: 'Compressez vos fichiers en toute sécurité grâce à notre outil fonctionnant directement dans votre navigateur.',
-      faq: [
-        {
-          question: 'La compression réduit-elle la netteté du texte ?',
-          answer: 'Non, les polices vectorielles restent parfaitement nettes. L\'optimisation cible principalement les images et les métadonnées.'
-        }
-      ],
-      readingTimeText: '5 min de lecture',
-      needToolPrompt: 'Besoin de compresser un PDF maintenant ?'
     }
   }
 };
@@ -535,6 +350,6 @@ export const getLocalizedArticle = (
     conclusion: loc.conclusion || article.content.conclusion,
     faq: loc.faq && loc.faq.length > 0 ? loc.faq : article.faq,
     readingTimeText: loc.readingTimeText || `${article.readingTime} min read`,
-    needToolPrompt: loc.needToolPrompt || (lang === 'fr' ? 'Besoin de cet outil maintenant ?' : 'Need the tool right now?')
+    needToolPrompt: loc.needToolPrompt || 'Need the tool right now?'
   };
 };
