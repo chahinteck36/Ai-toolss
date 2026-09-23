@@ -244,10 +244,7 @@ app.post('/api/admin/change-password', requireAdminAuth, async (req, res) => {
 
   return res.json({
     success: true,
-    message: 'تم التحقق من كلمة المرور وتحديث التشفير بنجاح.',
-    notice: 'في بيئة Cloudflare Pages، لتثبيت كلمة المرور الجديدة في الإنتاج، قم بتحديث متغير ADMIN_PASSWORD في لوحة تحكم Cloudflare Pages.',
-    newHash: hash,
-    newSalt: salt
+    message: 'تم التحقق من كلمة المرور بنجاح. لتثبيتها في بيئة Cloudflare Pages بشكل دائم، يرجى تحديث متغير ADMIN_PASSWORD في لوحة تحكم Cloudflare.'
   });
 });
 

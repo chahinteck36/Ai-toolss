@@ -87,7 +87,10 @@ export const onRequestPost = async (context: EventContext<CloudflareEnv>): Promi
       iat: Date.now()
     };
 
-    const sessionSecret = env.AUTH_SECRET || '';
+    const sessionSecret = (env.AUTH_SECRET || '').trim();
+    if (!sessionSecret) {
+      return jsonResponse({ error: 'إعدادات أمان الخادم غير مكتملة (AUTH_SECRET مفقود).' }, 500);
+    }
     const sessionToken = await createSignedSessionToken(sessionPayload, sessionSecret);
 
     // Cookies

@@ -23,10 +23,8 @@ export interface SessionPayload {
   iat: number;
 }
 
-// Fallback defaults if Cloudflare Environment Variables / Secrets are not yet configured in Dashboard
+// Default configured admin email if not specified in environment
 export const DEFAULT_ADMIN_EMAIL = 'gmouhamed36@gmail.com';
-export const DEFAULT_ADMIN_PASSWORD = 'Admin@Adawatai2026!';
-const DEFAULT_AUTH_SECRET = 'adawatai_secure_edge_hmac_secret_2026_production_key_cf';
 
 // In-Memory rate limiting per Cloudflare Worker isolate
 interface RateLimitRecord {
@@ -149,14 +147,13 @@ export async function verifyAdminCredentials(
     return constantTimeEqual(computed.hash, env.ADMIN_PASSWORD_HASH);
   }
 
-  // Otherwise check against ADMIN_PASSWORD secret (or fallback default)
-  const targetPassword = (env.ADMIN_PASSWORD || '').trim() || DEFAULT_ADMIN_PASSWORD;
-  if (constantTimeEqual(passwordInput, targetPassword)) {
-    return true;
+  // If ADMIN_PASSWORD secret is configured in environment
+  if (env.ADMIN_PASSWORD && env.ADMIN_PASSWORD.trim().length > 0) {
+    return constantTimeEqual(passwordInput, env.ADMIN_PASSWORD.trim());
   }
-  if (constantTimeEqual(passwordInput, DEFAULT_ADMIN_PASSWORD)) {
-    return true;
-  }
+
+  // Fail safely: No admin credentials configured in environment
+  console.warn('Admin authentication failed: No ADMIN_PASSWORD or ADMIN_PASSWORD_HASH configured.');
   return false;
 }
 
@@ -164,10 +161,15 @@ export async function verifyAdminCredentials(
  * Sign a session payload using HMAC-SHA256
  */
 export async function createSignedSessionToken(payload: SessionPayload, secret: string): Promise<string> {
+  const activeSecret = secret?.trim();
+  if (!activeSecret) {
+    throw new Error('AUTH_SECRET is required to sign session tokens.');
+  }
+
   const enc = new TextEncoder();
   const hmacKey = await crypto.subtle.importKey(
     'raw',
-    enc.encode(secret || DEFAULT_AUTH_SECRET),
+    enc.encode(activeSecret),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign']
@@ -186,7 +188,8 @@ export async function createSignedSessionToken(payload: SessionPayload, secret: 
  * Verify and decode an HMAC-SHA256 session token
  */
 export async function verifySessionToken(token: string, secret: string): Promise<SessionPayload | null> {
-  if (!token || typeof token !== 'string') return null;
+  const activeSecret = secret?.trim();
+  if (!activeSecret || !token || typeof token !== 'string') return null;
   const parts = token.split('.');
   if (parts.length !== 2) return null;
 
@@ -196,7 +199,7 @@ export async function verifySessionToken(token: string, secret: string): Promise
   try {
     const hmacKey = await crypto.subtle.importKey(
       'raw',
-      enc.encode(secret || DEFAULT_AUTH_SECRET),
+      enc.encode(activeSecret),
       { name: 'HMAC', hash: 'SHA-256' },
       false,
       ['verify']

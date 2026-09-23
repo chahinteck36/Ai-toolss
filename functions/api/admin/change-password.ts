@@ -65,10 +65,7 @@ export const onRequestPost = async (context: EventContext<CloudflareEnv>): Promi
 
     return jsonResponse({
       success: true,
-      message: 'تم التحقق من كلمة المرور وتوليد التشفير بنجاح.',
-      notice: 'في بيئة Cloudflare Pages، لتثبيت كلمة المرور الجديدة في الإنتاج، قم بتحديث متغير ADMIN_PASSWORD في لوحة تحكم Cloudflare Pages.',
-      newHash: hash,
-      newSalt: salt
+      message: 'تم التحقق من كلمة المرور بنجاح. لتثبيتها في بيئة Cloudflare Pages بشكل دائم، يرجى تحديث متغير ADMIN_PASSWORD في لوحة تحكم Cloudflare.'
     });
   } catch (err: any) {
     return jsonResponse({ error: 'فشل في تحديث كلمة المرور.' }, 500);

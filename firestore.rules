@@ -1,82 +1,108 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper function to validate string length
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Role check aligned with the project's member architecture & admin identity
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email == 'gmouhamed36@gmail.com' ||
+        (request.auth.token.role == 'admin') ||
+        (exists(/databases/$(database)/documents/members/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role in ['admin', 'editor'])
+      );
+    }
+
+    // Helper to validate string bounds
     function isValidString(str, minLen, maxLen) {
       return str is string && str.size() >= minLen && str.size() <= maxLen;
     }
 
-    // Tools collection
+    // 1. Tools Collection
     match /tools/{toolId} {
+      // Public read access for directory visitors
       allow read: if true;
-      
-      // Allow visitor click counter increment
+
+      // Visitor can ONLY increment the click counter; cannot tamper with any other fields
       allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicksCount'])
-        && request.resource.data.clicksCount is int;
-      
-      // Allow create/update with strict schema validation
-      allow create, update: if isValidString(request.resource.data.nameAr, 1, 200)
-        && isValidString(request.resource.data.nameEn, 1, 200)
-        && request.resource.data.websiteUrl is string
-        && request.resource.data.websiteUrl.size() > 0
-        && request.resource.data.category is string;
-      
-      // Allow delete
-      allow delete: if true;
+        && request.resource.data.clicksCount is int
+        && request.resource.data.clicksCount == resource.data.clicksCount + 1;
+
+      // Admin only: create, update full tool content, and delete
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin();
     }
-    
-    // Submissions collection: visitors submit recommendations
+
+    // 2. Submissions Collection (Visitor tool recommendations)
     match /submissions/{subId} {
+      // Public read (or admin read for review)
       allow read: if true;
-      
-      // Strict validation for visitor submissions to prevent spam/abuse
-      allow create: if isValidString(request.resource.data.name, 1, 100)
+
+      // Visitor create: strict schema validation, and status MUST be 'pending'
+      // Normal visitors CANNOT set status to 'approved' or 'rejected'
+      allow create: if isValidString(request.resource.data.nameAr, 1, 100)
         && isValidString(request.resource.data.websiteUrl, 4, 500)
         && request.resource.data.category is string
-        && (!('status' in request.resource.data) || request.resource.data.status in ['pending', 'approved', 'rejected']);
-        
-      allow update: if request.resource.data.status in ['pending', 'approved', 'rejected'];
-      allow delete: if true;
+        && (!('status' in request.resource.data) || request.resource.data.status == 'pending');
+
+      // Admin only: approve/reject status, edit submission, or delete
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
-    // Advertisements collection
+    // 3. Advertisements Collection
     match /advertisements/{adId} {
+      // Public read access for active banners
       allow read: if true;
-      
-      // Allow impression/click counters increment
-      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasAny(['clicks', 'impressions'])
-        || (isValidString(request.resource.data.title, 1, 300) && request.resource.data.targetUrl is string);
-        
-      allow create: if isValidString(request.resource.data.title, 1, 300)
-        && request.resource.data.targetUrl is string;
-        
-      allow delete: if true;
+
+      // Visitor counter updates ONLY: clicks and/or impressions increment
+      allow update: if (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks'])
+        && request.resource.data.clicks is int
+        && request.resource.data.clicks == resource.data.clicks + 1
+      ) || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['impressions'])
+        && request.resource.data.impressions is int
+        && request.resource.data.impressions == resource.data.impressions + 1
+      ) || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks', 'impressions'])
+        && request.resource.data.clicks is int
+        && request.resource.data.impressions is int
+      );
+
+      // Admin only: create new ads, modify copy/targeting/status, or delete
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin();
     }
 
-    // Site settings
-    match /settings/{settingId} {
-      allow read: if true;
-      allow create, update: if isValidString(request.resource.data.siteName, 1, 200);
-      allow delete: if false; // Never delete site settings
-    }
-
-    // User reviews & ratings
-    match /reviews/{reviewId} {
-      allow read: if true;
-      allow create, update: if request.resource.data.rating is number
-        && request.resource.data.rating >= 1
-        && request.resource.data.rating <= 5;
-      allow delete: if true;
-    }
-
-    // Team members
+    // 4. Members Collection (Admins and Editors)
     match /members/{memberId} {
       allow read: if true;
-      allow write: if true;
+      // Visitors CANNOT create, update or delete members
+      allow create, update, delete: if isAdmin();
     }
 
-    // Default deny for any other collection
+    // 5. Site Settings
+    match /settings/{settingId} {
+      allow read: if true;
+      allow create, update: if isAdmin();
+      allow delete: if false; // Settings must never be deleted
+    }
+
+    // 6. Reviews & Ratings
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if request.resource.data.rating is number
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5;
+      allow update, delete: if isAdmin();
+    }
+
+    // Default deny all other paths
     match /{document=**} {
       allow read, write: if false;
     }

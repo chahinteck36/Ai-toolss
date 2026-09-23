@@ -89,9 +89,13 @@ function ensureAdminCredentialsFile(): AdminUser[] {
     }
   }
 
-  // Initialize initial admin from environment variables or secure default
+  // Initialize initial admin from environment variables
   const defaultEmail = (process.env.ADMIN_EMAIL || 'gmouhamed36@gmail.com').toLowerCase().trim();
-  const defaultPassword = process.env.ADMIN_PASSWORD || 'Admin@Adawatai2026!';
+  const defaultPassword = process.env.ADMIN_PASSWORD;
+  if (!defaultPassword) {
+    console.warn('CRITICAL: ADMIN_PASSWORD is not set in environment. Admin login will be disabled until set.');
+    return [];
+  }
   const { hash, salt } = hashPassword(defaultPassword);
 
   const initialUser: AdminUser = {

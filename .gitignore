@@ -8,3 +8,5 @@ coverage/
 !.env.example
 test_cookies.txt
 *.cookie
+data/
+data/admin-credentials.json
