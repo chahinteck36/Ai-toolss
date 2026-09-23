@@ -21,6 +21,7 @@ import { Footer } from './components/Footer';
 import { CategoriesSection } from './components/home/CategoriesSection';
 import { ValuePropositionSection } from './components/home/ValuePropositionSection';
 import { HomeKnowledgeSection } from './components/home/HomeKnowledgeSection';
+import { CategoryEditorialBanner } from './components/CategoryEditorialBanner';
 import { SEO } from './components/SEO';
 import { getHomeSEO, getCategorySEO } from './lib/seoHelpers';
 import { SupportedLanguage, TRANSLATIONS } from './lib/i18n';
@@ -211,6 +212,7 @@ export default function App() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [selectedToolForModal, setSelectedToolForModal] = useState<AiTool | null>(null);
   const [selectedDigitalTool, setSelectedDigitalTool] = useState<DigitalTool | null>(null);
+  const [isStandaloneRoute, setIsStandaloneRoute] = useState(false);
   const [isToolFormOpen, setIsToolFormOpen] = useState(false);
   const [editingTool, setEditingTool] = useState<AiTool | null>(null);
   const [isVisitorSubmitOpen, setIsVisitorSubmitOpen] = useState(false);
@@ -302,6 +304,7 @@ export default function App() {
 
     setSelectedDigitalTool(null);
     setSelectedToolForModal(tool);
+    setIsStandaloneRoute(false);
     setIs404(false);
 
     try {
@@ -321,6 +324,7 @@ export default function App() {
   const handleCloseToolDetails = useCallback(() => {
     setSelectedToolForModal(null);
     setSelectedDigitalTool(null);
+    setIsStandaloneRoute(false);
     try {
       const currentUrl = new URL(window.location.href);
       if (currentUrl.pathname.startsWith('/tools/')) {
@@ -639,11 +643,13 @@ export default function App() {
       const currentToolsList = toolsRef.current.length > 0 ? toolsRef.current : ALL_BUILTIN_TOOLS;
 
       if (toolParam) {
+        const isFromDirectPath = Boolean(toolSlugFromPath);
         // 1. Check digital tools registry first
         const digitalFound = getDigitalToolBySlug(toolParam);
         if (digitalFound) {
           setSelectedDigitalTool(digitalFound);
           setSelectedToolForModal(null);
+          setIsStandaloneRoute(false);
           setIs404(false);
           return;
         }
@@ -659,14 +665,17 @@ export default function App() {
           if (digitalFromFound) {
             setSelectedDigitalTool(digitalFromFound);
             setSelectedToolForModal(null);
+            setIsStandaloneRoute(false);
           } else {
             setSelectedToolForModal(found);
             setSelectedDigitalTool(null);
+            setIsStandaloneRoute(isFromDirectPath);
           }
           setIs404(false);
         } else {
           setSelectedToolForModal(null);
           setSelectedDigitalTool(null);
+          setIsStandaloneRoute(false);
           setIs404(true);
         }
         return;
@@ -676,6 +685,7 @@ export default function App() {
         if (digitalFound) {
           setSelectedDigitalTool(digitalFound);
           setSelectedToolForModal(null);
+          setIsStandaloneRoute(false);
           setIs404(false);
           return;
         }
@@ -687,10 +697,12 @@ export default function App() {
         if (found) {
           setSelectedToolForModal(found);
           setSelectedDigitalTool(null);
+          setIsStandaloneRoute(false);
           setIs404(false);
         } else {
           setSelectedToolForModal(null);
           setSelectedDigitalTool(null);
+          setIsStandaloneRoute(false);
           setIs404(true);
         }
         return;
@@ -700,12 +712,14 @@ export default function App() {
       if (cleanPath === '/' || cleanPath === '') {
         setSelectedToolForModal(null);
         setSelectedDigitalTool(null);
+        setIsStandaloneRoute(false);
         setIsKnowledgeHubOpen(false);
         setSelectedKnowledgeArticleSlug(null);
         setIs404(false);
       } else {
         setSelectedToolForModal(null);
         setSelectedDigitalTool(null);
+        setIsStandaloneRoute(false);
         setIsKnowledgeHubOpen(false);
         setSelectedKnowledgeArticleSlug(null);
         setIs404(true);
@@ -912,7 +926,6 @@ export default function App() {
       pricingAr: sub.pricing === 'free' ? 'مجاني بالكامل' : 'فريميوم',
       websiteUrl: sub.websiteUrl,
       rating: 4.8,
-      reviewsCount: 1,
       tags: sub.tags || ['مقترح_معتمد', 'ذكاء_اصطناعي'],
       supportsArabic: sub.supportsArabic ?? true,
       platforms: ['Web'],
@@ -1626,6 +1639,44 @@ export default function App() {
             onBackToHome={handleCloseToolDetails}
           />
         </main>
+      ) : (selectedToolForModal && isStandaloneRoute) ? (
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <ToolDetailModal
+            tool={selectedToolForModal}
+            isOpen={true}
+            isStandaloneRoute={true}
+            onClose={handleCloseToolDetails}
+            isFavorite={selectedToolForModal ? !!favorites[selectedToolForModal.id] : false}
+            userRating={selectedToolForModal ? userRatings[selectedToolForModal.id] : undefined}
+            userNote={selectedToolForModal ? userNotes[selectedToolForModal.id] || '' : ''}
+            onToggleFavorite={handleToggleFavorite}
+            onRateTool={handleRateTool}
+            onSaveNote={handleSaveNote}
+            onSelectTool={(tool) => {
+              handleOpenToolDetails(tool);
+            }}
+            onOpenPromptsForTool={(toolName) => {
+              setPromptsLibraryToolFilter(toolName);
+              setIsPromptsLibraryOpen(true);
+            }}
+            onSelectCategory={(catId) => {
+              handleCloseToolDetails();
+              handleFilterChange({ selectedCategory: catId, searchQuery: '' });
+              const el = document.getElementById('tools-catalog');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+            onSelectTag={(tag) => {
+              handleCloseToolDetails();
+              handleFilterChange({ searchQuery: tag });
+              const el = document.getElementById('tools-catalog');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+            allTools={tools}
+            advertisements={advertisements}
+            isDarkMode={isDarkMode}
+            lang={lang}
+          />
+        </main>
       ) : (
         <>
           {/* Hero Section with Fuse.js instant fuzzy search */}
@@ -1667,6 +1718,16 @@ export default function App() {
           isDarkMode={isDarkMode}
           lang={lang}
         />
+
+        {/* Editorial Introduction for Selected Category (when filter is active) */}
+        {filterState.selectedCategory !== 'all' && (
+          <CategoryEditorialBanner
+            category={CATEGORIES.find((c) => c.id === filterState.selectedCategory) || CATEGORIES[0]}
+            totalToolsInCategory={filteredTools.length}
+            isDarkMode={isDarkMode}
+            lang={lang}
+          />
+        )}
 
         {/* Top Sponsored Ad Banner (if enabled and active) */}
         {siteSettings.showSponsoredAds && topAd && (
@@ -1823,11 +1884,12 @@ export default function App() {
 
       {/* Lazy Modals Container */}
       <Suspense fallback={null}>
-        {/* Tool Detail Modal */}
-        {selectedToolForModal && (
+        {/* Tool Detail Modal (Modal overlay mode) */}
+        {selectedToolForModal && !isStandaloneRoute && (
           <ToolDetailModal
             tool={selectedToolForModal}
             isOpen={!!selectedToolForModal}
+            isStandaloneRoute={false}
             onClose={handleCloseToolDetails}
             isFavorite={selectedToolForModal ? !!favorites[selectedToolForModal.id] : false}
             userRating={selectedToolForModal ? userRatings[selectedToolForModal.id] : undefined}

@@ -1511,7 +1511,6 @@ export const digitalToolToAiTool = (d: DigitalTool): any => {
     pricingDetailsEn: 'Free client-side tool running directly in your browser with no limits and no sign-up.',
     websiteUrl: `/tools/${d.slug}`,
     rating: 4.9,
-    reviewsCount: 150 + Math.floor(d.id.length * 12),
     tags: d.keywords || [],
     isPopular: true,
     isFeatured: true,

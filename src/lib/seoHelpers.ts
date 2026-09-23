@@ -172,13 +172,13 @@ export function getToolSEO(tool: AiTool, category?: Category, lang: SupportedLan
   const categoryName = category ? (isAr ? category.nameAr : category.nameEn) : tool.category;
 
   const title = isAr
-    ? `${tool.nameAr} - مراجعة، مميزات، أسعار وبدائل الأداة | أدواتي AI`
-    : `${tool.nameEn} - AI Review, Features, Pricing & Top Alternatives | Adawatai AI`;
+    ? `${tool.nameAr} - دليل ومميزات، أسعار وبدائل الأداة | أدواتي AI`
+    : `${tool.nameEn} - Editorial Guide, Features, Pricing & Alternatives | Adawatai AI`;
 
   const baseDesc = tool.taglineAr || tool.descriptionAr.slice(0, 160);
   const description = isAr
-    ? `دليل شامل لأداة ${tool.nameAr} (${tool.nameEn}): ${baseDesc} استكشف المميزات، الأسعار (${tool.pricingAr})، والبدائل المتاحة.`
-    : `Full guide & review for ${tool.nameEn}: ${baseDesc} Discover features, pros & cons, verified pricing, and top AI alternatives.`;
+    ? `دليل تحريري شامل لأداة ${tool.nameAr} (${tool.nameEn}): ${baseDesc} استكشف المميزات، نموذج التسعير (${tool.pricingAr})، والبدائل المتاحة.`
+    : `Editorial guide for ${tool.nameEn}: ${baseDesc} Explore features, pros & cons, pricing models, and top AI alternatives.`;
 
   const canonical = lang === 'ar'
     ? `${BASE_URL}/tools/${encodeURIComponent(tool.id)}`

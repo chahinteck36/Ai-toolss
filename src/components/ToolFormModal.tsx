@@ -42,7 +42,6 @@ export const ToolFormModal: React.FC<ToolFormModalProps> = ({
     pricingDetailsAr: '',
     websiteUrl: 'https://',
     rating: 4.8,
-    reviewsCount: 120,
     tags: [],
     supportsArabic: true,
     isFeatured: false,
@@ -81,7 +80,6 @@ export const ToolFormModal: React.FC<ToolFormModalProps> = ({
         pricingDetailsAr: '',
         websiteUrl: 'https://',
         rating: 4.8,
-        reviewsCount: 50,
         tags: ['ذكاء_اصطناعي'],
         supportsArabic: true,
         isFeatured: false,
@@ -153,7 +151,6 @@ export const ToolFormModal: React.FC<ToolFormModalProps> = ({
       pricingDetailsAr: formData.pricingDetailsAr || '',
       websiteUrl: formData.websiteUrl?.trim() || '',
       rating: Number(formData.rating) || 4.7,
-      reviewsCount: Number(formData.reviewsCount) || 1,
       tags: parsedTags.length > 0 ? parsedTags : ['ذكاء_اصطناعي'],
       supportsArabic: !!formData.supportsArabic,
       isFeatured: !!formData.isFeatured,
@@ -389,7 +386,7 @@ export const ToolFormModal: React.FC<ToolFormModalProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                التقييم الأولي (1.0 - 5.0)
+                التقييم التحريري الداخلي (1.0 - 5.0)
               </label>
               <input
                 type="number"

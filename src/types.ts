@@ -93,8 +93,8 @@ export interface AiTool {
   pricingAr: string;
   pricingDetailsAr?: string;
   websiteUrl: string;
-  rating: number; // Base rating 1-5
-  reviewsCount: number;
+  rating: number; // Editorial score 1-5
+  reviewsCount?: number; // Optional deprecated legacy field
   tags: string[];
   isPopular?: boolean;
   isFeatured?: boolean;

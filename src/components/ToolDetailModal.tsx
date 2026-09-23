@@ -29,10 +29,15 @@ import {
   ArrowUpRight,
   Info,
   Users,
-  Compass
+  Compass,
+  BookOpen,
+  ShieldAlert,
+  CheckSquare,
+  HelpCircle
 } from 'lucide-react';
 import { AiTool, PricingType, Advertisement, CategoryId } from '../types';
 import { CATEGORIES } from '../data/toolsData';
+import { KNOWLEDGE_ARTICLES } from '../articles/articleData';
 import { SponsoredBanner } from './SponsoredBanner';
 import { SEO } from './SEO';
 import { getToolSEO } from '../lib/seoHelpers';
@@ -56,6 +61,7 @@ interface ToolDetailModalProps {
   advertisements?: Advertisement[];
   isDarkMode: boolean;
   lang?: SupportedLanguage;
+  isStandaloneRoute?: boolean;
 }
 
 interface AudienceItem {
@@ -135,7 +141,8 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
   allTools,
   advertisements = [],
   isDarkMode,
-  lang = 'ar' as SupportedLanguage
+  lang = 'ar' as SupportedLanguage,
+  isStandaloneRoute = false
 }) => {
   const isAr = lang === 'ar';
   const [noteText, setNoteText] = useState(userNote);
@@ -143,6 +150,17 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
   const [noteSavedToast, setNoteSavedToast] = useState(false);
   const [hoverRating, setHoverRating] = useState<number | null>(null);
   const [logoImgError, setLogoImgError] = useState(false);
+
+  // Compute related articles from Knowledge Hub
+  const relatedArticles = useMemo(() => {
+    if (!tool) return [];
+    return KNOWLEDGE_ARTICLES.filter((art) => {
+      const toolId = tool.id.toLowerCase();
+      const inRelatedTools = art.relatedTools?.some((t) => t.toLowerCase() === toolId);
+      const sameCategory = art.category === tool.category;
+      return inRelatedTools || sameCategory;
+    }).slice(0, 3);
+  }, [tool]);
 
   // Sync user note
   useEffect(() => {
@@ -427,48 +445,38 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
   const inArticleTopAd = advertisements.find((a) => a.isActive && a.placement === 'in_article_top');
   const inArticleBottomAd = advertisements.find((a) => a.isActive && a.placement === 'in_article_bottom');
 
-  return (
+  const modalContent = (
     <div 
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/65 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-fadeIn"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="tool-title-h1"
+      id={isStandaloneRoute ? 'tool-detail-page-container' : 'tool-detail-modal-container'}
+      className={`relative w-full ${
+        isStandaloneRoute 
+          ? 'max-w-5xl mx-auto shadow-sm my-0 sm:my-4' 
+          : 'max-w-4xl shadow-2xl my-4 sm:my-8 z-10'
+      } rounded-3xl border overflow-hidden transition-colors ${
+        isDarkMode 
+          ? 'bg-slate-900 border-slate-800 text-slate-100' 
+          : 'bg-white border-slate-200 text-slate-900'
+      }`}
+      dir={lang === 'ar' ? 'rtl' : 'ltr'}
     >
-      {/* Dynamic SEO Head Management */}
-      {seoData && (
-        <SEO
-          title={seoData.title}
-          description={seoData.description}
-          canonical={seoData.canonical}
-          robots={seoData.robots}
-          image={seoData.image}
-          type="product"
-          jsonLd={seoData.jsonLd}
-          lang={lang}
-          keywords={seoData.keywords}
-        />
-      )}
-
-      {/* Click outside backdrop */}
-      <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
-
-      {/* Main Modal Container */}
-      <div 
-        id="tool-detail-modal-container"
-        className={`relative w-full max-w-4xl rounded-3xl border shadow-2xl overflow-hidden z-10 my-4 sm:my-8 transition-colors ${
-          isDarkMode 
-            ? 'bg-slate-900 border-slate-800 text-slate-100' 
-            : 'bg-white border-slate-200 text-slate-900'
-        }`}
-        dir={lang === 'ar' ? 'rtl' : 'ltr'}
-      >
-        {/* 1. Tool Header (Breadcrumb + Title + Logo + Rating + Badges + Quick Actions) */}
-        <header className={`relative p-5 sm:p-7 border-b ${
-          isDarkMode 
-            ? 'bg-gradient-to-b from-slate-800/80 to-slate-900 border-slate-800' 
-            : 'bg-gradient-to-b from-slate-50/90 to-white border-slate-200/80'
-        }`}>
-          {/* Close button top corner */}
+      {/* 1. Tool Header (Breadcrumb + Title + Logo + Rating + Badges + Quick Actions) */}
+      <header className={`relative p-5 sm:p-7 border-b ${
+        isDarkMode 
+          ? 'bg-gradient-to-b from-slate-800/80 to-slate-900 border-slate-800' 
+          : 'bg-gradient-to-b from-slate-50/90 to-white border-slate-200/80'
+      }`}>
+        {/* Close button top corner (or Back to Directory for standalone route) */}
+        {isStandaloneRoute ? (
+          <button
+            onClick={onClose}
+            className={`absolute top-4 ${lang === 'ar' ? 'left-4' : 'right-4'} inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-200/70 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors z-20 cursor-pointer`}
+            title={lang === 'ar' ? 'العودة للدليل' : 'Back to Directory'}
+            aria-label={lang === 'ar' ? 'العودة للدليل' : 'Back to Directory'}
+          >
+            <ChevronLeft className={`w-4 h-4 ${lang === 'ar' ? 'rotate-180' : ''}`} />
+            <span>{lang === 'ar' ? 'العودة للدليل' : 'Back to Directory'}</span>
+          </button>
+        ) : (
           <button
             id="close-modal-btn"
             onClick={onClose}
@@ -478,6 +486,7 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
           >
             <X className="w-5 h-5" />
           </button>
+        )}
 
           {/* Breadcrumbs Navigation */}
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-4 flex-wrap">
@@ -572,12 +581,17 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
                     <span>{isAr ? (categoryObj?.nameAr || 'القسم') : (categoryObj?.nameEn || 'Category')}</span>
                   </button>
 
-                  {/* Rating Badge */}
-                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/80">
+                  {/* Editorial Rating Badge */}
+                  <div 
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-bold bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/80 cursor-help"
+                    title={isAr 
+                      ? 'التقييم الظاهر هو تقييم تحريري من أدواتي، وليس متوسط تقييمات المستخدمين.' 
+                      : 'This is an editorial score from Adawatai, not a user-review average.'}
+                  >
                     <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                     <span>{displayRating.toFixed(1)} / 5</span>
-                    <span className="text-[11px] font-normal text-slate-400 mr-0.5">
-                      ({tool.reviewsCount || 100} {isAr ? 'تقييم' : 'reviews'})
+                    <span className="text-[10px] font-semibold text-amber-700/90 dark:text-amber-300/80">
+                      ({isAr ? 'تقييم تحريري' : 'Editorial score'})
                     </span>
                   </div>
 
@@ -893,6 +907,77 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
             </div>
           </section>
 
+          {/* Editorial Methodology & Transparency */}
+          <section aria-labelledby="section-methodology-title" className={`p-4 sm:p-5 rounded-2xl border space-y-3 ${
+            isDarkMode ? 'bg-indigo-950/20 border-indigo-900/40 text-slate-200' : 'bg-indigo-50/50 border-indigo-100 text-slate-800'
+          }`}>
+            <h2 id="section-methodology-title" className="text-xs sm:text-sm font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <span>{isAr ? 'منهجية صفحة الأداة' : 'Editorial Methodology'}</span>
+            </h2>
+            <div className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+              <p>
+                {isAr 
+                  ? 'هذه الصفحة إدخال تحريري في دليل أدواتي وليست صفحة تقييمات مستخدمين. نعتمد على معلومات الأداة ووصفها وحالات استخدامها ونموذج التسعير المتاح لدينا، ونحيلك إلى الموقع الرسمي للتحقق من آخر التغييرات.'
+                  : 'This is an editorial directory entry, not a user-review page. We use the tool information, use cases and pricing data available to us, and link to the official provider so visitors can verify the latest changes.'}
+              </p>
+              <p className="font-semibold text-indigo-700 dark:text-indigo-300">
+                {isAr 
+                  ? 'التقييم الظاهر هو تقييم تحريري داخلي، وليس متوسطاً لمراجعات المستخدمين.'
+                  : 'The score shown is an internal editorial rating, not a user-review average.'}
+              </p>
+            </div>
+          </section>
+
+          {/* Before Subscribing or Purchasing Checklist */}
+          <section aria-labelledby="section-checklist-title" className={`p-4 sm:p-5 rounded-2xl border space-y-3 ${
+            isDarkMode ? 'bg-amber-950/20 border-amber-900/40' : 'bg-amber-50/60 border-amber-200/70'
+          }`}>
+            <h2 id="section-checklist-title" className="text-xs sm:text-sm font-bold text-amber-900 dark:text-amber-300 flex items-center gap-2">
+              <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <span>{isAr ? 'قبل الاشتراك أو الشراء' : 'Before Subscribing or Purchasing'}</span>
+            </h2>
+            <p className="text-xs text-amber-800/90 dark:text-amber-200/90 leading-relaxed">
+              {isAr 
+                ? 'لضمان اتخاذ قرار استثماري مدروس يتناسب مع احتياجاتك، ينصح فريق تحرير أدواتي بما يلي:'
+                : 'To ensure a well-informed decision that fits your workflow and budget, our editorial team recommends:'}
+            </p>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-700 dark:text-slate-300">
+              <li className="flex items-start gap-2">
+                <CheckSquare className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <span>
+                  {isAr 
+                    ? 'مراجعة الأسعار والباقات الحالية على الموقع الرسمي مباشرة قبل الدفع.' 
+                    : 'Review current prices and tiers directly on the official provider website before purchasing.'}
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckSquare className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <span>
+                  {isAr 
+                    ? 'التأكد من سياسة الاسترجاع والإلغاء وشروط تجديد الاشتراك التلقائي.' 
+                    : 'Verify refund and cancellation policies along with automatic renewal terms.'}
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckSquare className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <span>
+                  {isAr 
+                    ? 'فحص ما إذا كانت الأداة تدعم العربية بشكل كافٍ لمتطلباتك وتنسيق النصوص.' 
+                    : 'Check whether Arabic language and RTL formatting adequately meet your project requirements.'}
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckSquare className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <span>
+                  {isAr 
+                    ? 'التحقق من حدود الاستخدام (Rate limits أو حصص الائتمان) في الباقة المجانية أو المدفوعة.' 
+                    : 'Inspect usage limits (token/rate limits or generation credits) in free and paid tiers.'}
+                </span>
+              </li>
+            </ul>
+          </section>
+
           {/* Academic or Scholar Focus if present */}
           {(tool.academicFocus || (tool.academicTags && tool.academicTags.length > 0)) && (
             <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200">
@@ -1089,6 +1174,70 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
             </section>
           )}
 
+          {/* Related Guides & Articles from Knowledge Hub */}
+          {relatedArticles.length > 0 && (
+            <section aria-labelledby="section-knowledge-title" className="pt-2">
+              <div className="flex items-center justify-between mb-3">
+                <h2 id="section-knowledge-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  <span>
+                    {isAr 
+                      ? 'مقالات وأدلة ذات صلة من مركز المعرفة' 
+                      : 'Related Guides & Articles from Knowledge Hub'}
+                  </span>
+                </h2>
+                <a
+                  href="/knowledge"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onClose();
+                    window.history.pushState(null, '', '/knowledge');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                  }}
+                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <span>{isAr ? 'مركز المعرفة كاملاً' : 'All Guides'}</span>
+                  <ChevronLeft className={`w-3.5 h-3.5 ${!isAr ? 'rotate-180' : ''}`} />
+                </a>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {relatedArticles.map((art) => (
+                  <a
+                    key={art.id}
+                    href={`/knowledge/${art.slug}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onClose();
+                      window.history.pushState(null, '', `/knowledge/${art.slug}`);
+                      window.dispatchEvent(new PopStateEvent('popstate'));
+                    }}
+                    className={`p-3.5 rounded-2xl border transition-all hover:border-indigo-400 hover:shadow-md flex flex-col justify-between gap-3 group cursor-pointer ${
+                      isDarkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-white border-slate-200'
+                    }`}
+                  >
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                        {art.readingTime} {isAr ? 'دقائق قراءة' : 'min read'}
+                      </span>
+                      <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
+                        {art.title}
+                      </h3>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                        {art.description}
+                      </p>
+                    </div>
+
+                    <div className="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1 pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <span>{isAr ? 'اقرأ الدليل' : 'Read Guide'}</span>
+                      <ChevronLeft className={`w-3 h-3 ${!isAr ? 'rotate-180' : ''}`} />
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Interactive Rating & Personal User Notes Section (Local State) */}
           <section aria-labelledby="section-notes-title" className={`p-4 sm:p-5 rounded-2xl border space-y-3 ${
             isDarkMode ? 'bg-slate-800/50 border-slate-700/80' : 'bg-slate-50 border-slate-200'
@@ -1190,9 +1339,16 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
           <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
             <button
               onClick={onClose}
-              className="px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+              className="px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer inline-flex items-center gap-1.5"
             >
-              {isAr ? 'إغلاق النافذة' : 'Close Window'}
+              {isStandaloneRoute ? (
+                <>
+                  <ChevronLeft className={`w-4 h-4 ${isAr ? 'rotate-180' : ''}`} />
+                  <span>{isAr ? 'العودة للدليل' : 'Back to Directory'}</span>
+                </>
+              ) : (
+                <span>{isAr ? 'إغلاق النافذة' : 'Close Window'}</span>
+              )}
             </button>
 
             <button
@@ -1229,6 +1385,52 @@ export const ToolDetailModal: React.FC<ToolDetailModalProps> = ({
           </a>
         </footer>
       </div>
+  );
+
+  if (isStandaloneRoute) {
+    return (
+      <div className="w-full animate-fadeIn">
+        {seoData && (
+          <SEO
+            title={seoData.title}
+            description={seoData.description}
+            canonical={seoData.canonical}
+            robots={seoData.robots}
+            image={seoData.image}
+            type="product"
+            jsonLd={seoData.jsonLd}
+            lang={lang}
+            keywords={seoData.keywords}
+          />
+        )}
+        {modalContent}
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/65 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-fadeIn"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tool-title-h1"
+    >
+      {seoData && (
+        <SEO
+          title={seoData.title}
+          description={seoData.description}
+          canonical={seoData.canonical}
+          robots={seoData.robots}
+          image={seoData.image}
+          type="product"
+          jsonLd={seoData.jsonLd}
+          lang={lang}
+          keywords={seoData.keywords}
+        />
+      )}
+      {/* Click outside backdrop */}
+      <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
+      {modalContent}
     </div>
   );
 };

@@ -1,41 +1,84 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Tools collection: allow reading published tools to everyone; allow write/edit/delete
+    
+    // Helper function to validate string length
+    function isValidString(str, minLen, maxLen) {
+      return str is string && str.size() >= minLen && str.size() <= maxLen;
+    }
+
+    // Tools collection
     match /tools/{toolId} {
       allow read: if true;
-      allow write: if true;
+      
+      // Allow visitor click counter increment
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicksCount'])
+        && request.resource.data.clicksCount is int;
+      
+      // Allow create/update with strict schema validation
+      allow create, update: if isValidString(request.resource.data.nameAr, 1, 200)
+        && isValidString(request.resource.data.nameEn, 1, 200)
+        && request.resource.data.websiteUrl is string
+        && request.resource.data.websiteUrl.size() > 0
+        && request.resource.data.category is string;
+      
+      // Allow delete
+      allow delete: if true;
     }
     
-    // Submissions collection: visitors can submit; admins can review/update
+    // Submissions collection: visitors submit recommendations
     match /submissions/{subId} {
       allow read: if true;
-      allow create: if true;
-      allow update, delete: if true;
+      
+      // Strict validation for visitor submissions to prevent spam/abuse
+      allow create: if isValidString(request.resource.data.name, 1, 100)
+        && isValidString(request.resource.data.websiteUrl, 4, 500)
+        && request.resource.data.category is string
+        && (!('status' in request.resource.data) || request.resource.data.status in ['pending', 'approved', 'rejected']);
+        
+      allow update: if request.resource.data.status in ['pending', 'approved', 'rejected'];
+      allow delete: if true;
     }
 
-    // Advertisements: public read for active ads; manage via admin
+    // Advertisements collection
     match /advertisements/{adId} {
       allow read: if true;
-      allow write: if true;
+      
+      // Allow impression/click counters increment
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasAny(['clicks', 'impressions'])
+        || (isValidString(request.resource.data.title, 1, 300) && request.resource.data.targetUrl is string);
+        
+      allow create: if isValidString(request.resource.data.title, 1, 300)
+        && request.resource.data.targetUrl is string;
+        
+      allow delete: if true;
     }
 
-    // Reviews & Ratings
+    // Site settings
+    match /settings/{settingId} {
+      allow read: if true;
+      allow create, update: if isValidString(request.resource.data.siteName, 1, 200);
+      allow delete: if false; // Never delete site settings
+    }
+
+    // User reviews & ratings
     match /reviews/{reviewId} {
       allow read: if true;
-      allow write: if true;
+      allow create, update: if request.resource.data.rating is number
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5;
+      allow delete: if true;
     }
 
-    // Members & Roles
+    // Team members
     match /members/{memberId} {
       allow read: if true;
       allow write: if true;
     }
 
-    // Settings
-    match /settings/{settingId} {
-      allow read: if true;
-      allow write: if true;
+    // Default deny for any other collection
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

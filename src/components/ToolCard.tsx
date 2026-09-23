@@ -372,8 +372,13 @@ const ToolCardComponent: React.FC<ToolCardProps> = ({
             )}
           </div>
 
-          <span className="text-[11px] text-slate-400">
-            {tool.reviewsCount} {isAr ? 'مراجعة' : 'reviews'}
+          <span 
+            className="text-[11px] font-medium text-slate-500 dark:text-slate-400 cursor-help"
+            title={isAr 
+              ? 'التقييم الظاهر هو تقييم تحريري من أدواتي، وليس متوسط تقييمات المستخدمين.' 
+              : 'This is an editorial score from Adawatai, not a user-review average.'}
+          >
+            {isAr ? 'تقييم تحريري' : 'Editorial score'}
           </span>
         </div>
 
