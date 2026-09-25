@@ -1,3 +1,4 @@
+import http from 'http';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import path from 'path';
@@ -256,12 +257,16 @@ app.get('/api/health', (req, res) => {
 
 // ------------------- VITE OR STATIC ASSETS ------------------- //
 async function startServer() {
+  const server = http.createServer(app);
   const publicPath = path.join(process.cwd(), 'public');
   app.use(express.static(publicPath));
 
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: process.env.DISABLE_HMR === 'true' ? false : { server },
+      },
       appType: 'spa',
     });
     app.use(vite.middlewares);
@@ -273,7 +278,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`Adawatai Server running securely on http://0.0.0.0:${PORT}`);
   });
 }
