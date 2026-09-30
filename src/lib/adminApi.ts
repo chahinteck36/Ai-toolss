@@ -96,9 +96,9 @@ export async function adminLogin(email: string, password: string): Promise<Admin
     error: 'تم تسجيل الدخول إلى بوابة الإدارة، لكن حساب Firebase الإداري غير متاح أو كلمة المرور مختلفة.'
   };
       
+            }
+
       if (data.csrfToken) {
-        setCsrfToken(data.csrfToken);
-      }
       return {
         authenticated: true,
         user: data.user,
