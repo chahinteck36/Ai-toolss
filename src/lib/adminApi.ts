@@ -98,12 +98,13 @@ export async function adminLogin(email: string, password: string): Promise<Admin
       
             }
 
-      if (data.csrfToken) {
-      return {
-        authenticated: true,
-        user: data.user,
-        csrfToken: data.csrfToken
-      };
+            if (data.csrfToken) {
+        return {
+          authenticated: true,
+          user: data.user,
+          csrfToken: data.csrfToken
+        };
+      }
     }
 
     return {
