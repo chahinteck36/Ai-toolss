@@ -3,7 +3,8 @@
  * Interacts with server-side authentication and session endpoints.
  * All requests use HttpOnly cookies and CSRF tokens.
  */
-
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { auth } from './firebase';
 export interface AdminAuthResponse {
   authenticated: boolean;
   user?: {
@@ -80,6 +81,21 @@ export async function adminLogin(email: string, password: string): Promise<Admin
 
     const data = await res.json();
     if (res.ok && data.success) {
+      try {
+  await signInWithEmailAndPassword(auth, email.trim(), password);
+} catch (firebaseError) {
+  await fetch('/api/admin/logout', {
+    method: 'POST',
+    credentials: 'include'
+  }).catch(() => {});
+
+  setCsrfToken(null);
+
+  return {
+    authenticated: false,
+    error: 'تم تسجيل الدخول إلى بوابة الإدارة، لكن حساب Firebase الإداري غير متاح أو كلمة المرور مختلفة.'
+  };
+      
       if (data.csrfToken) {
         setCsrfToken(data.csrfToken);
       }
@@ -122,37 +138,13 @@ export async function adminLogout(): Promise<boolean> {
   } catch (e) {
     // Non-blocking
   } finally {
-    setCsrfToken(null);
+  try {
+    await signOut(auth);
+  } catch (e) {
+    // Non-blocking
+  }
+
+  setCsrfToken(null);
   }
   return true;
-}
-
-/**
- * Change Admin Password on the server.
- */
-export async function adminChangePassword(currentPassword: string, newPassword: string): Promise<{ success: boolean; error?: string; message?: string }> {
-  try {
-    const csrf = getCsrfToken();
-    const res = await fetch('/api/admin/change-password', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(csrf ? { 'X-CSRF-Token': csrf } : {})
-      },
-      credentials: 'include',
-      body: JSON.stringify({ currentPassword, newPassword })
-    });
-
-    const data = await res.json();
-    if (res.ok && data.success) {
-      if (data.csrfToken) {
-        setCsrfToken(data.csrfToken);
-      }
-      return { success: true, message: data.message };
-    }
-
-    return { success: false, error: data.error || 'فشل في تحديث كلمة المرور.' };
-  } catch (err: any) {
-    return { success: false, error: 'حدث خطأ أثناء الاتصال بالخادم.' };
-  }
 }
