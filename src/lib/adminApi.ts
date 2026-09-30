@@ -149,3 +149,47 @@ export async function adminLogout(): Promise<boolean> {
   }
   return true;
 }
+/**
+ * Change Admin Password on the server.
+ */
+export async function adminChangePassword(
+  currentPassword: string,
+  newPassword: string
+): Promise<{ success: boolean; error?: string; message?: string }> {
+  try {
+    const csrf = getCsrfToken();
+
+    const res = await fetch('/api/admin/change-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(csrf ? { 'X-CSRF-Token': csrf } : {})
+      },
+      credentials: 'include',
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      if (data.csrfToken) {
+        setCsrfToken(data.csrfToken);
+      }
+
+      return {
+        success: true,
+        message: data.message
+      };
+    }
+
+    return {
+      success: false,
+      error: data.error || 'فشل في تحديث كلمة المرور.'
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      error: 'حدث خطأ أثناء الاتصال بالخادم.'
+    };
+  }
+}
